@@ -3,7 +3,7 @@
 // that buyer's spend limits.
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Buyer } from "@simpuru/agent";
-import { explorerTx, type Listing } from "@simpuru/core";
+import { CATEGORIES, explorerTx, type Listing } from "@simpuru/core";
 import { z } from "zod";
 
 const ada = (lovelace: string | bigint) => `${Number(lovelace) / 1_000_000} tADA`;
@@ -25,8 +25,46 @@ const summary = (l: Listing) => ({
   price: ada(l.priceLovelace),
   modes: l.modes,
   contentHash: l.contentHash,
+  ...(l.category ? { category: l.category } : {}),
+  sales: l.sales ?? 0,
+  seller: l.sellerAddress,
+  sellerReputation: l.sellerReputation
+    ? `${l.sellerReputation.score}/100 from ${l.sellerReputation.basis} closed escrow(s)`
+    : "new seller (no closed escrow yet)",
   ...(l.previewMedia ? { preview: l.previewMedia } : {}),
 });
+
+export interface ListingFilter {
+  query?: string;
+  category?: string;
+  mode?: "instant" | "protected";
+  maxPriceAda?: number;
+  /** 0-100; sellers without a closed escrow are left out when set. */
+  minReputation?: number;
+  sort?: "popular" | "newest" | "price_asc" | "price_desc" | "reputation";
+}
+
+/** Catalogue filter + sort behind search_listings. Pure, so it is tested without a server. */
+export function filterListings(all: Listing[], f: ListingFilter): Listing[] {
+  const q = f.query?.toLowerCase().trim();
+  const hits = all.filter(
+    (l) =>
+      (!q || `${l.title} ${l.description} ${l.category ?? ""}`.toLowerCase().includes(q)) &&
+      (!f.category || l.category === f.category) &&
+      (!f.mode || l.modes.includes(f.mode)) &&
+      (f.maxPriceAda === undefined || Number(l.priceLovelace) <= f.maxPriceAda * 1_000_000) &&
+      (f.minReputation === undefined || (l.sellerReputation?.score ?? -1) >= f.minReputation),
+  );
+  const price = (l: Listing) => Number(l.priceLovelace);
+  const by: Record<NonNullable<ListingFilter["sort"]>, (a: Listing, b: Listing) => number> = {
+    popular: (a, b) => (b.sales ?? 0) - (a.sales ?? 0),
+    newest: (a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0),
+    price_asc: (a, b) => price(a) - price(b),
+    price_desc: (a, b) => price(b) - price(a),
+    reputation: (a, b) => (b.sellerReputation?.score ?? -1) - (a.sellerReputation?.score ?? -1),
+  };
+  return f.sort ? [...hits].sort(by[f.sort]) : hits;
+}
 
 export interface SimpuruMcpOptions {
   buyer: Buyer;
@@ -51,21 +89,30 @@ export function createSimpuruMcp({
     {
       title: "Search the Simpuru catalogue",
       description:
-        "Free. Lists digital goods for sale on Simpuru (Cardano preprod), optionally filtered by a search term.",
+        "Free. Design prompts for sale on Simpuru (Cardano preprod). Filter by words, category, delivery mode, max price or seller reputation (0-100, from on-chain escrow outcomes: share of the seller's closed escrows where the buyer was not refunded), and sort.",
       inputSchema: {
-        query: z.string().optional().describe("Words to match in title or description"),
+        query: z.string().optional().describe("Words to match in title, description or category"),
+        category: z.enum(CATEGORIES).optional(),
+        mode: z
+          .enum(["instant", "protected"])
+          .optional()
+          .describe("Only listings offering this mode"),
+        maxPriceAda: z.number().positive().optional().describe("Highest price in ADA"),
+        minReputation: z
+          .number()
+          .min(0)
+          .max(100)
+          .optional()
+          .describe("Lowest seller reputation; new sellers are excluded when set"),
+        sort: z.enum(["popular", "newest", "price_asc", "price_desc", "reputation"]).optional(),
       },
       annotations: { readOnlyHint: true },
     },
-    async ({ query }) => {
+    async (filter) => {
       const res = await fetch(`${api}/listings`);
       if (!res.ok) return fail(`catalogue unavailable (HTTP ${res.status})`);
-      const q = query?.toLowerCase().trim();
-      const all = (await res.json()) as Listing[];
-      const hits = q
-        ? all.filter((l) => `${l.title} ${l.description}`.toLowerCase().includes(q))
-        : all;
-      return text(hits.map(summary));
+      const hits = filterListings((await res.json()) as Listing[], filter);
+      return text(hits.length ? hits.map(summary) : "No listing matches these filters.");
     },
   );
 

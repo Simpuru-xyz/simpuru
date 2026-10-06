@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "start": "bun --env-file=../../.env src/index.ts"
+    "start": "bun --env-file=../../.env src/index.ts",
+    "test": "bun test"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",

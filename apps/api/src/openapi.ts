@@ -268,7 +268,7 @@ export const openApiSpec = {
           "",
           "| Tool | Cost | Input |",
           "|---|---|---|",
-          "| `search_listings` | free | `{ query? }` |",
+          "| `search_listings` | free | `{ query?, category?, mode?, maxPriceAda?, minReputation?, sort? }` (sort: popular, newest, price_asc, price_desc, reputation) |",
           "| `get_listing` | free | `{ id }` |",
           '| `buy_listing` | listing price | `{ id, mode: "instant" \\| "protected" }` |',
           "| `my_purchases` | free | `{}` |",
