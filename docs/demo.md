@@ -33,6 +33,17 @@ Every row is a real Cardano preprod transaction. Explorer: `https://preprod.card
 | Buyer `verifyDelivery` → `mismatch` (`da7bd341…` ≠ `990cf6bb…`), `setRefundRequested` | [`c1e28c30…`](https://preprod.cardanoscan.io/transaction/c1e28c303d20e9107c56d423fec7bebfa2c09b1c85d0bf666e607cb8c3abe909) | Disputed |
 | Arbiter decides **buyer** from evidence (#43) and pays out after the dispute window | [`7132086b…`](https://preprod.cardanoscan.io/transaction/7132086b6142a805e0018458800d4053eae7a865f9f58d1eb924fc6ad1ca3d1b) | earlier proof: [`074da4b5…`](https://preprod.cardanoscan.io/transaction/074da4b5eda0a23af5513f9d4115f0d74f70c12e109a8353ca256bcf15ba90ec), 5.0 tADA to the buyer |
 
+### 5. A real agent over the hosted MCP (production)
+Claude Code with only `claude mcp add --transport http simpuru https://api.simpuru.xyz/mcp`:
+browse → filter `minReputation: 80` (both 0/100 demo sellers left out) → buy protected → status →
+buy again (`alreadyPaid`, 0 tADA) → `my_purchases`.
+
+| Step | Tx | Notes |
+|---|---|---|
+| `buy_listing kinetic-pricing-section protected` | [`fc9db1e1…`](https://preprod.cardanoscan.io/transaction/fc9db1e1a198a7dd3b270dc57bd793c66c4d05e14538e42b8a04caa4230ee7be) | 10 tADA into escrow in ~22 s, content hash matches |
+| VPS seller agent posts the result (automatic, ~1 min) | [`acf5a3cd…`](https://preprod.cardanoscan.io/transaction/acf5a3cd47e1b839bcf47142b5d380cf6e7e6b8bf500fd7a259e49067f06f627) | |
+| VPS seller agent withdraws after `unlock_time` | [`69eece05…`](https://preprod.cardanoscan.io/transaction/69eece05747a816208c7e735f55a553ec254d49ae74c928121e612ada9cb53a3) | seller reputation now 100/100 over 4 closed escrows |
+
 ## Time and cost (measured)
 | Path | Time | Buyer fee | Seller / arbiter fees |
 |---|---|---|---|
