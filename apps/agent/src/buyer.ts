@@ -1,5 +1,5 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { type DeliveryMode, type EscrowDeadlines, type Listing, X402_NETWORK } from "@simpuru/core";
 import { ESCROW, isOurDeployment } from "@simpuru/core/escrow";
 import { contentHash, unlockProofDigest } from "@simpuru/core/hash";
@@ -225,6 +225,13 @@ export function createBuyer(cfg: BuyerConfig) {
       };
       mkdirSync(dirname(cfg.logPath), { recursive: true });
       appendFileSync(cfg.logPath, `${JSON.stringify(record)}\n`);
+      // Keep what we received: the protection watcher needs it to check the seller's
+      // result hash and, in a dispute, to show the arbiter.
+      if (record.escrow) {
+        const dir = join(dirname(cfg.logPath), "deliveries");
+        mkdirSync(dir, { recursive: true });
+        writeFileSync(join(dir, record.txHash), r.body);
+      }
       return { ok: true, record, content: r.body, seconds: (Date.now() - started) / 1000 };
     },
   };
