@@ -6,6 +6,7 @@ import { type Db, insertListing, listListings } from "./db";
 const SEED = [
   {
     id: "aurora-saas-hero",
+    category: "Hero" as const,
     title: "Aurora SaaS hero with a slow gradient sky",
     description:
       "A dark landing hero: drifting aurora gradient, a glass nav, one headline, two CTAs. Built for a dev-tool launch.",
@@ -32,6 +33,7 @@ Typography: Inter from Google Fonts. Contrast must pass WCAG AA for all text.
   },
   {
     id: "editorial-portfolio-grid",
+    category: "Portfolio" as const,
     title: "Editorial portfolio grid with hover reveals",
     description:
       "A magazine-style work grid for a designer: oversized serif titles, image cards that reveal the project on hover.",
@@ -56,6 +58,7 @@ Focus states must be visible for keyboard users; every card is a link with a mea
   },
   {
     id: "kinetic-pricing-section",
+    category: "SaaS" as const,
     title: "Kinetic pricing section with a monthly/yearly toggle",
     description:
       "Three pricing tiers, an animated billing toggle, numbers that roll when the price changes, a highlighted middle plan.",
@@ -90,6 +93,7 @@ export const DEMO_FAULTS: Record<string, "no_delivery" | "wrong_file"> = {
 const DEMO = [
   {
     id: "demo-no-delivery",
+    category: "Landing Page" as const,
     title: "Demo: a seller who never delivers",
     description:
       "Protected only. The seller takes the order and never posts a result, so the buyer is refunded.",
@@ -99,6 +103,7 @@ const DEMO = [
   },
   {
     id: "demo-wrong-file",
+    category: "Landing Page" as const,
     title: "Demo: a seller who delivers the wrong file",
     description:
       "Protected only. The seller delivers something else than it listed, so the buyer disputes.",
@@ -119,6 +124,12 @@ export function deliveredContent(listing: { id: string; content: string }) {
 /** Inserts every seed and demo listing that is missing, owned by `sellerAddress`. */
 export function seed(db: Db, sellerAddress: string) {
   const existing = new Set(listListings(db).map((l) => l.id));
+  // Listings seeded before categories existed get theirs once.
+  for (const s of [...SEED, ...DEMO])
+    db.query("UPDATE listings SET category = ? WHERE id = ? AND category IS NULL").run(
+      s.category,
+      s.id,
+    );
   const rows = [...SEED, ...DEMO].filter((d) => !existing.has(d.id));
   for (const s of rows) {
     insertListing(db, {
