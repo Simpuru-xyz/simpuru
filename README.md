@@ -15,7 +15,9 @@ claude mcp add --transport http simpuru https://api.simpuru.xyz/mcp
 ```
 
 Then ask Claude: *"Find a hero section prompt on Simpuru and buy it with buyer protection."*
-The hosted MCP pays from a shared preprod demo wallet. API: `https://api.simpuru.xyz/listings`.
+The hosted MCP pays from a shared preprod demo wallet.
+
+**API docs (Swagger):** [api.simpuru.xyz/docs](https://api.simpuru.xyz/docs) · OpenAPI 3.1: [`/openapi.json`](https://api.simpuru.xyz/openapi.json)
 
 ## The problem
 
