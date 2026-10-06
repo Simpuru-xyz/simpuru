@@ -104,8 +104,18 @@ export const openApiSpec = {
         tags: ["Catalogue"],
         summary: "Create a listing",
         description:
-          "The API stores the content and returns its SHA-256 as `contentHash`; protected quotes commit to it. No seller auth yet.",
+          "Anyone can sell: the creator signs the listing with the wallet of `sellerAddress`. The API stores the content and returns its SHA-256 as `contentHash`; protected quotes commit to it. Instant sales pay the creator directly; protected sales lock into the escrow with the platform as seller of record, which pays the creator `price − max(1.5 tADA, 10%)` once the escrow releases.",
         operationId: "createListing",
+        parameters: [
+          {
+            name: "X-Simpuru-Proof",
+            in: "header",
+            required: true,
+            schema: proofHeader,
+            description:
+              'Base64 JSON `UnlockProof` signed by `sellerAddress` (CIP-30 `signData`) over `sha256("simpuru:listing:v1\\n" + sellerAddress + "\\n" + sha256(content) + "\\n" + priceLovelace + "\\n" + timestamp)`, at most 5 min old.',
+          },
+        ],
         requestBody: { required: true, content: json(ref("NewListing")) },
         responses: {
           201: { description: "Created", content: json(ref("Listing")) },
@@ -186,6 +196,42 @@ export const openApiSpec = {
             },
           },
           404: error("Unknown listing"),
+        },
+      },
+    },
+    "/creators/{address}": {
+      get: {
+        tags: ["Catalogue"],
+        summary: "A creator's page",
+        description: "Their listings for sale, total sales and on-chain reputation.",
+        operationId: "getCreator",
+        parameters: [
+          {
+            name: "address",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+            description: "Creator's preprod address",
+          },
+        ],
+        responses: {
+          200: {
+            description: "Creator",
+            content: json({
+              type: "object",
+              properties: {
+                address: { type: "string" },
+                listings: { type: "array", items: ref("Listing") },
+                sales: { type: "integer" },
+                sellerReputation: {
+                  type: "object",
+                  properties: { score: { type: "integer" }, basis: { type: "integer" } },
+                },
+              },
+              required: ["address", "listings", "sales"],
+            }),
+          },
+          400: error("Not a preprod address"),
         },
       },
     },

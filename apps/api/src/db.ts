@@ -41,6 +41,7 @@ export function openDb(path = process.env.DB_PATH ?? "data/simpuru.db") {
     "last_ref TEXT",
     "verification TEXT",
     "updated_at INTEGER",
+    "payout_tx TEXT",
   ]) {
     try {
       db.run(`ALTER TABLE purchases ADD COLUMN ${col}`);

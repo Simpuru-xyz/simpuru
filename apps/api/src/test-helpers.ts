@@ -34,3 +34,33 @@ export function addListing(
     ...(over.previewMedia ? { previewMedia: over.previewMedia } : {}),
   });
 }
+
+import { listingProofDigest } from "@simpuru/core/hash";
+import { toMasumiSellerSigner } from "@x402/cardano";
+import { encodeProof } from "./owned";
+
+// Public BIP-39 test vectors, never funded.
+export const alice = toMasumiSellerSigner({
+  mnemonic: `${"abandon ".repeat(23)}art`,
+  network: "cardano:preprod",
+});
+export const bob = toMasumiSellerSigner({
+  mnemonic: `${"zoo ".repeat(23)}vote`,
+  network: "cardano:preprod",
+});
+
+/** The X-Simpuru-Proof a creator sends with a new listing. */
+export async function listingProof(
+  signer: typeof alice,
+  body: { sellerAddress: string; content: string; priceLovelace: string },
+  timestamp = Date.now(),
+) {
+  const digest = listingProofDigest(
+    body.sellerAddress,
+    contentHash(body.content),
+    body.priceLovelace,
+    timestamp,
+  );
+  const { key, signature } = await signer.signTerms(body.sellerAddress, digest);
+  return encodeProof({ address: body.sellerAddress, timestamp, key, signature });
+}

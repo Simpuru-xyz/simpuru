@@ -2,13 +2,28 @@
 // unlock time it collects. It never concedes on its own (a dispute goes to the arbiter).
 // Each pass also turns what it sees on chain into purchase events for the web timeline.
 
-import { Address } from "@evolution-sdk/evolution";
+import { Address, Assets } from "@evolution-sdk/evolution";
 import { ESCROW_STATES } from "@simpuru/core";
 import { ESCROW } from "@simpuru/core/escrow";
 import { purchaseResultHash } from "@simpuru/core/hash";
-import { type Actor, readClient, submitResult, viewOf, withdraw } from "@simpuru/escrow";
+import {
+  type Actor,
+  readClient,
+  roomyUtxos,
+  submitResult,
+  viewOf,
+  walletClient,
+  withdraw,
+} from "@simpuru/escrow";
 import { type Db, getListing } from "./db";
-import { addEvent, type OpenPurchase, openProtectedPurchases, updatePurchase } from "./purchases";
+import {
+  addEvent,
+  type OpenPurchase,
+  openProtectedPurchases,
+  pendingCreatorPayouts,
+  setPayout,
+  updatePurchase,
+} from "./purchases";
 import { DEMO_FAULTS, deliveredContent } from "./seed";
 
 /** The datum fields the decision needs. */
@@ -98,7 +113,54 @@ async function closingOf(bf: Blockfrost, ref: string, buyer: string, seller: str
 /** Seller address → the key that signs for it. Listings by any other address are only watched. */
 export type SellerKeys = Map<string, Actor>;
 
-export async function sellerTick(db: Db, bf: Blockfrost, keys: SellerKeys, now = Date.now()) {
+/** Platform keys by address, and the main seller that stands in for creators. */
+export interface Sellers {
+  keys: SellerKeys;
+  main: string;
+}
+
+/** Who sits in the escrow as seller: the listing's own platform wallet, else the main seller. */
+export const escrowSeller = (s: Sellers, listingSeller: string) =>
+  s.keys.has(listingSeller) ? listingSeller : s.main;
+
+// What a creator receives for a protected sale: the price minus the escrow's cost (two escrow txs
+// and the payout, ~1.5 tADA) or 10%, whichever is larger. Instant sales pay the creator in full.
+const CREATOR_FEE_FLOOR = 1_500_000n;
+export const creatorPayout = (priceLovelace: bigint) => {
+  const tenth = priceLovelace / 10n;
+  return priceLovelace - (tenth > CREATOR_FEE_FLOOR ? tenth : CREATOR_FEE_FLOOR);
+};
+
+/** Pays creators whose protected sales the platform has collected. */
+async function payCreators(db: Db, s: Sellers) {
+  const main = s.keys.get(s.main);
+  if (!main) return;
+  for (const p of pendingCreatorPayouts(db, [...s.keys.keys()])) {
+    try {
+      const amount = creatorPayout(BigInt(p.price_lovelace));
+      const wallet = walletClient(main);
+      const tx = await wallet
+        .newTx()
+        .payToAddress({
+          address: Address.fromBech32(p.seller_address),
+          assets: Assets.fromLovelace(amount),
+        })
+        .build({ changeAddress: await wallet.address(), availableUtxos: await roomyUtxos(wallet) });
+      const hash = Buffer.from((await (await tx.sign()).submit()).hash).toString("hex");
+      setPayout(db, p.tx_hash, hash);
+      addEvent(db, p.tx_hash, "creator_paid", hash);
+      console.log(`[seller] ${p.tx_hash.slice(0, 8)} creator paid ${amount} lovelace ${hash}`);
+    } catch (error) {
+      console.warn(
+        `[seller] ${p.tx_hash.slice(0, 8)} creator payout failed: ${String(error).slice(0, 200)}`,
+      );
+    }
+  }
+}
+
+export async function sellerTick(db: Db, bf: Blockfrost, sellers: Sellers, now = Date.now()) {
+  await payCreators(db, sellers);
+  const keys = sellers.keys;
   const open = openProtectedPurchases(db);
   if (open.length === 0) return;
   // A lock moves to a new UTxO on every action; the seller nonce in its datum stays the same.
@@ -128,7 +190,7 @@ export async function sellerTick(db: Db, bf: Blockfrost, keys: SellerKeys, now =
       }
       if (action.kind === "submit" && lock) {
         const listing = getListing(db, p.listing_id);
-        const key = listing && keys.get(listing.sellerAddress);
+        const key = listing && keys.get(escrowSeller(sellers, listing.sellerAddress));
         // A seller who never delivers never posts a result (demo fault).
         if (!listing || !key || DEMO_FAULTS[listing.id] === "no_delivery") continue;
         const resultHash = purchaseResultHash(p.tx_hash, deliveredContent(listing));
@@ -136,7 +198,9 @@ export async function sellerTick(db: Db, bf: Blockfrost, keys: SellerKeys, now =
         updatePurchase(db, p.tx_hash, { resultTx, resultHash });
         console.log(`[seller] ${p.tx_hash.slice(0, 8)} result submitted ${resultTx}`);
       } else if (action.kind === "withdraw" && lock) {
-        const key = keys.get(getListing(db, p.listing_id)?.sellerAddress ?? "");
+        const key = keys.get(
+          escrowSeller(sellers, getListing(db, p.listing_id)?.sellerAddress ?? ""),
+        );
         if (!key) continue;
         updatePurchase(db, p.tx_hash, { status: "withdrawing" });
         const closingTx = await withdraw(lock.ref, key);
@@ -144,7 +208,8 @@ export async function sellerTick(db: Db, bf: Blockfrost, keys: SellerKeys, now =
         addEvent(db, p.tx_hash, "withdrawn", closingTx);
         console.log(`[seller] ${p.tx_hash.slice(0, 8)} withdrawn ${closingTx}`);
       } else if (action.kind === "closed" && p.last_ref) {
-        const seller = getListing(db, p.listing_id)?.sellerAddress ?? "";
+        // The escrow pays its seller of record (a platform wallet for creators), not the creator.
+        const seller = escrowSeller(sellers, getListing(db, p.listing_id)?.sellerAddress ?? "");
         const closed = await closingOf(bf, p.last_ref, p.payer, seller);
         if (closed) {
           updatePurchase(db, p.tx_hash, { status: closed.status, closingTx: closed.closingTx });
@@ -181,7 +246,7 @@ export const blockfrost =
 export function startSellerAgent(
   db: Db,
   blockfrostProjectId: string,
-  keys: SellerKeys,
+  sellers: Sellers,
   intervalMs = 30_000,
 ) {
   const bf = blockfrost(blockfrostProjectId);
@@ -190,7 +255,7 @@ export function startSellerAgent(
     if (running) return;
     running = true;
     try {
-      await sellerTick(db, bf, keys);
+      await sellerTick(db, bf, sellers);
     } catch (error) {
       console.warn(`[seller] tick failed: ${String(error).slice(0, 200)}`);
     } finally {

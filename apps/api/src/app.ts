@@ -5,7 +5,7 @@ import { createSimpuruMcp } from "@simpuru/mcp";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { type Db, getListing } from "./db";
-import { listingsRoutes } from "./listings";
+import { creatorsRoutes, listingsRoutes } from "./listings";
 import { docsHtml, openApiSpec } from "./openapi";
 import { ownedContent, PROOF_HEADER, PURCHASE_HEADER } from "./owned";
 import type { Paywall } from "./paywall";
@@ -56,6 +56,7 @@ export function createApp(db: Db, paywall?: Paywall, mcp?: SimpuruMcpOptions) {
   }
 
   app.route("/listings", listingsRoutes(db));
+  app.route("/creators", creatorsRoutes(db));
   app.route("/purchases", purchasesRoutes(db));
   return app;
 }

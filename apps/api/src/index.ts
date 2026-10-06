@@ -20,15 +20,14 @@ const paywall = createPaywall(db, {
   blockfrostProjectId: need("BLOCKFROST_PROJECT_ID"),
 });
 seed(db, paywall.sellerAddresses[1] ?? paywall.sellerAddress);
-startSellerAgent(
-  db,
-  need("BLOCKFROST_PROJECT_ID"),
-  new Map(
+startSellerAgent(db, need("BLOCKFROST_PROJECT_ID"), {
+  keys: new Map(
     [process.env.SELLER_MNEMONIC, process.env.DEMO_SELLER_MNEMONIC]
       .filter((m): m is string => Boolean(m))
       .map((mnemonic, i) => [paywall.sellerAddresses[i] ?? "", { mnemonic }]),
   ),
-);
+  main: paywall.sellerAddress,
+});
 
 const port = Number(process.env.PORT ?? 4021);
 

@@ -4,24 +4,36 @@ import { createApp } from "./app";
 import { openDb } from "./db";
 import { insertPurchase } from "./purchases";
 import { deliveredContent, seed } from "./seed";
-import { addListing, DEMO_SELLER, SELLER } from "./test-helpers";
+import { creatorPayout, escrowSeller } from "./seller";
+import { addListing, alice, bob, DEMO_SELLER, listingProof, SELLER } from "./test-helpers";
 
 const fresh = () => {
   const db = openDb(":memory:");
   seed(db, DEMO_SELLER);
   return { db, app: createApp(db) };
 };
-const post = (app: ReturnType<typeof createApp>, body: unknown) =>
+type Body = Record<string, unknown>;
+/** POST /listings, signed by `signer` (alice by default) unless `proof` is given. */
+const post = async (app: ReturnType<typeof createApp>, body: Body, proof?: string) =>
   app.request("/listings", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      "X-Simpuru-Proof":
+        proof ??
+        (await listingProof(alice, {
+          sellerAddress: String(body.sellerAddress),
+          content: String(body.content),
+          priceLovelace: String(body.priceLovelace),
+        })),
+    },
     body: JSON.stringify(body),
   });
 const valid = {
   title: "Thing",
   description: "A thing",
   priceLovelace: "5000000",
-  sellerAddress: SELLER,
+  sellerAddress: alice.sellerAddress,
   modes: ["instant", "protected"],
   content: "secret bytes",
 };
@@ -101,7 +113,60 @@ describe("creating a listing", () => {
     ["preview that is not a URL", { ...valid, previewMedia: "a.mp4" }],
     ["unknown category", { ...valid, category: "Crypto" }],
   ])("rejects %s", async (_, body) => {
-    expect((await post(fresh().app, body)).status).toBe(400);
+    // Input is validated before the signature, so no real proof is needed here.
+    expect((await post(fresh().app, body, "unsigned")).status).toBe(400);
+  });
+});
+
+describe("creator signature", () => {
+  test("an unsigned listing is refused", async () => {
+    expect((await post(fresh().app, valid, "")).status).toBe(401);
+  });
+
+  test("a listing signed by someone else is refused", async () => {
+    const proof = await listingProof(bob, valid);
+    expect((await post(fresh().app, valid, proof)).status).toBe(401);
+  });
+
+  test("a signature for another price can't be reused", async () => {
+    const proof = await listingProof(alice, { ...valid, priceLovelace: "9000000" });
+    expect((await post(fresh().app, valid, proof)).status).toBe(401);
+  });
+
+  test("an old signature is refused", async () => {
+    const proof = await listingProof(alice, valid, Date.now() - 10 * 60_000);
+    expect((await post(fresh().app, valid, proof)).status).toBe(401);
+  });
+});
+
+describe("creators", () => {
+  test("a creator page lists their listings, sales and reputation", async () => {
+    const { db, app } = fresh();
+    await post(app, valid);
+    await post(app, { ...valid, title: "Second", content: "other bytes" });
+    addListing(db, "not-mine", { sellerAddress: SELLER });
+    const page = (await (await app.request(`/creators/${alice.sellerAddress}`)).json()) as {
+      listings: { title: string }[];
+      sales: number;
+    };
+    expect(page.listings.map((l) => l.title)).toEqual(["Thing", "Second"]);
+    expect(page.sales).toBe(0);
+    expect((await app.request("/creators/not-an-address")).status).toBe(400);
+  });
+
+  test("protected creator sales pay price minus max(1.5 tADA, 10%)", () => {
+    expect(creatorPayout(5_000_000n)).toBe(3_500_000n);
+    expect(creatorPayout(15_000_000n)).toBe(13_500_000n);
+    expect(creatorPayout(30_000_000n)).toBe(27_000_000n);
+  });
+
+  test("the platform stands in as escrow seller for creators", () => {
+    const sellers = {
+      keys: new Map([["addr_platform", "seller" as const]]),
+      main: "addr_platform",
+    };
+    expect(escrowSeller(sellers, "addr_platform")).toBe("addr_platform");
+    expect(escrowSeller(sellers, alice.sellerAddress)).toBe("addr_platform");
   });
 });
 

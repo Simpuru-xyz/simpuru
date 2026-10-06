@@ -184,3 +184,17 @@ export function purchasesRoutes(db: Db) {
 
   return app;
 }
+
+/** Protected sales of creator listings the platform has collected but not yet paid out. */
+export const pendingCreatorPayouts = (db: Db, platformAddresses: string[]) =>
+  db
+    .query<{ tx_hash: string; seller_address: string; price_lovelace: string }, string[]>(
+      `SELECT p.tx_hash, l.seller_address, l.price_lovelace FROM purchases p
+       JOIN listings l ON l.id = p.listing_id
+       WHERE p.mode = 'protected' AND p.status = 'withdrawn' AND p.payout_tx IS NULL
+       AND l.seller_address NOT IN (${platformAddresses.map(() => "?").join(",") || "''"})`,
+    )
+    .all(...platformAddresses);
+
+export const setPayout = (db: Db, txHash: string, payoutTx: string) =>
+  db.query("UPDATE purchases SET payout_tx = ? WHERE tx_hash = ?").run(payoutTx, txHash);
