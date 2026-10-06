@@ -8,6 +8,7 @@ import { useEffect, useRef } from "react";
 /** Only pages that exist. Add an item together with its page. */
 export const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Catalogue", href: "/listings" },
+  { label: "Sell", href: "/sell" },
 ];
 
 /** `/listings` stays lit on `/listings/<id>`, but a bare prefix does not match. */
