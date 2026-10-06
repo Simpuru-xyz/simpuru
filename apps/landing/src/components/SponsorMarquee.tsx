@@ -1,34 +1,43 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 
-type Sponsor = { name: string; src: string; href: string; wordmark?: boolean };
+type Sponsor = { name: string; src: string; href: string; height: string };
 
 /**
  * What Simpuru is built on, and the event it was built for.
  *
- * Every entry starts as its name set in the hero's serif, so nothing here
- * depends on someone else's trademark file. Drop an official mark into
- * `public/` and point `src` at it; the name stays as the fallback.
+ * Wordmarks are the brands' own files, downloaded from their sites into
+ * public/logos. They come in different colours (and TOKEN2049's is white), so
+ * every mark is flattened to one dark tone: legible on the light hero and
+ * nobody's colours clash with the page. `height` evens out their proportions.
  */
 const SPONSORS: Sponsor[] = [
-  { name: "Cardano", src: "", href: "https://cardano.org" },
-  { name: "x402", src: "", href: "https://x402.org" },
-  { name: "Masumi", src: "", href: "https://masumi.network" },
-  { name: "Blockfrost", src: "", href: "https://blockfrost.io" },
-  { name: "TOKEN2049", src: "", href: "https://www.token2049.com" },
+  { name: "Cardano", src: "/logos/cardano.svg", href: "https://cardano.org", height: "h-6 sm:h-7" },
+  { name: "x402", src: "/logos/x402.svg", href: "https://x402.org", height: "h-8 sm:h-10" },
+  {
+    name: "Masumi",
+    src: "/logos/masumi.webp",
+    href: "https://masumi.network",
+    height: "h-5 sm:h-6",
+  },
+  {
+    name: "Blockfrost",
+    src: "/logos/blockfrost.svg",
+    href: "https://blockfrost.io",
+    height: "h-6 sm:h-7",
+  },
+  {
+    name: "TOKEN2049",
+    src: "/logos/token2049.png",
+    href: "https://www.token2049.com",
+    height: "h-4 sm:h-5",
+  },
 ];
 
-/**
- * One mark, or its name if the file is not there.
- *
- * The fallback is not a placeholder to be embarrassed about: the wordmark is
- * set in the same face as the rest of the hero, so a missing file reads as a
- * design choice rather than a broken image.
- */
+/** One mark, or its name in the same dark tone if the file fails to load. */
 function Mark({ sponsor }: { sponsor: Sponsor }) {
-  const [failed, setFailed] = useState(!sponsor.src);
+  const [failed, setFailed] = useState(false);
 
   return (
     <a
@@ -36,29 +45,21 @@ function Mark({ sponsor }: { sponsor: Sponsor }) {
       target="_blank"
       rel="noreferrer"
       aria-label={sponsor.name}
-      className="flex shrink-0 items-center opacity-80 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none"
+      className="flex shrink-0 items-center opacity-70 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none"
     >
       {failed ? (
-        <span
-          className="text-lg whitespace-nowrap text-white italic sm:text-2xl md:text-3xl"
-          style={{ fontFamily: "Georgia, serif" }}
-        >
+        <span className="text-lg font-medium whitespace-nowrap text-[#141414] sm:text-2xl">
           {sponsor.name}
         </span>
       ) : (
-        <Image
+        // A plain img on purpose: SVG and WebP marks need no optimizer, and
+        // w-auto keeps each one at its own aspect ratio.
+        // biome-ignore lint/performance/noImgElement: static wordmarks, see above
+        <img
           src={sponsor.src}
           alt={sponsor.name}
-          width={sponsor.wordmark ? 320 : 96}
-          height={96}
           onError={() => setFailed(true)}
-          className={
-            sponsor.wordmark
-              ? "h-6 w-auto sm:h-8"
-              : // Square marks with the brand's own colour baked in; the circle
-                // crop removes white corners without touching their colours.
-                "h-9 w-9 rounded-full object-cover sm:h-11 sm:w-11"
-          }
+          className={`${sponsor.height} w-auto brightness-0`}
         />
       )}
     </a>
