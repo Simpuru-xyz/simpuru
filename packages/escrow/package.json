@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@evolution-sdk/evolution": "^0.5.9",
+    "@noble/hashes": "^2.2.0",
     "@simpuru/core": "workspace:*",
     "@x402/cardano": "2.28.0"
   },
