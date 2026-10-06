@@ -29,6 +29,7 @@ const summary = (l: Listing) => ({
   price: ada(l.priceLovelace),
   modes: l.modes,
   contentHash: l.contentHash,
+  ...(l.previewMedia ? { preview: l.previewMedia } : {}),
 });
 
 const mcp = new McpServer({ name: "simpuru", version: "0.1.0" });

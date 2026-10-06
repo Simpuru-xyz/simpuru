@@ -64,8 +64,32 @@ describe("listings", () => {
     ["unknown mode", { ...valid, modes: ["cheap"] }],
     ["empty content", { ...valid, content: "" }],
     ["price not a string", { ...valid, priceLovelace: 5000000 }],
+    ["preview over http", { ...valid, previewMedia: "http://cdn.example.com/a.mp4" }],
+    ["preview that is not media", { ...valid, previewMedia: "https://cdn.example.com/a.html" }],
+    ["preview that is not a URL", { ...valid, previewMedia: "a.mp4" }],
   ])("rejects %s", async (_, body) => {
     expect((await post(fresh(), body)).status).toBe(400);
+  });
+});
+
+describe("preview media", () => {
+  test("an https recording is stored and returned, never the content", async () => {
+    const app = fresh();
+    const previewMedia = "https://cdn.example.com/previews/hero.webm?v=2";
+    const res = await post(app, { ...valid, previewMedia });
+    expect(res.status).toBe(201);
+    const { id } = (await res.json()) as { id: string };
+    const l = (await (await app.request(`/listings/${id}`)).json()) as Record<string, unknown>;
+    expect(l.previewMedia).toBe(previewMedia);
+    expect(l.content).toBeUndefined();
+  });
+
+  test("listings without a preview omit the field", async () => {
+    const l = (await (await fresh().request("/listings/aurora-saas-hero")).json()) as Record<
+      string,
+      unknown
+    >;
+    expect("previewMedia" in l).toBe(false);
   });
 });
 

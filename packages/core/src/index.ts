@@ -18,6 +18,8 @@ export interface Listing {
   modes: DeliveryMode[];
   /** Lowercase hex SHA-256 of the content the buyer receives. */
   contentHash: string;
+  /** Optional https URL of a recording of what the content produces (mp4, webm, webp, gif). Free to view. */
+  previewMedia?: string;
 }
 
 /** vested_pay datum `state`, in constructor order (index = on-chain value). */

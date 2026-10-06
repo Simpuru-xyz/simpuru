@@ -26,6 +26,11 @@ export function openDb(path = process.env.DB_PATH ?? "data/simpuru.db") {
     terms TEXT NOT NULL,
     created_at INTEGER NOT NULL
   )`);
+  try {
+    db.run("ALTER TABLE listings ADD COLUMN preview_media TEXT");
+  } catch {
+    // already there
+  }
   // Columns added after the first release, hence ALTER (a no-op once they exist).
   for (const col of [
     "result_tx TEXT",
@@ -63,6 +68,7 @@ type Row = {
   modes: string;
   content: string;
   content_hash: string;
+  preview_media: string | null;
 };
 
 const toListing = (r: Row): ListingRow => ({
@@ -73,6 +79,7 @@ const toListing = (r: Row): ListingRow => ({
   sellerAddress: r.seller_address,
   modes: JSON.parse(r.modes) as DeliveryMode[],
   contentHash: r.content_hash,
+  ...(r.preview_media ? { previewMedia: r.preview_media } : {}),
   content: r.content,
 });
 
@@ -87,8 +94,8 @@ export const getListing = (db: Db, id: string) => {
 export const insertListing = (db: Db, l: ListingRow) =>
   db
     .query(
-      `INSERT INTO listings (id, title, description, price_lovelace, seller_address, modes, content, content_hash, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO listings (id, title, description, price_lovelace, seller_address, modes, content, content_hash, preview_media, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       l.id,
@@ -99,6 +106,7 @@ export const insertListing = (db: Db, l: ListingRow) =>
       JSON.stringify(l.modes),
       l.content,
       l.contentHash,
+      l.previewMedia ?? null,
       Date.now(),
     );
 
