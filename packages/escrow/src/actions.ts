@@ -17,7 +17,7 @@ import {
   verifyAdminSignature,
   withdrawDisputedRedeemer,
 } from "./dispute";
-import { escrowValidator } from "./script";
+import { escrowScriptStep } from "./script";
 
 const TX_WINDOW_MS = 5 * 60_000;
 
@@ -85,11 +85,11 @@ async function continueEscrow(c: Continuation): Promise<string> {
   if (to <= from) throw new Error(`no valid time window for ${c.action} (from ${from}, to ${to})`);
 
   const nextDatum = c.next(datumOf(utxo), to, BigInt(ours.deployment.cooldownPeriod));
+  const useScript = await escrowScriptStep();
   return withStaleUtxoRetry(async () => {
-    const tx = await wallet
-      .newTx()
-      .collectFrom({ inputs: [utxo], redeemer: redeemer(c.action) })
-      .attachScript({ script: escrowValidator() })
+    const tx = await useScript(
+      wallet.newTx().collectFrom({ inputs: [utxo], redeemer: redeemer(c.action) }),
+    )
       .addSigner({ keyHash: keyHashOf(c.role) })
       .setValidity({ from, to })
       .payToAddress({
@@ -253,20 +253,19 @@ export async function withdrawDisputed(
   }
   const { buyer, seller } = payoutAddresses(utxo);
   const wallet = walletClient(submitter);
+  const useScript = await escrowScriptStep();
 
   return withStaleUtxoRetry(async () => {
-    let builder = wallet
-      .newTx()
-      .collectFrom({
+    let builder = useScript(
+      wallet.newTx().collectFrom({
         inputs: [utxo],
         redeemer: withdrawDisputedRedeemer(
           assetValueData({ lovelace: payout.buyerLovelace }),
           assetValueData({ lovelace: payout.sellerLovelace }),
           payout.signatures,
         ),
-      })
-      .attachScript({ script: escrowValidator() })
-      .setValidity({ from, to: now + BigInt(TX_WINDOW_MS) });
+      }),
+    ).setValidity({ from, to: now + BigInt(TX_WINDOW_MS) });
     for (const [address, lovelace] of [
       [buyer, payout.buyerLovelace],
       [seller, payout.sellerLovelace],
@@ -322,12 +321,12 @@ async function closeEscrow(t: Terminal): Promise<string> {
   if (from >= now) throw new Error(`${t.action} opens at ${new Date(Number(from)).toISOString()}`);
   const { txHash, index } = refOf(t.utxo);
   const ownRef = outputReferenceData(txHash, index);
+  const useScript = await escrowScriptStep();
 
   return withStaleUtxoRetry(async () => {
-    let builder = wallet
-      .newTx()
-      .collectFrom({ inputs: [t.utxo], redeemer: redeemer(t.action) })
-      .attachScript({ script: escrowValidator() })
+    let builder = useScript(
+      wallet.newTx().collectFrom({ inputs: [t.utxo], redeemer: redeemer(t.action) }),
+    )
       .addSigner({ keyHash: keyHashOf(t.role) })
       .setValidity({ from, to: now + BigInt(TX_WINDOW_MS) });
     for (const out of t.tagged) {

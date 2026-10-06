@@ -14,5 +14,6 @@
     "keyHash": "f7c7b7455aa07fb60a9635f198eb896ef5948fae88a1a000ff89178b",
     "address": "addr_test1vrmu0d69t2s8lds2jc6lrx8t39h0t9y046y2rgqql7y30zcj2plet"
   },
-  "referenceScript": null
+  "referenceScript": "9cc49588d78cb0b99c18f153416410eaf3fcdb4c5e567c2274a9cf851749ea0e#0",
+  "referenceScriptAddress": "addr_test1wpfdc02rkmfyvh5kzzwwwk4kr2l9a8qa3g7feehl3ga022qez7f2d"
 }

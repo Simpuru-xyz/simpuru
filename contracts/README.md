@@ -26,7 +26,15 @@ The current values, script hash and address are in [`deployments/preprod.json`](
   the same code the x402 client and facilitator run to check `payTo`, so the recorded address is the one
   they will accept, as long as they are told to allow it (`validateCustomMasumiDeployment`).
 - **No deployment transaction.** A parameterised spending validator needs no on-chain registration:
-  funds are locked by paying to the address. A reference-script UTxO to cut fees is #18.
+  funds are locked by paying to the address.
+- **Reference script (#18).** The validator also sits in a reference-script UTxO
+  (`referenceScript` in `deployments/preprod.json`), so escrow txs reference it instead of
+  carrying ~9.9 KB each. Measured on preprod for the same `submitResult`: **0.689425 → 0.402252
+  tADA** fee, 11,029 → 1,121 bytes. The UTxO sits at the native script "any of nothing"
+  (`referenceScriptAddress`), which no one can ever spend, so no wallet can consume it by
+  accident; its 43.75 tADA min-ADA is locked for good. Fine on preprod; on mainnet a key-locked
+  address that can be reclaimed would be the better trade. Builders check that the UTxO carries
+  exactly our validator before using it; `ESCROW_INLINE_SCRIPT=1` attaches the script instead.
 - **Not visible to Masumi tooling.** Locks at our address do not show up in Sokosumi or the Masumi
   Payment Service. That is expected.
 
@@ -36,6 +44,7 @@ The current values, script hash and address are in [`deployments/preprod.json`](
 cp .env.example .env            # fill ARBITER_MNEMONIC (fresh preprod-only wallet)
 bun install
 bun packages/escrow/scripts/derive-deployment.ts
+bun packages/escrow/scripts/deploy-reference-script.ts   # once per deployment
 ```
 
 Run it from the repo root so Bun loads `.env`. The script first checks itself: the canonical Masumi
