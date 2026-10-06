@@ -8,8 +8,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@evolution-sdk/evolution": "^0.5.9",
     "@simpuru/core": "workspace:*",
-    "@simpuru/escrow": "workspace:*"
+    "@simpuru/escrow": "workspace:*",
+    "@x402/cardano": "2.28.0"
   },
   "devDependencies": {
     "@simpuru/tsconfig": "workspace:*"
