@@ -2,7 +2,6 @@
   "name": "@simpuru/mcp",
   "private": true,
   "type": "module",
-  "main": "src/index.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "start": "bun --env-file=../../.env src/index.ts"
@@ -15,5 +14,8 @@
   },
   "devDependencies": {
     "@simpuru/tsconfig": "workspace:*"
+  },
+  "exports": {
+    ".": "./src/server.ts"
   }
 }

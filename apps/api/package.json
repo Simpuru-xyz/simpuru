@@ -9,13 +9,16 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@evolution-sdk/evolution": "^0.5.9",
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "@simpuru/agent": "workspace:*",
     "@simpuru/core": "workspace:*",
+    "@simpuru/escrow": "workspace:*",
+    "@simpuru/mcp": "workspace:*",
     "@x402/cardano": "2.28.0",
     "@x402/core": "2.28.0",
     "@x402/hono": "2.28.0",
-    "hono": "^4.13.13",
-    "@simpuru/escrow": "workspace:*",
-    "@evolution-sdk/evolution": "^0.5.9"
+    "hono": "^4.13.13"
   },
   "devDependencies": {
     "@simpuru/tsconfig": "workspace:*"
