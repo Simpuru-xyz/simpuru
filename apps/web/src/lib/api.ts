@@ -30,8 +30,43 @@ async function getJson<T>(url: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-export const fetchListings = () => getJson<Listing[]>(ENDPOINTS.listings());
-export const fetchListing = (id: string) => getJson<Listing>(ENDPOINTS.listing(id));
+/**
+ * `Listing` (which carries `previewMedia` since #51) plus the catalogue fields proposed on #46
+ * that the API doesn't send yet. Each is optional, so the page renders either way.
+ */
+export type ListingView = Listing & {
+  /** One of CATEGORIES, for the catalogue filter. */
+  category?: string;
+  /** Unix ms, as a string like the rest of the API. "Newest" sort. */
+  createdAt?: string;
+  /** How many times it was bought. "Popular" sort and "sold" count. */
+  sales?: number;
+  /** 0–100 from the seller's settled escrow outcomes; absent until there is one (#46). */
+  sellerReputation?: { score: number; basis: number };
+};
+
+/** Fixed list the API validates `category` against (#46). */
+export const CATEGORIES = [
+  "Landing Page",
+  "Hero",
+  "Portfolio",
+  "SaaS",
+  "Fintech",
+  "3D",
+  "AI",
+  "Editorial",
+  "Wellness",
+] as const;
+
+export const fetchListings = () => getJson<ListingView[]>(ENDPOINTS.listings());
+export const fetchListing = (id: string) => getJson<ListingView>(ENDPOINTS.listing(id));
+
+/** `fetchListing`, but an unknown id (404) is `null` instead of an error. */
+export const fetchListingOrNull = (id: string) =>
+  fetchListing(id).catch((e: unknown) => {
+    if (e instanceof ApiError && e.status === 404) return null;
+    throw e;
+  });
 
 export interface NewListing {
   title: string;
@@ -40,16 +75,17 @@ export interface NewListing {
   sellerAddress: string;
   modes: DeliveryMode[];
   content: string;
+  previewMedia?: string;
 }
 
 /** POST /listings. The API's own validation message is surfaced as the error. */
-export async function createListing(body: NewListing): Promise<Listing> {
+export async function createListing(body: NewListing): Promise<ListingView> {
   const res = await fetch(ENDPOINTS.listings(), {
     method: "POST",
     headers: { "content-type": "application/json", Accept: "application/json" },
     body: JSON.stringify(body),
   });
-  const data = (await res.json().catch(() => ({}))) as Listing & { error?: string };
+  const data = (await res.json().catch(() => ({}))) as ListingView & { error?: string };
   if (!res.ok) throw new ApiError(res.status, data.error ?? `listing failed (${res.status})`);
   return data;
 }
