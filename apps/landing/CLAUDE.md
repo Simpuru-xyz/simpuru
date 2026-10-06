@@ -7,8 +7,9 @@ Tailwind v4, React Compiler, `lucide-react`. Port 3001. Owner: @Lexirieru. Issue
 
 ## Sections
 
-Hero → connect your agent (`#for-agents`) → chat demo → footer. Still to build for #25: the
-problem, how it works in 3–4 steps, instant vs protected, preprod proof links, dark mode.
+Hero → how it works (`#how-it-works`, also states the problem) → instant vs protected
+(`#instant-vs-protected`) → connect your agent (`#for-agents`) → chat demo → footer.
+Still to build for #25: preprod proof links (from #19), dark mode.
 
 ## Copy
 
