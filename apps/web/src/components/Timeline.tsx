@@ -1,7 +1,7 @@
 import { explorerTx, type PurchaseStatus } from "@simpuru/core";
 import { ArrowUpRight } from "lucide-react";
 import { shorten } from "@/lib/api";
-import { isDispute, type PurchaseView, STATUS_LABEL } from "@/lib/purchases";
+import { isDispute, type PurchaseView, statusLabel } from "@/lib/purchases";
 
 /** `by` is a deadline the step must beat; `from` is the earliest it can happen. */
 type Upcoming = { label: string; note?: string; at?: string; when?: "by" | "from" };
@@ -9,7 +9,10 @@ type Upcoming = { label: string; note?: string; at?: string; when?: "by" | "from
 /** What can still happen from here, so the timeline shows the road, not only the past. */
 function upcoming(p: PurchaseView): Upcoming[] {
   const d = p.escrow?.deadlines;
-  switch (p.status) {
+  // `withdrawing` is the seller agent's in-flight state, outside the core type.
+  switch (p.status as string) {
+    case "withdrawing":
+      return [{ label: "Seller paid", note: "The seller's withdraw transaction is confirming." }];
     case "FundsLocked":
       return [
         {
@@ -62,7 +65,7 @@ function upcoming(p: PurchaseView): Upcoming[] {
 function labelFor(status: PurchaseStatus, disputed: boolean) {
   if (disputed && status === "withdrawn") return "Resolved: seller paid";
   if (disputed && status === "refunded") return "Resolved: buyer refunded";
-  return STATUS_LABEL[status];
+  return statusLabel(status);
 }
 
 const time = (ms: string) =>

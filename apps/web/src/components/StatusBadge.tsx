@@ -1,5 +1,5 @@
 import type { PurchaseStatus } from "@simpuru/core";
-import { isDispute, STATUS_LABEL } from "@/lib/purchases";
+import { isDispute, statusLabel } from "@/lib/purchases";
 
 const DONE: PurchaseStatus[] = ["withdrawn", "refunded", "settled"];
 
@@ -14,7 +14,7 @@ export default function StatusBadge({ status }: { status: PurchaseStatus }) {
     <span
       className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium whitespace-nowrap ${tone}`}
     >
-      {STATUS_LABEL[status]}
+      {statusLabel(status)}
     </span>
   );
 }

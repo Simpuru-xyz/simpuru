@@ -43,7 +43,8 @@ function gateFor(p: PurchaseView): Gate | null {
 export default function Countdown({ purchase }: { purchase: PurchaseView }) {
   const now = useNow();
   const gate = gateFor(purchase);
-  if (!gate) return null;
+  // The API sends "" when a quote carried no deadline; nothing to count down to then.
+  if (!gate?.at) return null;
   const left = Number(gate.at) - now;
 
   return (

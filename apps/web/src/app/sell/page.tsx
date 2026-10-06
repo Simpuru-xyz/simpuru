@@ -54,7 +54,7 @@ export default function SellPage() {
     setSales({ phase: "pending" });
     fetchListings()
       .then(async (listings) => {
-        const mine = await fetchSales(address, listings);
+        const mine = await fetchSales(address);
         if (!cancelled) setSales({ phase: "ready", sales: mine, listings });
       })
       .catch(() => {
@@ -114,9 +114,6 @@ export default function SellPage() {
                 </span>
               )}
             </div>
-            <p className="rounded-xl border border-dashed border-gray-300 px-3 py-2 text-xs text-gray-500">
-              Sample data. The live feed lands with the purchases endpoint.
-            </p>
 
             {!valid && (
               <p className="rounded-2xl border border-gray-200 p-8 text-center text-sm text-gray-600">

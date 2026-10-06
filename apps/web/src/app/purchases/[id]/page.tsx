@@ -32,9 +32,8 @@ export default function PurchasePage({ params }: PageProps<"/purchases/[id]">) {
 
   useEffect(() => {
     let cancelled = false;
-    fetchListings()
-      .then(async (listings) => {
-        const purchase = await fetchPurchase(id, listings);
+    Promise.all([fetchListings(), fetchPurchase(id)])
+      .then(([listings, purchase]) => {
         if (cancelled) return;
         if (!purchase) return setLoad({ phase: "missing" });
         setLoad({
@@ -91,10 +90,6 @@ export default function PurchasePage({ params }: PageProps<"/purchases/[id]">) {
 
         {load.phase === "ready" && (
           <article className="mt-8 space-y-6">
-            <p className="rounded-xl border border-dashed border-gray-300 px-3 py-2 text-xs text-gray-500">
-              Sample data. The live feed lands with the purchases endpoint.
-            </p>
-
             <header className="space-y-3">
               <div className="flex flex-wrap items-center gap-1.5">
                 <ModeBadge mode={load.purchase.mode} />
