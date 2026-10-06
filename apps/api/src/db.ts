@@ -26,7 +26,7 @@ export function openDb(path = process.env.DB_PATH ?? "data/simpuru.db") {
     terms TEXT NOT NULL,
     created_at INTEGER NOT NULL
   )`);
-  for (const col of ["preview_media TEXT", "category TEXT"]) {
+  for (const col of ["preview_media TEXT", "category TEXT", "hidden INTEGER NOT NULL DEFAULT 0"]) {
     try {
       db.run(`ALTER TABLE listings ADD COLUMN ${col}`);
     } catch {
@@ -89,8 +89,19 @@ const toListing = (r: Row): ListingRow => ({
   content: r.content,
 });
 
+/** Every listing, retired ones included (seeding and lookups need them). */
 export const listListings = (db: Db) =>
   db.query<Row, []>("SELECT * FROM listings ORDER BY created_at").all().map(toListing);
+
+/** What the catalogue shows: listings still for sale. */
+export const listCatalogue = (db: Db) =>
+  db
+    .query<Row, []>("SELECT * FROM listings WHERE hidden = 0 ORDER BY created_at")
+    .all()
+    .map(toListing);
+
+export const setHidden = (db: Db, id: string, hidden: boolean) =>
+  db.query("UPDATE listings SET hidden = ? WHERE id = ?").run(hidden ? 1 : 0, id);
 
 export const getListing = (db: Db, id: string) => {
   const r = db.query<Row, [string]>("SELECT * FROM listings WHERE id = ?").get(id);
