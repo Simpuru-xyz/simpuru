@@ -10,8 +10,9 @@ import { MCP_DOCS_URL } from "@/lib/links";
  *
  * Layout follows the MotionSites "Community CTA" card (video background, copy
  * on the left, a pill row where the form was). The commands mirror
- * apps/mcp/README.md and apps/agent/README.md; change them together. The MCP
- * server runs next to the agent over stdio and holds the agent's own wallet.
+ * apps/mcp/README.md and apps/agent/README.md; change them together. The hosted
+ * MCP (api.simpuru.xyz/mcp) pays from a shared preprod demo wallet; run apps/mcp
+ * locally to pay from your own.
  *
  * Tabs follow the WAI-ARIA tabs pattern: roving tabindex, arrow keys, labelled
  * panel.
@@ -23,12 +24,12 @@ export const ONBOARDING_TARGETS: OnboardingTarget[] = [
   {
     id: "claude-code",
     label: "Claude Code",
-    command: `claude mcp add simpuru -- bun --env-file="$PWD/.env" "$PWD/apps/mcp/src/index.ts"`,
+    command: "claude mcp add --transport http simpuru https://api.simpuru.xyz/mcp",
   },
   {
     id: "cursor",
     label: "Cursor · Claude Desktop",
-    command: `{"mcpServers":{"simpuru":{"command":"bun","args":["--env-file=<repo>/.env","<repo>/apps/mcp/src/index.ts"]}}}`,
+    command: `{"mcpServers":{"simpuru":{"url":"https://api.simpuru.xyz/mcp"}}}`,
   },
   {
     id: "cli",
