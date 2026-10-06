@@ -106,17 +106,7 @@ function FooterCard() {
         </div>
 
         <div className="flex flex-col items-center justify-between gap-6 px-6 py-5 text-[15px] sm:px-12 md:flex-row md:px-16 lg:px-20">
-          <p className="font-medium text-[#64748B]">
-            © {new Date().getFullYear()} Simpuru. Cardano preprod.
-          </p>
-          <div className="flex items-center gap-8 font-medium text-[#64748B]">
-            <a
-              href={`${REPO_URL}/blob/main/README.md`}
-              className="transition-colors hover:text-[#1E293B]"
-            >
-              How it works
-            </a>
-          </div>
+          <p className="font-medium text-[#64748B]">© {new Date().getFullYear()} Simpuru.</p>
         </div>
       </div>
     </div>
