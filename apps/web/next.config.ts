@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // @simpuru/core ships TypeScript source, not a build.
+  transpilePackages: ["@simpuru/core"],
 };
 
 export default nextConfig;

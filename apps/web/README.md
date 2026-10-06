@@ -1,6 +1,8 @@
 # @simpuru/web
 
-Web app: landing, catalogue, listing pages, purchase timeline, seller dashboard.
+Web app: catalogue, listing pages, purchase timeline, seller dashboard. Marketing is `apps/landing`.
+
+API base URL from `NEXT_PUBLIC_API_URL` (default `http://localhost:4021`).
 
 Owner: @AdityaWisnuu
 
