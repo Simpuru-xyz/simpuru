@@ -253,7 +253,7 @@ export function buyerFromEnv(
   return createBuyer({
     mnemonic: need("BUYER_MNEMONIC"),
     blockfrostProjectId: need("BLOCKFROST_PROJECT_ID"),
-    apiUrl: process.env.SIMPURU_API_URL ?? "http://localhost:4021",
+    apiUrl: process.env.SIMPURU_API_URL ?? "https://api.simpuru.xyz",
     maxPerPaymentLovelace: BigInt(process.env.MAX_PER_PAYMENT_LOVELACE ?? "20000000"),
     dailyBudgetLovelace: BigInt(process.env.DAILY_BUDGET_LOVELACE ?? "50000000"),
     logPath,

@@ -17,7 +17,8 @@ Owner: @yeheskieltame
 ## Add it to Claude Code
 
 ```bash
-# from the repo root, with the API running (bun run dev in apps/api) and .env filled
+# from the repo root with .env filled (BUYER_MNEMONIC, BLOCKFROST_PROJECT_ID).
+# It buys from the live API, https://api.simpuru.xyz, unless SIMPURU_API_URL says otherwise.
 claude mcp add simpuru -- bun --env-file="$PWD/.env" "$PWD/apps/mcp/src/index.ts"
 ```
 
