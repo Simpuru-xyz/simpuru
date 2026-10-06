@@ -127,7 +127,7 @@ function useInView<T extends HTMLElement>() {
 /** A plain person mark for the agent's side of the conversation. */
 function AgentAvatar() {
   return (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2a2a2a]">
+    <span className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2a2a2a] sm:flex">
       <svg
         viewBox="0 0 24 24"
         aria-hidden
@@ -148,7 +148,7 @@ function SimpuruAvatar() {
   return (
     <span
       aria-hidden
-      className="h-8 w-8 shrink-0 rounded-full"
+      className="hidden h-8 w-8 shrink-0 rounded-full sm:block"
       style={{
         background: "linear-gradient(105deg, #b9a7f0 0%, #9d8ae0 40%, #8fb8ea 70%, #bfe0f5 100%)",
       }}
@@ -170,7 +170,7 @@ export default function ChatDemo() {
 
   return (
     <section ref={ref} className="w-full bg-white px-4 py-16 sm:px-6 sm:py-24">
-      <div className="mx-auto max-w-[1300px]">
+      <div className="mx-auto max-w-6xl">
         <h2
           data-reveal
           className="mb-10 text-3xl leading-[1.11] font-normal tracking-[-0.02em] text-[#141414] sm:text-4xl md:text-5xl"
@@ -206,7 +206,7 @@ export default function ChatDemo() {
                   } ${started ? "opacity-100" : "opacity-0"}`}
                 >
                   {isAgent ? <AgentAvatar /> : <SimpuruAvatar />}
-                  <div className="flex max-w-[78%] flex-col gap-1">
+                  <div className="flex max-w-[88%] flex-col gap-1 sm:max-w-[78%]">
                     <span
                       className={`font-mono text-[11px] text-white/40 ${isAgent ? "text-right" : ""}`}
                     >
@@ -249,7 +249,7 @@ export default function ChatDemo() {
               );
             })}
 
-            <div className="flex h-3 items-center gap-1.5 pl-11">
+            <div className="flex h-3 items-center gap-1.5 sm:pl-11">
               {thinking &&
                 [0, 1, 2].map((dot) => (
                   <span

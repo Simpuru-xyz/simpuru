@@ -132,9 +132,9 @@ export default function AgentOnboarding() {
             role="tabpanel"
             id="agent-panel"
             aria-labelledby={`agent-tab-${active.id}`}
-            className="flex flex-col gap-2 sm:flex-row sm:items-center"
+            className="flex items-center gap-2"
           >
-            <code className="min-w-0 flex-1 overflow-x-auto rounded-full border border-[rgba(195,210,235,0.75)] bg-white/95 px-5 py-3 font-mono text-[13px] whitespace-nowrap shadow-[0_1px_5px_rgba(100,110,180,0.07)]">
+            <code className="min-w-0 flex-1 overflow-x-auto rounded-full border border-[rgba(195,210,235,0.75)] bg-white/95 px-4 py-3 font-mono text-[12px] sm:px-5 sm:text-[13px] whitespace-nowrap shadow-[0_1px_5px_rgba(100,110,180,0.07)]">
               {active.command}
             </code>
             <CopyButton text={active.command} label={active.label} tone="light" />

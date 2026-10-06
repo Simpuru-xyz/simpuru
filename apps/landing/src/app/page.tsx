@@ -44,10 +44,10 @@ export default function Home() {
 
         <main className="relative z-20 mx-auto max-w-7xl px-4 pt-6 pb-16 text-center sm:px-6 sm:pt-12 sm:pb-32">
           <h1
-            className="animate-fade-in-up mb-4 text-[38px] leading-[1.1] font-normal tracking-tight sm:mb-5 sm:text-6xl md:text-7xl lg:text-[80px]"
+            className="animate-fade-in-up mb-4 text-[38px] leading-[1.1] font-normal tracking-tight text-balance sm:mb-5 sm:text-6xl md:text-[64px] lg:text-[80px]"
             style={{ animationDelay: "0.3s", opacity: 0 }}
           >
-            <span className="sm:hidden">
+            <span className="lg:hidden">
               Pay per prompt.
               <br />
               Not per month.
@@ -56,7 +56,7 @@ export default function Home() {
                 Refunded if it never arrives.
               </span>
             </span>
-            <span className="hidden sm:inline">
+            <span className="hidden lg:inline">
               Pay per prompt. Not per month.
               <br />
               <span className="bg-gradient-to-r from-black via-gray-500 to-gray-400 bg-clip-text text-transparent">

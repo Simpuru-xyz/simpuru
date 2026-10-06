@@ -15,7 +15,7 @@ const RESET_MS = 2500;
 const TONES = {
   dark: "bg-white/10 px-3.5 py-1.5 text-xs text-white hover:bg-white/20 focus-visible:ring-white focus-visible:ring-offset-gray-950",
   light:
-    "bg-[#f8f9fc] px-6 py-3 text-sm text-[#08063C] shadow-[0_2px_10px_rgba(100,110,180,0.15)] hover:-translate-y-px hover:bg-[#eef0f5] focus-visible:ring-[#08063C]",
+    "bg-[#f8f9fc] px-4 py-3 text-sm sm:px-6 text-[#08063C] shadow-[0_2px_10px_rgba(100,110,180,0.15)] hover:-translate-y-px hover:bg-[#eef0f5] focus-visible:ring-[#08063C]",
 } as const;
 
 export default function CopyButton({

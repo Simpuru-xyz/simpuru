@@ -39,10 +39,10 @@ export default function InstantVsProtected() {
             className="relative flex min-h-80 flex-col justify-between overflow-hidden rounded-2xl bg-cover bg-center p-7 lg:col-span-2"
             style={{ backgroundImage: "url('/media/protected.webp')" }}
           >
-            <p className="text-2xl leading-snug font-medium tracking-[-0.02em] text-black">
+            <p className="relative z-10 text-2xl leading-snug font-medium tracking-[-0.02em] text-black">
               Protected
             </p>
-            <p className="max-w-xs text-base leading-relaxed text-black/70">
+            <p className="relative z-10 max-w-[60%] text-base leading-relaxed text-black/70 sm:max-w-xs">
               The money waits until the prompt arrives. No prompt, money back.
             </p>
           </div>

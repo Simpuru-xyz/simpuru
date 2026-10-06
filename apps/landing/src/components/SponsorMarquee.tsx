@@ -71,7 +71,7 @@ function Half({ hidden }: { hidden: boolean }) {
   return (
     <div
       aria-hidden={hidden || undefined}
-      className="flex min-w-full shrink-0 items-center justify-around gap-10 px-5 sm:gap-16 md:gap-20"
+      className="flex min-w-[100vw] shrink-0 items-center justify-around gap-8 px-4 sm:gap-16 md:gap-20"
     >
       {SPONSORS.map((sponsor) => (
         <Mark key={sponsor.name} sponsor={sponsor} />
@@ -85,7 +85,7 @@ function Half({ hidden }: { hidden: boolean }) {
  *
  * Two identical halves translated by exactly half the track, so the seam
  * between the last mark and the first is invisible. Each half carries
- * `min-w-full`: a few marks and their gaps are narrower than a desktop screen,
+ * `min-w-[100vw]` (not `min-w-full`, which resolves against the content-sized track): a few marks and their gaps are narrower than a desktop screen,
  * so without it the right side of the row would sit empty.
  *
  * The copy is `aria-hidden`, so a screen reader hears each name once.
