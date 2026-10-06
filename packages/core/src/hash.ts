@@ -25,3 +25,11 @@ export const UNLOCK_PROOF_MAX_AGE_MS = 5 * 60_000;
  */
 export const unlockProofDigest = (listingId: string, address: string, timestampMs: number) =>
   sha256Hex(`simpuru:unlock:v1\n${listingId}\n${address}\n${timestampMs}`);
+
+/**
+ * Team convention for Simpuru escrow purchases: the seller's `result_hash` is the MIP-004 result
+ * hash with the **lock tx hash** as `identifier_from_purchaser` (x402 locks carry none of their own,
+ * and the lock tx hash is unique and known to buyer, seller and arbiter).
+ */
+export const purchaseResultHash = (lockTxHash: string, content: string) =>
+  resultHash(lockTxHash, content);
