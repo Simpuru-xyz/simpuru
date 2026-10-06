@@ -15,6 +15,11 @@ if (!r.ok) {
   console.error(`not paid: ${r.error}`);
   process.exit(1);
 }
+if (r.redelivered) {
+  console.log(`already paid (${explorerTx(r.txHash)}), content delivered again for free`);
+  console.log(`--- content ---\n${r.content}`);
+  process.exit(0);
+}
 const { record } = r;
 console.log(
   JSON.stringify({ ...record, explorer: explorerTx(record.txHash), seconds: r.seconds }, null, 2),
