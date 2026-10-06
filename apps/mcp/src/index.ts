@@ -79,7 +79,7 @@ mcp.registerTool(
       "Spends real (test) ADA from the agent's wallet. Pays over x402 and returns the content.",
       "mode 'protected' pays into an escrow: the money only reaches the seller if delivery checks out,",
       "otherwise it is refunded. mode 'instant' pays the seller directly (cheaper, no refund).",
-      "Refused if it would exceed the per-payment cap or today's budget.",
+      "Refused if it would exceed the per-payment cap or today's budget. Never pays twice for the same listing.",
     ].join(" "),
     inputSchema: {
       id: z.string().describe("Listing id from search_listings"),
@@ -90,6 +90,13 @@ mcp.registerTool(
   async ({ id, mode }) => {
     const r = await buyer.buy(id, mode);
     if (!r.ok) return fail(`Not paid: ${r.error}`);
+    if (r.redelivered)
+      return text({
+        alreadyPaid: true,
+        tx: explorerTx(r.txHash),
+        paidNow: "0 tADA",
+        content: r.content,
+      });
     const { record } = r;
     return text({
       paid: ada(record.priceLovelace),

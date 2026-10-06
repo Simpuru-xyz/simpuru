@@ -99,3 +99,12 @@ export const insertPurchase = (db: Db, p: PurchaseRow) =>
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(p.txHash, p.listingId, p.mode, p.payer, p.status, p.terms, Date.now());
+
+/** A purchase that still entitles the payer to the content (refunded ones don't). */
+export const findPurchase = (db: Db, listingId: string, payer: string) =>
+  db
+    .query<{ tx_hash: string }, [string, string]>(
+      `SELECT tx_hash FROM purchases WHERE listing_id = ? AND payer = ? AND status != 'refunded'
+       ORDER BY created_at LIMIT 1`,
+    )
+    .get(listingId, payer)?.tx_hash ?? null;

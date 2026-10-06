@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { type Db, getListing } from "./db";
 import { listingsRoutes } from "./listings";
+import { ownedContent, PROOF_HEADER, PURCHASE_HEADER } from "./owned";
 import type { Paywall } from "./paywall";
 
 export function createApp(db: Db, paywall?: Paywall) {
@@ -11,11 +12,14 @@ export function createApp(db: Db, paywall?: Paywall) {
     "*",
     cors({
       origin: "*",
-      allowHeaders: ["Content-Type", "PAYMENT-SIGNATURE"],
-      exposeHeaders: ["PAYMENT-REQUIRED", "PAYMENT-RESPONSE"],
+      allowHeaders: ["Content-Type", "PAYMENT-SIGNATURE", PROOF_HEADER],
+      exposeHeaders: ["PAYMENT-REQUIRED", "PAYMENT-RESPONSE", PURCHASE_HEADER],
     }),
   );
   app.get("/health", (c) => c.json({ ok: true, network: NETWORK }));
+
+  // Returning buyers who prove they paid skip the gate.
+  app.use("/listings/:id/unlock", ownedContent(db));
 
   if (paywall) {
     // x402 gate: 402 with both payment options until paid, then the content below.

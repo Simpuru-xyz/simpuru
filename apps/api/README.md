@@ -30,3 +30,11 @@ SQLite file in `apps/api/data/` (git-ignored), seeded with 3 sample listings on 
 
 The facilitator runs in-process (Blockfrost, no keys). Every settled payment lands in the
 `purchases` table (protected ones as `FundsLocked`, with the signed quote in `terms`).
+
+### Returning buyers
+
+A buyer who already paid sends `X-Simpuru-Proof` (base64 JSON `{ address, timestamp, key, signature }`):
+a CIP-8 signature over `unlockProofDigest(listingId, address, timestamp)` from `@simpuru/core/hash`,
+made with its payment key, at most 5 min old. If `purchases` has a non-refunded purchase of that
+listing by that address, the content comes back with `X-Simpuru-Purchase: <tx>` and no 402.
+Anything else falls through to the gate. `@simpuru/agent` does this automatically before paying.

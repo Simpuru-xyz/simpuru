@@ -2,8 +2,8 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { type DeliveryMode, type EscrowDeadlines, type Listing, X402_NETWORK } from "@simpuru/core";
 import { ESCROW, isOurDeployment } from "@simpuru/core/escrow";
-import { contentHash } from "@simpuru/core/hash";
-import { toClientCardanoSigner } from "@x402/cardano";
+import { contentHash, unlockProofDigest } from "@simpuru/core/hash";
+import { toClientCardanoSigner, toMasumiSellerSigner } from "@x402/cardano";
 import { ExactCardanoScheme } from "@x402/cardano/exact/client";
 import type { PaymentRequirements } from "@x402/core/types";
 import { decodePaymentResponseHeader, wrapFetchWithPayment, x402Client } from "@x402/fetch";
@@ -40,7 +40,8 @@ export interface PurchaseRecord {
 }
 
 export type BuyResult =
-  | { ok: true; record: PurchaseRecord; content: string; seconds: number }
+  | { ok: true; record: PurchaseRecord; content: string; seconds: number; redelivered?: false }
+  | { ok: true; redelivered: true; txHash: string; content: string; seconds: number }
   | { ok: false; error: string; paid: false };
 
 export function createBuyer(cfg: BuyerConfig) {
@@ -55,6 +56,29 @@ export function createBuyer(cfg: BuyerConfig) {
     },
     validateCustomMasumiDeployment: isOurDeployment,
   });
+
+  // Same key as the payment wallet, used only to prove "I already paid" (CIP-8).
+  const prover = toMasumiSellerSigner({ mnemonic: cfg.mnemonic, network: X402_NETWORK });
+  if (prover.sellerAddress !== signer.getAddress())
+    throw new Error("proof key and payment key derive different addresses");
+
+  /** Content we already paid for, without paying again; null if the API has no purchase on record. */
+  async function redeliver(listingId: string) {
+    const timestamp = Date.now();
+    const address = prover.sellerAddress;
+    const { key, signature } = await prover.signTerms(
+      address,
+      unlockProofDigest(listingId, address, timestamp),
+    );
+    const proof = Buffer.from(JSON.stringify({ address, timestamp, key, signature })).toString(
+      "base64",
+    );
+    const res = await fetch(`${cfg.apiUrl}/listings/${encodeURIComponent(listingId)}/unlock`, {
+      headers: { "X-Simpuru-Proof": proof },
+    });
+    const txHash = res.headers.get("X-Simpuru-Purchase");
+    return res.ok && txHash ? { txHash, content: await res.text() } : null;
+  }
 
   const purchases = (): PurchaseRecord[] =>
     existsSync(cfg.logPath)
@@ -134,10 +158,17 @@ export function createBuyer(cfg: BuyerConfig) {
     purchases,
     spentToday,
     getListing,
+    redeliver,
 
     async buy(listingId: string, mode: DeliveryMode): Promise<BuyResult> {
       const listing = await getListing(listingId);
       if (!listing) return { ok: false, paid: false, error: `listing ${listingId} not found` };
+      // Already paid (maybe the connection dropped last time)? Then never pay twice.
+      const started = Date.now();
+      const owned = await redeliver(listing.id);
+      if (owned)
+        return { ok: true, redelivered: true, ...owned, seconds: (Date.now() - started) / 1000 };
+
       if (!listing.modes.includes(mode))
         return { ok: false, paid: false, error: `listing does not offer ${mode}` };
       const price = BigInt(listing.priceLovelace);
@@ -155,7 +186,6 @@ export function createBuyer(cfg: BuyerConfig) {
           error: `daily budget: ${spent} spent of ${cfg.dailyBudgetLovelace}`,
         };
 
-      const started = Date.now();
       let r = await attempt(listing, mode);
       // A 402 means nothing was broadcast. The usual cause right after another buy is a
       // wallet UTxO the provider has not indexed yet, so wait one block and try once more.
