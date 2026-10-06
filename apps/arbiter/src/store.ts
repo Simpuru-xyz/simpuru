@@ -8,7 +8,11 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname } from "node:path";
 
 interface State {
-  /** lock tx hash → the first output shown that matches the posted result hash. */
+  /**
+   * `${lockTx}:${resultHash}` → the first output shown that matches that result hash.
+   * Keyed by the result hash too: the seller may replace its result while disputed,
+   * and evidence for an old hash says nothing about a new one.
+   */
   evidence: Record<string, { output: string; shownAt: string }>;
   /** escrow UTxO ref → payout tx hash. */
   payouts: Record<string, string>;
@@ -27,12 +31,14 @@ export function createStore(path: string) {
   const busy = new Map<string, Promise<unknown>>();
 
   return {
-    evidenceFor: (lockTx: string) => load().evidence[lockTx]?.output,
-    /** Records matching evidence; the first one wins and is never replaced. */
-    recordEvidence(lockTx: string, output: string) {
+    evidenceFor: (lockTx: string, resultHash: string) =>
+      load().evidence[`${lockTx}:${resultHash}`]?.output,
+    /** Records evidence for one posted result; the first one wins and is never replaced. */
+    recordEvidence(lockTx: string, resultHash: string, output: string) {
       const state = load();
-      if (state.evidence[lockTx]) return;
-      state.evidence[lockTx] = { output, shownAt: new Date().toISOString() };
+      const key = `${lockTx}:${resultHash}`;
+      if (state.evidence[key]) return;
+      state.evidence[key] = { output, shownAt: new Date().toISOString() };
       save(state);
     },
     payoutFor: (ref: string) => load().payouts[ref],

@@ -51,9 +51,11 @@ async function resolveOnce(req: ResolveRequest, store: Store): Promise<ResolveRe
   if (view.state !== 3n) throw new Error(`escrow ${req.ref} is not Disputed`);
 
   const lockTx = await lockTxOf(req.ref);
-  if (resultHash(lockTx, req.output) === view.resultHash) store.recordEvidence(lockTx, req.output);
-  // Once matching evidence exists, it is the evidence, whatever this caller sent.
-  const output = store.evidenceFor(lockTx) ?? req.output;
+  if (resultHash(lockTx, req.output) === view.resultHash) {
+    store.recordEvidence(lockTx, view.resultHash, req.output);
+  }
+  // Once evidence for the result now on chain exists, it is the evidence, whatever this caller sent.
+  const output = store.evidenceFor(lockTx, view.resultHash) ?? req.output;
 
   const verdict = decide({
     escrow: { inputHash: view.inputHash, resultHash: view.resultHash },

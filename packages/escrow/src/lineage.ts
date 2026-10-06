@@ -40,43 +40,77 @@ interface TxInput {
   payment_addr: { bech32: string };
 }
 
+interface TxOutput {
+  tx_index: number;
+  payment_addr: { bech32: string };
+}
+
 interface UtxoInfo {
   tx_hash: string;
   tx_index: number;
   inline_datum: { bytes: string | null } | null;
 }
 
-async function referenceSignatures(refs: string[]): Promise<Map<string, string>> {
+type DatumView = NonNullable<ReturnType<typeof parseMasumiLockDatum>>;
+
+async function datums(refs: string[]): Promise<Map<string, DatumView>> {
   const rows = await koios<UtxoInfo[]>("utxo_info", { _utxo_refs: refs, _extended: true });
-  const out = new Map<string, string>();
+  const out = new Map<string, DatumView>();
   for (const row of rows) {
     const bytes = row.inline_datum?.bytes;
     const view = bytes ? parseMasumiLockDatum(bytes) : null;
-    if (view) out.set(`${row.tx_hash}#${row.tx_index}`, view.referenceSignature);
+    if (view) out.set(`${row.tx_hash}#${row.tx_index}`, view);
   }
   return out;
+}
+
+/**
+ * Anyone can create a UTxO at a script address with any datum, so the root of a
+ * lineage is only accepted as a lock if the escrow output it created for this
+ * reference signature is a fresh lock: FundsLocked, no result hash.
+ */
+async function assertFreshLock(
+  txHash: string,
+  outputs: TxOutput[],
+  escrow: string,
+  signature: string,
+) {
+  const refs = outputs
+    .filter((o) => o.payment_addr.bech32 === escrow)
+    .map((o) => `${txHash}#${o.tx_index}`);
+  const views = refs.length ? await datums(refs) : new Map<string, DatumView>();
+  const mine = [...views.values()].filter((v) => v.referenceSignature === signature);
+  if (mine.length !== 1 || mine[0]?.state !== 0n || mine[0]?.resultHash !== "") {
+    throw new Error(`${txHash} is not a fresh vested_pay lock for this escrow`);
+  }
 }
 
 /** Hash of the tx that locked the funds now sitting at escrow UTxO `ref`. */
 export async function lockTxOf(ref: string, maxHops = 32): Promise<string> {
   const escrow = loadDeployment().escrowAddress;
-  const signature = (await referenceSignatures([ref])).get(ref);
+  const signature = (await datums([ref])).get(ref)?.referenceSignature;
   if (!signature) throw new Error(`${ref} does not carry a vested_pay datum`);
 
   let txHash = ref.split("#")[0] ?? "";
   for (let hop = 0; hop < maxHops; hop++) {
-    const [tx] = await koios<{ inputs: TxInput[] }[]>("tx_info", {
+    const [tx] = await koios<{ inputs: TxInput[]; outputs: TxOutput[] }[]>("tx_info", {
       _tx_hashes: [txHash],
       _inputs: true,
     });
     const escrowInputs = (tx?.inputs ?? [])
       .filter((i) => i.payment_addr.bech32 === escrow)
       .map((i) => `${i.tx_hash}#${i.tx_index}`);
-    if (escrowInputs.length === 0) return txHash;
-
-    const signatures = await referenceSignatures(escrowInputs);
-    const previous = escrowInputs.filter((r) => signatures.get(r) === signature);
-    if (previous.length === 0) return txHash; // this escrow starts here; other escrow inputs belong to others
+    const inputViews = escrowInputs.length
+      ? await datums(escrowInputs)
+      : new Map<string, DatumView>();
+    const previous = escrowInputs.filter(
+      (r) => inputViews.get(r)?.referenceSignature === signature,
+    );
+    if (previous.length === 0) {
+      // No earlier step for this escrow: this tx must be where it was locked.
+      await assertFreshLock(txHash, tx?.outputs ?? [], escrow, signature);
+      return txHash;
+    }
     if (previous.length > 1)
       throw new Error(`${txHash} spends two escrow inputs with one reference signature`);
     txHash = previous[0]?.split("#")[0] ?? "";
