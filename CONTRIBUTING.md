@@ -6,10 +6,10 @@ Four people, 36 hours, one `main` that always works. These rules keep it that wa
 
 | Area | Path | Owner |
 |---|---|---|
-| Smart contracts, escrow, arbiter | `contracts/`, `packages/escrow`, `apps/arbiter` | @ghozzza |
-| Frontend | `apps/web` | @Lexirieru |
-| Backend: API and MCP | `apps/api`, `apps/mcp`, `packages/core` | @yeheskieltame |
-| Buyer agent and protection | `apps/agent` | @AdityaWisnuu |
+| Backend: contracts, escrow, arbiter, buyer protection | `contracts/`, `packages/escrow`, `apps/arbiter`, `apps/agent` | @ghozzza |
+| Backend: API, MCP, shared core | `apps/api`, `apps/mcp`, `packages/core` | @yeheskieltame |
+| Frontend: app | `apps/web` | @Lexirieru |
+| Frontend: landing page | `apps/landing` | @AdityaWisnuu |
 
 `CODEOWNERS` asks the owner to review every PR that touches their area.
 
