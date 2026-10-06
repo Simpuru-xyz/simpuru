@@ -1,37 +1,111 @@
+import { readFileSync } from "node:fs";
 import { contentHash } from "@simpuru/core/hash";
-import { type Db, insertListing, listListings } from "./db";
+import { type Db, insertListing, listListings, setHidden } from "./db";
 
 // Design prompts: paste one into a coding agent and it builds the page. The prompt text is what
 // is sold (and hashed); `previewMedia` is a free recording of the result, set by the seller.
-const SEED = [
+// Pro-grade prompts (#76). Bodies live in catalog/*.md; each one builds the page in its preview
+// recording (apps/web/public/mock), so the card shows exactly what the buyer gets.
+const prompt = (file: string) =>
+  readFileSync(new URL(`./catalog/${file}.md`, import.meta.url), "utf8");
+const preview = (file: string) => `https://app.simpuru.xyz/mock/${file}.webm`;
+
+const PRO = [
   {
-    id: "aurora-saas-hero",
-    previewMedia: "https://app.simpuru.xyz/mock/aurora-saas.webm",
-    category: "Hero" as const,
-    title: "Aurora SaaS hero with a slow gradient sky",
+    id: "lumen-aurora-hero",
+    category: "SaaS" as const,
+    title: "Lumen: aurora SaaS hero",
     description:
-      "A dark landing hero: drifting aurora gradient, a glass nav, one headline, two CTAs. Built for a dev-tool launch.",
+      "Dark analytics hero lit by a live canvas aurora, gradient headline that slowly pans, glass pills. One HTML file, no images.",
     priceLovelace: "6000000",
     modes: ["instant", "protected"] as const,
-    content: `Build a landing page hero section for a developer tool called "Northwind".
-
-Stack: one HTML file, Tailwind via CDN, no JavaScript framework. Must work at 375px and 1440px.
-
-Background: near-black (#07080c). Behind everything, three large blurred blobs (teal #2dd4bf, violet #8b5cf6, blue #3b82f6) at 35% opacity, filter blur(120px), drifting on separate 18-26 s CSS keyframe loops (translate and scale only, ease-in-out, alternate). Respect prefers-reduced-motion: no drift.
-
-Nav: sticky, 64px tall, glass effect (white/5 background, backdrop-blur-md, a 1px white/10 bottom border). Wordmark left, four links center (Docs, Pricing, Changelog, Blog), "Sign in" ghost button right.
-
-Hero copy, centered, max-width 760px:
-- small pill above the headline: "v2.0 is live" with a pulsing teal dot
-- headline, 64px desktop / 40px mobile, tight leading, white: "Ship the boring parts faster"
-- subline, 18px, white/60: "Northwind writes the glue code between your services so your team can work on the product."
-- two buttons: primary white with black text "Start free", secondary white/10 with a border "Read the docs"
-
-Below the buttons, a 1200px wide product screenshot placeholder: rounded-2xl, 1px white/10 border, a soft teal glow underneath (box-shadow), tilted 8 degrees on the X axis with perspective, straightening to 0 on scroll into view (IntersectionObserver, 600 ms ease-out).
-
-Typography: Inter from Google Fonts. Contrast must pass WCAG AA for all text.
-`,
+    previewMedia: preview("aurora-saas"),
+    content: prompt("lumen-aurora-hero"),
   },
+  {
+    id: "neura-particle-sphere",
+    category: "AI" as const,
+    title: "NEURA: breathing particle sphere",
+    description:
+      "4,200-point WebGL sphere that rotates, breathes and tilts to the cursor beside a two-line statement. Raw WebGL, no three.js.",
+    priceLovelace: "8000000",
+    modes: ["instant", "protected"] as const,
+    previewMedia: preview("particle-ai"),
+    content: prompt("neura-particle-sphere"),
+  },
+  {
+    id: "orbital-infra-3d",
+    category: "3D" as const,
+    title: "ORBITAL: planet with three live orbits",
+    description:
+      "Glowing CSS planet, three tilted SVG orbits whose lights pass behind and in front of it, pointer tilt. No WebGL.",
+    priceLovelace: "7000000",
+    modes: ["instant", "protected"] as const,
+    previewMedia: preview("orbit-3d"),
+    content: prompt("orbital-infra-3d"),
+  },
+  {
+    id: "noa-kinetic-type",
+    category: "Portfolio" as const,
+    title: "Noa Martens: kinetic type portfolio",
+    description:
+      "Four giant marquee rows (solid, outline, orange) that speed up and skew with your scroll, plus a rotating scroll badge.",
+    priceLovelace: "5000000",
+    modes: ["instant", "protected"] as const,
+    previewMedia: preview("kinetic-type"),
+    content: prompt("noa-kinetic-type"),
+  },
+  {
+    id: "studio-hard-brutalist",
+    category: "Landing Page" as const,
+    title: "Studio Hard: brutalist swap grid",
+    description:
+      "Flat yellow / black / blue / red grid whose cells hard-cut to new colors and glyphs, over a huge 'WE MAKE LOUD BRANDS'.",
+    priceLovelace: "4000000",
+    modes: ["instant"] as const,
+    previewMedia: preview("brutalist-agency"),
+    content: prompt("studio-hard-brutalist"),
+  },
+  {
+    id: "ledgerly-fintech-dashboard",
+    category: "Fintech" as const,
+    title: "Ledgerly: live fintech dashboard hero",
+    description:
+      "Light bento of money cards with a live SVG area chart that ticks and morphs, count-up figures, savings bar, FX card.",
+    priceLovelace: "6000000",
+    modes: ["instant", "protected"] as const,
+    previewMedia: preview("fintech-dash"),
+    content: prompt("ledgerly-fintech-dashboard"),
+  },
+  {
+    id: "wander-journal-editorial",
+    category: "Editorial" as const,
+    title: "Wander Journal: sunset magazine cover",
+    description:
+      "Layered flat-color mountains under a sinking sun, serif headline with an italic line, pointer parallax, film grain.",
+    priceLovelace: "3000000",
+    modes: ["instant"] as const,
+    previewMedia: preview("editorial-travel"),
+    content: prompt("wander-journal-editorial"),
+  },
+  {
+    id: "still-breathing-wellness",
+    category: "Wellness" as const,
+    title: "still.: 4-7-8 breathing circle",
+    description:
+      "Three sage rings that breathe in a real 4-7-8 rhythm with a guided cue, hold progress ring and pause on Space.",
+    priceLovelace: "5000000",
+    modes: ["instant", "protected"] as const,
+    previewMedia: preview("wellness-calm"),
+    content: prompt("still-breathing-wellness"),
+  },
+];
+
+/** Listings no longer sold (still unlockable for people who bought them). */
+export const RETIRED = ["aurora-saas-hero"];
+
+const SEED = [
+  ...PRO,
   {
     id: "editorial-portfolio-grid",
     previewMedia: "https://app.simpuru.xyz/mock/editorial-portfolio-grid.webm",
@@ -41,22 +115,7 @@ Typography: Inter from Google Fonts. Contrast must pass WCAG AA for all text.
       "A magazine-style work grid for a designer: oversized serif titles, image cards that reveal the project on hover.",
     priceLovelace: "2000000",
     modes: ["instant"] as const,
-    content: `Build a portfolio "Selected work" section for an independent designer.
-
-Stack: one HTML file, plain CSS (no framework), a few lines of vanilla JS at most.
-
-Layout: warm off-white page (#f4f1ea), ink text (#151412). A 12-column grid with 24px gutters, max-width 1320px. The section title "Selected work, 2021-2026" is set in Fraunces at 96px desktop / 48px mobile, weight 300, letter-spacing -0.02em, spanning all 12 columns.
-
-Six project cards in an asymmetric rhythm: row 1 spans 7 + 5 columns, row 2 spans 4 + 4 + 4, row 3 spans 12 (wide). Each card:
-- an image area with a fixed aspect ratio (4:5 for narrow cards, 16:9 for the wide one), using a solid color placeholder per project
-- below it: project name in Fraunces 28px, then client and year in a 13px uppercase mono (JetBrains Mono), letter-spacing 0.08em
-
-Hover (pointer devices only, @media (hover: hover)): the image scales to 1.04 over 500 ms with a cubic-bezier(.2,.7,.2,1); a caption panel slides up from the bottom of the image with a one-line project summary; the cursor becomes a 72px black circle with the word "View" (a custom cursor div that follows the pointer with a slight lag).
-
-On touch devices the caption is always visible under the image instead.
-
-Focus states must be visible for keyboard users; every card is a link with a meaningful accessible name.
-`,
+    content: prompt("editorial-portfolio-grid"),
   },
   {
     id: "kinetic-pricing-section",
@@ -67,23 +126,7 @@ Focus states must be visible for keyboard users; every card is a link with a mea
       "Three pricing tiers, an animated billing toggle, numbers that roll when the price changes, a highlighted middle plan.",
     priceLovelace: "10000000",
     modes: ["protected"] as const,
-    content: `Build a pricing section with three tiers and a monthly / yearly toggle.
-
-Stack: React + TypeScript + Tailwind, a single component file "Pricing.tsx" with no extra dependencies.
-
-Toggle: a pill switch centered above the cards, labels "Monthly" and "Yearly (save 20%)". The active background is a sliding thumb that moves with a spring-like transition (CSS transition 350 ms, cubic-bezier(.34,1.56,.64,1)). It is a real radio group: arrow keys switch, the state is announced to screen readers.
-
-Tiers (monthly / yearly per month):
-- Starter: $0 / $0 — 1 project, community support
-- Team: $24 / $19 — unlimited projects, 10 seats, priority support (highlighted)
-- Scale: $79 / $63 — SSO, audit log, 99.9% SLA, dedicated support
-
-Cards: equal height, rounded-3xl, 1px border. The highlighted Team card is lifted 12px, has a 2px gradient border (indigo to fuchsia, done with a background-clip trick, not an image) and a "Most popular" badge.
-
-Price animation: when the billing period changes, each price rolls to its new value digit by digit like an odometer (each digit is a vertical strip of 0-9 translated with transform, 400 ms, digits staggered by 40 ms). With prefers-reduced-motion the value just swaps.
-
-Each card ends with a full-width button; feature lists use check icons drawn as inline SVG. Mobile: cards stack, the highlighted card comes first.
-`,
+    content: prompt("kinetic-pricing-section"),
   },
 ];
 
@@ -138,6 +181,14 @@ export function seed(db: Db, sellerAddress: string, demoSellerAddress = sellerAd
       demoSellerAddress,
     );
   const existing = new Set(listListings(db).map((l) => l.id));
+  for (const id of RETIRED) setHidden(db, id, true);
+  // Seed prompts are ours: keep stored text, hash, title and description in step with the source
+  // (the two first prompts were rewritten as full specs in #76; their escrows are all closed).
+  for (const l of SEED)
+    db.query(
+      `UPDATE listings SET content = ?, content_hash = ?, title = ?, description = ?
+       WHERE id = ? AND content_hash != ?`,
+    ).run(l.content, contentHash(l.content), l.title, l.description, l.id, contentHash(l.content));
   // Listings seeded before categories existed get theirs once.
   for (const s of [...SEED, ...DEMO])
     db.query("UPDATE listings SET category = ? WHERE id = ? AND category IS NULL").run(

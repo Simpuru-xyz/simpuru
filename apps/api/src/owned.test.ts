@@ -16,7 +16,7 @@ const bob = toMasumiSellerSigner({
   mnemonic: `${"zoo ".repeat(23)}vote`,
   network: "cardano:preprod",
 });
-const LISTING = "aurora-saas-hero";
+const LISTING = "lumen-aurora-hero";
 
 const setup = (status = "settled") => {
   const db = openDb(":memory:");
@@ -52,7 +52,7 @@ test("a buyer who paid gets the content again without paying", async () => {
   const res = await unlock(setup(), await proof());
   expect(res.status).toBe(200);
   expect(res.headers.get(PURCHASE_HEADER)).toBe("ab".repeat(32));
-  expect(await res.text()).toStartWith("Build a landing page hero");
+  expect(await res.text()).toStartWith('Build ONE standalone HTML file for "Lumen"');
 });
 
 test.each([

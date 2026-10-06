@@ -1,7 +1,7 @@
 import { CATEGORIES, type Category, type DeliveryMode } from "@simpuru/core";
 import { contentHash } from "@simpuru/core/hash";
 import { Hono } from "hono";
-import { type Db, getListing, insertListing, listListings, publicListing, withStats } from "./db";
+import { type Db, getListing, insertListing, listCatalogue, publicListing, withStats } from "./db";
 
 // Ledger min-UTxO is ~0.97 tADA. The protected path costs the seller ~1.35 tADA in escrow fees,
 // so below ~5 tADA it makes no sense.
@@ -85,7 +85,7 @@ export function isPreviewUrl(value: string) {
 export function listingsRoutes(db: Db) {
   const app = new Hono();
 
-  app.get("/", (c) => c.json(listListings(db).map((l) => withStats(db, publicListing(l)))));
+  app.get("/", (c) => c.json(listCatalogue(db).map((l) => withStats(db, publicListing(l)))));
 
   app.get("/:id", (c) => {
     const listing = getListing(db, c.req.param("id"));
