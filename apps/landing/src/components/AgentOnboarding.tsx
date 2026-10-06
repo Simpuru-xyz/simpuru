@@ -2,16 +2,15 @@
 
 import { useRef, useState } from "react";
 import CopyButton from "@/components/CopyButton";
-import { MCP_DOCS_URL, MCP_URL } from "@/lib/links";
+import { MCP_DOCS_URL } from "@/lib/links";
 
 /**
  * Agent onboarding: the landing section where a visitor with an agent copies
  * one block and is wired into the catalogue.
  *
- * The MCP server (apps/mcp) exposes `search_listings` and `get_listing` for
- * free, `buy_listing` paid over x402, and `get_purchase_status` for the escrow
- * state. The buyer CLI (apps/agent) is the same purchase with a spend budget
- * enforced before anything is signed.
+ * Every snippet mirrors apps/mcp/README.md and apps/agent/README.md. The MCP
+ * server runs next to the agent over stdio and holds the agent's own wallet,
+ * because a generic MCP host cannot pay an x402 402 by itself.
  *
  * Tabs follow the WAI-ARIA tabs pattern: roving tabindex, arrow-key navigation
  * with selection following focus, labelled panels. The copy control keeps its
@@ -30,38 +29,38 @@ export const ONBOARDING_TARGETS: OnboardingTarget[] = [
   {
     id: "claude-code",
     label: "Claude Code",
-    intro: "One command. The server is remote, so there is nothing to install.",
-    snippet: `claude mcp add --transport http simpuru ${MCP_URL}`,
-    note: "Then ask: “search simpuru for a landing page prompt and buy it, protected”. The agent can check the escrow state at any time with get_purchase_status.",
+    intro: "From a clone of the repo, with .env filled in and the API running.",
+    snippet: `claude mcp add simpuru -- bun --env-file="$PWD/.env" "$PWD/apps/mcp/src/index.ts"`,
+    note: "Then ask: “find a landing page prompt on Simpuru and buy it with buyer protection”. my_purchases shows what it bought and how much of today's budget is left.",
   },
   {
     id: "mcp-json",
-    label: "Cursor · Windsurf · Claude Desktop",
-    intro: "Any MCP client that takes a URL. Paste this into its MCP config.",
+    label: "Claude Desktop · Cursor",
+    intro: "Same server, as an entry in the client's MCP config.",
     snippet: `{
   "mcpServers": {
     "simpuru": {
-      "type": "http",
-      "url": "${MCP_URL}"
+      "command": "bun",
+      "args": [
+        "--env-file=<repo>/.env",
+        "<repo>/apps/mcp/src/index.ts"
+      ]
     }
   }
 }`,
-    note: "Config file names differ per editor, but most accept this shape.",
+    note: "Replace <repo> with the absolute path to your clone. Config file names differ per client, but most accept this shape.",
   },
   {
     id: "buyer-cli",
-    label: "Buyer agent CLI",
-    intro:
-      "The reference buyer. It pays from its own preprod wallet and refuses to sign anything outside its budget.",
-    snippet: `# From a clone of the repo, with a funded preprod wallet in .env
-bun install
-bun run buy <listing-id>
+    label: "Buyer CLI",
+    intro: "The same purchase without an MCP host, straight from the terminal.",
+    snippet: `bun run buy <listingId> protected
 
-# Before signing it checks:
-#   - payTo is our approved escrow deployment
-#   - the price is under the per-payment cap
-#   - today's total stays under the daily budget`,
-    note: "After the purchase the protection watcher keeps running: no result by the deadline means withdrawRefund, a result that fails the hash check means a dispute.",
+# needs BUYER_MNEMONIC and BLOCKFROST_PROJECT_ID in .env
+# refuses before signing: an escrow other than ours, a price other than
+# the listed one, more than MAX_PER_PAYMENT_LOVELACE per payment
+# (default 20 tADA), more than DAILY_BUDGET_LOVELACE per day (default 50 tADA)`,
+    note: "Every purchase is logged with its tx hash and deadlines, so the watcher can refund it if the prompt never arrives.",
   },
 ];
 
@@ -105,7 +104,7 @@ export default function AgentOnboarding() {
     >
       <p className="mb-3 text-xs font-medium tracking-widest text-gray-500 uppercase">For agents</p>
       <h2 className="mb-4 text-3xl leading-tight font-normal tracking-tight sm:text-4xl md:text-5xl">
-        Connect your agent in one paste
+        Connect your agent
       </h2>
       <p className="mb-3 max-w-2xl text-base text-gray-600 sm:text-lg">
         Every listing commits to a hash of its content before it is sold, so the agent can prove
