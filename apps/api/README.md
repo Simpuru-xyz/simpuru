@@ -57,3 +57,10 @@ by its seller nonce (the lock moves to a new UTxO on every action) and:
 | `GET /purchases/:id` | `PurchaseView` = `Purchase` from `@simpuru/core` + `verification?` (`id` = payment/lock tx) |
 | `GET /purchases?seller=addr` | purchases of listings that address sells, newest first |
 | `POST /purchases/:id/verification` | `{ verification: "ok" \| "mismatch" \| "no_result_yet" }`, buyer only (`X-Simpuru-Proof`) |
+
+### Deploy (VPS)
+
+`Dockerfile` + `docker-compose.yml` at the repo root. On the VPS: clone to `/opt/simpuru`, put a `.env`
+with only `SELLER_MNEMONIC` and `BLOCKFROST_PROJECT_ID` next to the compose file, then
+`docker compose up -d --build`. The API binds `127.0.0.1:4021`; the host's reverse proxy serves
+`https://api.simpuru.xyz`. SQLite lives in `./data` on the host.
