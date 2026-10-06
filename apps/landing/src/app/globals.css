@@ -103,3 +103,13 @@ body {
     animation: none;
   }
 }
+
+/* No visible scrollbar: the page still scrolls (wheel, touch, keys, Lenis),
+   only the bar is hidden. */
+html {
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
