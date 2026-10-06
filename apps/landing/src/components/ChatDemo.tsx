@@ -142,9 +142,8 @@ export default function ChatDemo() {
           One line in, a protected prompt out
         </h2>
         <p className="mb-14 max-w-2xl text-base leading-relaxed text-gray-600">
-          No checkout, no card. The agent asks, Simpuru quotes the seller&apos;s price in ADA, and
-          the payment waits in escrow until the delivered prompt matches what was promised. If it
-          does not, the ADA goes back on its own.
+          No checkout, no card. The agent asks, Simpuru quotes the price, and the seller is only paid
+          once the prompt arrives as promised. If it does not, the money goes back on its own.
         </p>
 
         <div className="flex flex-col gap-5">

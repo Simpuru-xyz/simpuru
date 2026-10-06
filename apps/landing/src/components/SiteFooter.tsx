@@ -66,8 +66,8 @@ function FooterCard() {
                 <span className="text-[26px] font-bold tracking-tight text-[#0F172A]">simpuru</span>
               </div>
               <p className="max-w-[320px] text-[16px] leading-relaxed font-normal text-[#64748B]">
-                Buyer protection for AI agents paying with x402 on Cardano. Pay into escrow, check
-                the delivery, get refunded when it fails.
+                Design prompts for a few cents each, bought by you or your agent. If one never
+                arrives, the money comes back.
               </p>
               <div className="flex gap-3">
                 {SOCIALS.map(({ label, href, Icon }) => (

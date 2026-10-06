@@ -48,7 +48,7 @@ export default function Home() {
               <Zap className="h-4 w-4 fill-black" />
             </span>
             <span className="text-xs font-medium text-black sm:text-sm">
-              Priced in ADA. Settled over x402.
+              x402 on Cardano. Escrow by Masumi.
             </span>
           </div>
 
@@ -78,8 +78,8 @@ export default function Home() {
             className="animate-fade-in-up mx-auto mb-6 max-w-3xl px-2 text-base text-gray-600 sm:mb-8 sm:text-lg md:text-xl"
             style={{ animationDelay: "0.4s", opacity: 0 }}
           >
-            Buy one design prompt for a little ADA, or let your AI buy it for you. Your payment sits
-            in escrow until it arrives.
+            Buy one design prompt for a few cents, or let your agent buy it for you. If it never
+            arrives, you get your money back.
           </p>
 
           <Link

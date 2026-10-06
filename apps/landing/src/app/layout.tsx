@@ -11,7 +11,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Simpuru | pay per prompt, not per month",
   description:
-    "Design prompts you or your AI can buy one at a time, paid in ADA over x402. The payment waits in escrow until the prompt arrives, and comes back if it doesn't.",
+    "Buy one design prompt for a few cents, or let your agent buy it for you. If it never arrives, you get your money back. x402 on Cardano.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
