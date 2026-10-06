@@ -160,8 +160,8 @@ function SimpuruAvatar() {
  * What buying a prompt looks like from inside an agent.
  *
  * Layout follows the chat panel of the MotionSites "DeepThink" prompt: a dark
- * chat card inside a soft gradient panel, avatars on each side, a "live" dot,
- * and a pill input at the bottom. The panel is recoloured from yellow/teal to
+ * chat card inside a soft gradient panel, avatars on each side and a pill
+ * input at the bottom. The panel is recoloured from yellow/teal to
  * the lilac and sky of the sections above. All of it is CSS and inline SVG.
  */
 export default function ChatDemo() {
@@ -171,14 +171,11 @@ export default function ChatDemo() {
   return (
     <section ref={ref} className="w-full bg-white px-4 py-16 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-[1300px]">
-        <h2 className="mb-4 text-3xl leading-[1.11] font-normal tracking-[-0.02em] text-[#141414] sm:text-4xl md:text-5xl">
+        <h2 className="mb-10 text-3xl leading-[1.11] font-normal tracking-[-0.02em] text-[#141414] sm:text-4xl md:text-5xl">
           One line in.
           <br />
           <span className="text-[#8b8b8d]">A protected prompt out.</span>
         </h2>
-        <p className="mb-10 max-w-xl text-base text-[#6b6b6d] sm:mb-12 sm:text-lg">
-          No checkout, no card. No prompt, no payment.
-        </p>
 
         <div
           className="relative overflow-hidden rounded-[14px] px-3 py-6 sm:px-10 sm:py-10"
@@ -191,11 +188,6 @@ export default function ChatDemo() {
             ].join(", "),
           }}
         >
-          <div className="mb-4 flex items-center gap-2 px-1 text-sm font-medium text-[#0b0c07]">
-            <span className="h-2 w-2 rounded-full bg-[#23d92c] shadow-[0_0_6px_rgba(45,220,55,0.65)]" />
-            Live purchase
-          </div>
-
           <div className="mx-auto flex max-w-[814px] flex-col gap-4 rounded-[18px] bg-[#0d0d0d] p-4 sm:p-6">
             {TRANSCRIPT.map((entry, index) => {
               const isAgent = entry.speaker === "agent";
