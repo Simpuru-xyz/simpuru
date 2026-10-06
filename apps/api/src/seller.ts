@@ -9,6 +9,7 @@ import { purchaseResultHash } from "@simpuru/core/hash";
 import { readClient, submitResult, viewOf, withdraw } from "@simpuru/escrow";
 import { type Db, getListing } from "./db";
 import { addEvent, type OpenPurchase, openProtectedPurchases, updatePurchase } from "./purchases";
+import { DEMO_FAULTS, deliveredContent } from "./seed";
 
 /** The datum fields the decision needs. */
 export interface LockView {
@@ -118,8 +119,9 @@ export async function sellerTick(db: Db, bf: Blockfrost, now = Date.now()) {
       }
       if (action.kind === "submit" && lock) {
         const listing = getListing(db, p.listing_id);
-        if (!listing) continue;
-        const resultHash = purchaseResultHash(p.tx_hash, listing.content);
+        // A seller who never delivers never posts a result (demo fault).
+        if (!listing || DEMO_FAULTS[listing.id] === "no_delivery") continue;
+        const resultHash = purchaseResultHash(p.tx_hash, deliveredContent(listing));
         const resultTx = await submitResult(lock.ref, resultHash);
         updatePurchase(db, p.tx_hash, { resultTx, resultHash });
         console.log(`[seller] ${p.tx_hash.slice(0, 8)} result submitted ${resultTx}`);

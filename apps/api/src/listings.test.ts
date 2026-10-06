@@ -29,7 +29,7 @@ describe("listings", () => {
   test("catalogue is public and never leaks content", async () => {
     const res = await fresh().request("/listings");
     const body = (await res.json()) as Record<string, unknown>[];
-    expect(body.length).toBe(3);
+    expect(body.length).toBe(5);
     for (const l of body) {
       expect(l.content).toBeUndefined();
       expect(l.contentHash).toMatch(/^[0-9a-f]{64}$/);
@@ -40,7 +40,7 @@ describe("listings", () => {
     const db = openDb(":memory:");
     seed(db, SELLER);
     seed(db, SELLER);
-    expect(db.query("SELECT count(*) AS n FROM listings").get()).toEqual({ n: 3 });
+    expect(db.query("SELECT count(*) AS n FROM listings").get()).toEqual({ n: 5 });
   });
 
   test("unknown id is 404", async () => {
@@ -66,5 +66,22 @@ describe("listings", () => {
     ["price not a string", { ...valid, priceLovelace: 5000000 }],
   ])("rejects %s", async (_, body) => {
     expect((await post(fresh(), body)).status).toBe(400);
+  });
+});
+
+describe("demo faults", () => {
+  test("honest listings deliver their content, faulty ones don't", async () => {
+    const { deliveredContent } = await import("./seed");
+    expect(deliveredContent({ id: "orders-dataset-100", content: "x" })).toBe("x");
+    expect(deliveredContent({ id: "demo-no-delivery", content: "x" })).toBe("");
+    expect(deliveredContent({ id: "demo-wrong-file", content: "x" })).not.toBe("x");
+  });
+
+  test("demo listings are added to an existing catalogue", () => {
+    const db = openDb(":memory:");
+    seed(db, SELLER);
+    db.run("DELETE FROM listings WHERE id LIKE 'demo-%'");
+    seed(db, SELLER);
+    expect(db.query("SELECT count(*) AS n FROM listings").get()).toEqual({ n: 5 });
   });
 });

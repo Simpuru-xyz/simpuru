@@ -3,6 +3,7 @@ import { verifySellerTermsSignature } from "@x402/cardano";
 import type { MiddlewareHandler } from "hono";
 import { type Db, getListing } from "./db";
 import { findPurchase } from "./purchases";
+import { deliveredContent } from "./seed";
 
 /** Headers a returning buyer sends; see `unlockProofDigest`. */
 export const PROOF_HEADER = "X-Simpuru-Proof";
@@ -39,5 +40,5 @@ export const ownedContent =
     const tx = listing && buyer ? findPurchase(db, listing.id, buyer) : null;
     if (!listing || !tx) return next();
     c.header(PURCHASE_HEADER, tx);
-    return c.text(listing.content);
+    return c.text(deliveredContent(listing));
   };
