@@ -2,11 +2,11 @@
   "name": "@simpuru/agent",
   "private": true,
   "type": "module",
-  "main": "src/index.ts",
   "scripts": {
-    "dev": "bun --watch src/index.ts",
+    "dev": "bun --env-file=../../.env --watch src/index.ts",
     "typecheck": "tsc --noEmit",
-    "buy": "bun --env-file=../../.env src/buy.ts"
+    "buy": "bun --env-file=../../.env src/buy.ts",
+    "test": "bun test"
   },
   "dependencies": {
     "@simpuru/core": "workspace:*",
@@ -17,5 +17,8 @@
   },
   "devDependencies": {
     "@simpuru/tsconfig": "workspace:*"
+  },
+  "exports": {
+    ".": "./src/index.ts"
   }
 }
