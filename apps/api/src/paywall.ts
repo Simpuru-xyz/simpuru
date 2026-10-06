@@ -118,9 +118,9 @@ export function createPaywall(
         },
       });
     }
-    // ponytail: a platform wallet is the escrow seller of record (it signs quotes and submits
-    // results), so the protected path is only offered for listings one of them sells.
-    if (listing.modes.includes("protected") && listingSeller) {
+    // A platform wallet is the escrow seller of record: its own for platform listings, the main
+    // one for creators (it signs the quote, submits, withdraws, then pays the creator; see seller.ts).
+    if (listing.modes.includes("protected")) {
       accepts.push({
         scheme: "exact",
         network: X402_NETWORK,

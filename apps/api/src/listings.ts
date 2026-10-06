@@ -1,7 +1,8 @@
 import { CATEGORIES, type Category, type DeliveryMode } from "@simpuru/core";
-import { contentHash } from "@simpuru/core/hash";
+import { contentHash, listingProofDigest } from "@simpuru/core/hash";
 import { Hono } from "hono";
 import { type Db, getListing, insertListing, listCatalogue, publicListing, withStats } from "./db";
+import { PROOF_HEADER, verifySignedProof } from "./owned";
 
 // Ledger min-UTxO is ~0.97 tADA. The protected path costs the seller ~1.35 tADA in escrow fees,
 // so below ~5 tADA it makes no sense.
@@ -94,15 +95,49 @@ export function listingsRoutes(db: Db) {
       : c.json({ error: "not found" }, 404);
   });
 
-  // ponytail: no seller auth yet, anyone can list. Add a signed-address check when listings get abused.
   app.post("/", async (c) => {
     const body = await c.req.json().catch(() => null);
     const v = validateNewListing(body);
     if (!v.ok) return c.json({ error: v.error }, 400);
-    const row = { id: crypto.randomUUID(), ...v.value, contentHash: contentHash(v.value.content) };
+    const hash = contentHash(v.value.content);
+    // The creator proves the seller address is theirs by signing this exact listing.
+    const signer = verifySignedProof(c.req.header(PROOF_HEADER) ?? "", (address, ts) =>
+      listingProofDigest(address, hash, v.value.priceLovelace, ts),
+    );
+    if (signer !== v.value.sellerAddress)
+      return c.json(
+        {
+          error:
+            "X-Simpuru-Proof must be a CIP-8 signature by sellerAddress over listingProofDigest(sellerAddress, sha256(content), priceLovelace, timestamp)",
+        },
+        401,
+      );
+    const row = { id: crypto.randomUUID(), ...v.value, contentHash: hash };
     insertListing(db, row);
     return c.json(publicListing(row), 201);
   });
 
+  return app;
+}
+
+/** A creator's public page: what they sell, how much, and their on-chain reputation. */
+export function creatorsRoutes(db: Db) {
+  const app = new Hono();
+  app.get("/:address", (c) => {
+    const address = c.req.param("address");
+    const listings = listCatalogue(db)
+      .filter((l) => l.sellerAddress === address)
+      .map((l) => withStats(db, publicListing(l)));
+    if (listings.length === 0 && !/^addr_test1[0-9a-z]{50,110}$/.test(address))
+      return c.json({ error: "not a preprod address" }, 400);
+    const sales = listings.reduce((n, l) => n + (l.sales ?? 0), 0);
+    const reputation = listings.find((l) => l.sellerReputation)?.sellerReputation;
+    return c.json({
+      address,
+      listings,
+      sales,
+      ...(reputation ? { sellerReputation: reputation } : {}),
+    });
+  });
   return app;
 }

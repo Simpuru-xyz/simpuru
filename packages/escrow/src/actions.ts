@@ -29,7 +29,7 @@ const TX_WINDOW_MS = 5 * 60_000;
  * are fine: they go back in the collateral return and the change.
  */
 const ROOMY_LOVELACE = 10_000_000n;
-async function roomyUtxos(wallet: ReturnType<typeof walletClient>) {
+export async function roomyUtxos(wallet: ReturnType<typeof walletClient>) {
   const utxos = await wallet.getWalletUtxos();
   const roomy = utxos.filter((u) => u.assets.lovelace >= ROOMY_LOVELACE);
   return roomy.length > 0 ? roomy : utxos;
