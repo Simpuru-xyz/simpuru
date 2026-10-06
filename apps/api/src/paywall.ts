@@ -26,9 +26,17 @@ const CONFIRMATION = { l1Confirmations: 0 };
 
 export function createPaywall(
   db: Db,
-  opts: { sellerMnemonic: string; blockfrostProjectId: string },
+  opts: { sellerMnemonics: string[]; blockfrostProjectId: string },
 ) {
-  const seller = toMasumiSellerSigner({ mnemonic: opts.sellerMnemonic, network: X402_NETWORK });
+  // Every wallet the platform sells from (the main seller, plus the demo bad seller when set).
+  const sellers = new Map(
+    opts.sellerMnemonics.map((mnemonic) => {
+      const signer = toMasumiSellerSigner({ mnemonic, network: X402_NETWORK });
+      return [signer.sellerAddress, signer] as const;
+    }),
+  );
+  const [seller] = [...sellers.values()];
+  if (!seller) throw new Error("at least one seller mnemonic is required");
 
   // In-process facilitator: no keys, only verifies and broadcasts the buyer's signed tx.
   const facilitator = new x402Facilitator().register(
@@ -55,11 +63,12 @@ export function createPaywall(
   };
 
   const build = async (listing: ListingRow): Promise<MiddlewareHandler> => {
+    const listingSeller = sellers.get(listing.sellerAddress);
     const server = new x402ResourceServer(facilitatorClient).register(
       X402_NETWORK,
       new ServerScheme({
         masumi: {
-          seller,
+          seller: listingSeller ?? seller,
           deployment: ESCROW.deployment,
           deadlines: DEADLINES,
           // input_hash binds the escrow to this listing and its committed content.
@@ -109,9 +118,9 @@ export function createPaywall(
         },
       });
     }
-    // ponytail: the platform wallet is the escrow seller of record (it signs quotes and submits
-    // results), so the protected path is only offered for listings it sells.
-    if (listing.modes.includes("protected") && listing.sellerAddress === seller.sellerAddress) {
+    // ponytail: a platform wallet is the escrow seller of record (it signs quotes and submits
+    // results), so the protected path is only offered for listings one of them sells.
+    if (listing.modes.includes("protected") && listingSeller) {
       accepts.push({
         scheme: "exact",
         network: X402_NETWORK,
@@ -143,6 +152,7 @@ export function createPaywall(
   const cache = new Map<string, Promise<MiddlewareHandler>>();
   return {
     sellerAddress: seller.sellerAddress,
+    sellerAddresses: [...sellers.keys()],
     forListing(listing: ListingRow) {
       let handler = cache.get(listing.id);
       if (!handler) {

@@ -13,11 +13,22 @@ const need = (k: string) => {
 
 const db = openDb();
 const paywall = createPaywall(db, {
-  sellerMnemonic: need("SELLER_MNEMONIC"),
+  // The second wallet sells the deliberately bad demo listings (optional).
+  sellerMnemonics: [need("SELLER_MNEMONIC"), process.env.DEMO_SELLER_MNEMONIC].filter(
+    (m): m is string => Boolean(m),
+  ),
   blockfrostProjectId: need("BLOCKFROST_PROJECT_ID"),
 });
-seed(db, paywall.sellerAddress);
-startSellerAgent(db, need("BLOCKFROST_PROJECT_ID"));
+seed(db, paywall.sellerAddress, paywall.sellerAddresses[1]);
+startSellerAgent(
+  db,
+  need("BLOCKFROST_PROJECT_ID"),
+  new Map(
+    [process.env.SELLER_MNEMONIC, process.env.DEMO_SELLER_MNEMONIC]
+      .filter((m): m is string => Boolean(m))
+      .map((mnemonic, i) => [paywall.sellerAddresses[i] ?? "", { mnemonic }]),
+  ),
+);
 
 const port = Number(process.env.PORT ?? 4021);
 

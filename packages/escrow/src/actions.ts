@@ -6,7 +6,7 @@
 // cooldown must be at least that plus the deployment's cooldown period.
 import { Address, Assets, Data, KeyHash, PrivateKey, type UTxO } from "@evolution-sdk/evolution";
 import { inlineDatum, parseMasumiLockDatum } from "@x402/cardano";
-import { mnemonicFor, type Role, readClient, walletClient } from "./chain";
+import { type Actor, mnemonicFor, type Role, readClient, walletClient } from "./chain";
 import { redeemer, stateData, withFields } from "./datum";
 import { loadDeployment } from "./deployment";
 import {
@@ -35,7 +35,7 @@ async function roomyUtxos(wallet: ReturnType<typeof walletClient>) {
   return roomy.length > 0 ? roomy : utxos;
 }
 
-export function keyHashOf(role: Role) {
+export function keyHashOf(role: Actor) {
   return KeyHash.fromPrivateKey(PrivateKey.fromMnemonicCardano(mnemonicFor(role)));
 }
 
@@ -76,7 +76,7 @@ export function viewOf(utxo: UTxO.UTxO) {
 }
 
 interface Continuation {
-  role: Role;
+  role: Actor;
   utxo: UTxO.UTxO;
   action: "SubmitResult" | "SetRefundRequested" | "AuthorizeRefund" | "AuthorizeWithdrawal";
   next: (datum: Data.Data, nowMs: bigint, cooldownMs: bigint) => Data.Data;
@@ -165,13 +165,17 @@ async function withStaleUtxoRetry<T>(build: () => Promise<T>, attempts = 5): Pro
 }
 
 /** Seller posts the hash of what it delivered. FundsLocked/ResultSubmitted → ResultSubmitted. */
-export async function submitResult(ref: string, resultHashHex: string): Promise<string> {
+export async function submitResult(
+  ref: string,
+  resultHashHex: string,
+  seller: Actor = "seller",
+): Promise<string> {
   if (!/^[0-9a-f]{64}$/.test(resultHashHex)) throw new Error("result hash must be 32 bytes hex");
   const utxo = await findEscrowUtxo(ref);
   const view = viewOf(utxo);
   const disputed = view.state === 2n || view.state === 3n;
   return continueEscrow({
-    role: "seller",
+    role: seller,
     utxo,
     action: "SubmitResult",
     after: view.sellerCooldownTime,
@@ -319,11 +323,11 @@ export async function withdrawDisputed(
 }
 
 /** Seller concedes: any non-terminal state → RefundAuthorized; the buyer can then refund at once. */
-export async function authorizeRefund(ref: string): Promise<string> {
+export async function authorizeRefund(ref: string, seller: Actor = "seller"): Promise<string> {
   const utxo = await findEscrowUtxo(ref);
   const view = viewOf(utxo);
   return continueEscrow({
-    role: "seller",
+    role: seller,
     utxo,
     action: "AuthorizeRefund",
     after: view.sellerCooldownTime,
@@ -338,7 +342,7 @@ export async function authorizeRefund(ref: string): Promise<string> {
 }
 
 interface Terminal {
-  role: Role;
+  role: Actor;
   utxo: UTxO.UTxO;
   action: "Withdraw" | "WithdrawRefund";
   /** Validity lower bound must be after this (POSIX ms). */
@@ -385,7 +389,7 @@ async function closeEscrow(t: Terminal): Promise<string> {
  * Seller collects. ResultSubmitted after `unlock_time`, or WithdrawAuthorized at once.
  * The buyer's collateral goes back in an output tagged with the escrow's own reference.
  */
-export async function withdraw(ref: string): Promise<string> {
+export async function withdraw(ref: string, signer: Actor = "seller"): Promise<string> {
   const utxo = await findEscrowUtxo(ref);
   const view = viewOf(utxo);
   if (view.state !== 1n && view.state !== 4n)
@@ -399,7 +403,7 @@ export async function withdraw(ref: string): Promise<string> {
     });
   }
   return closeEscrow({
-    role: "seller",
+    role: signer,
     utxo,
     action: "Withdraw",
     after: view.state === 1n ? view.unlockTime : undefined,
