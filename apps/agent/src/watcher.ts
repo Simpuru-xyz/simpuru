@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname } from "node:path";
 import { Address, type UTxO } from "@evolution-sdk/evolution";
 import {
+  type Actor,
   errorText,
   loadDeployment,
   lockTxOf,
@@ -29,6 +30,8 @@ export interface WatcherConfig {
   delivery: (lockTx: string) => string | undefined;
   statusPath: string;
   arbiter?: { url: string; token: string };
+  /** Who signs refunds and disputes; defaults to the BUYER_MNEMONIC role. */
+  buyer?: Actor;
 }
 
 export interface WatchEvent {
@@ -162,9 +165,9 @@ export function createWatcher(cfg: WatcherConfig) {
 
       try {
         if (next.kind === "refund") {
-          log({ action: "refund", why: next.why, tx: await withdrawRefund(ref) });
+          log({ action: "refund", why: next.why, tx: await withdrawRefund(ref, cfg.buyer) });
         } else if (next.kind === "dispute") {
-          log({ action: "dispute", why: next.why, tx: await setRefundRequested(ref) });
+          log({ action: "dispute", why: next.why, tx: await setRefundRequested(ref, cfg.buyer) });
         } else if (content !== undefined) {
           const res = await arbitrate(ref, record, content);
           if (res.status === "paid") log({ action: "arbitrate", why: next.why, tx: res.tx });

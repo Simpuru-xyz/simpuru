@@ -194,11 +194,11 @@ export async function submitResult(
  * Buyer rejects. With no result yet: → RefundRequested. With a result: → Disputed,
  * which only the seller (AuthorizeRefund) or the arbiter (after the dispute unlock) can end.
  */
-export async function setRefundRequested(ref: string): Promise<string> {
+export async function setRefundRequested(ref: string, buyer: Actor = "buyer"): Promise<string> {
   const utxo = await findEscrowUtxo(ref);
   const view = viewOf(utxo);
   return continueEscrow({
-    role: "buyer",
+    role: buyer,
     utxo,
     action: "SetRefundRequested",
     after: view.buyerCooldownTime,
@@ -415,7 +415,7 @@ export async function withdraw(ref: string, signer: Actor = "seller"): Promise<s
  * Buyer takes the money back. FundsLocked / RefundRequested after `submit_result_time`
  * (only while no result hash is on chain), or RefundAuthorized at once.
  */
-export async function withdrawRefund(ref: string): Promise<string> {
+export async function withdrawRefund(ref: string, signer: Actor = "buyer"): Promise<string> {
   const utxo = await findEscrowUtxo(ref);
   const view = viewOf(utxo);
   if (view.resultHash !== "")
@@ -424,7 +424,7 @@ export async function withdrawRefund(ref: string): Promise<string> {
     throw new Error(`escrow is ${view.state}, not refundable`);
   const { buyer } = payoutAddresses(utxo);
   return closeEscrow({
-    role: "buyer",
+    role: signer,
     utxo,
     action: "WithdrawRefund",
     after: view.state === 5n ? undefined : view.submitResultTime,

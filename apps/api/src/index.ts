@@ -1,9 +1,11 @@
-import { createBuyer } from "@simpuru/agent";
+import { createAccounts, DEMO_OWNER } from "./accounts";
+import { lovelaceAt, sendAllTo, startAgentWatchers } from "./agents";
 import { createApp } from "./app";
 import { openDb } from "./db";
+import { createOAuth } from "./oauth";
 import { createPaywall } from "./paywall";
 import { seed } from "./seed";
-import { startSellerAgent } from "./seller";
+import { blockfrost, startSellerAgent } from "./seller";
 
 const need = (k: string) => {
   const v = process.env[k];
@@ -31,29 +33,55 @@ startSellerAgent(db, need("BLOCKFROST_PROJECT_ID"), {
 
 const port = Number(process.env.PORT ?? 4021);
 
-// Hosted MCP pays from a separate demo wallet with tight limits (preprod tADA only), so an agent
-// can shop by adding one URL. Off unless MCP_BUYER_MNEMONIC is set.
-const MCP_DAILY_BUDGET = 30_000_000n;
-const mcp = process.env.MCP_BUYER_MNEMONIC
-  ? {
-      buyer: createBuyer({
-        mnemonic: process.env.MCP_BUYER_MNEMONIC,
+// Hosted MCP: owners sign in with their Cardano wallet (OAuth 2.1) and get an agent wallet the
+// agent spends from, inside their limits. Off unless AGENT_WALLET_KEY is set.
+const dataDir = process.env.DATA_DIR ?? "data";
+const self = `http://127.0.0.1:${port}`;
+const hosted = process.env.AGENT_WALLET_KEY
+  ? (() => {
+      const accounts = createAccounts(db, {
+        secret: process.env.AGENT_WALLET_KEY as string,
         blockfrostProjectId: need("BLOCKFROST_PROJECT_ID"),
-        apiUrl: `http://127.0.0.1:${port}`,
-        maxPerPaymentLovelace: 10_000_000n,
-        dailyBudgetLovelace: MCP_DAILY_BUDGET,
-        logPath: `${process.env.DATA_DIR ?? "data"}/mcp-purchases.jsonl`,
-      }),
-      api: `http://127.0.0.1:${port}`,
-      dailyBudgetLovelace: MCP_DAILY_BUDGET,
-      walletNote:
-        "Hosted Simpuru MCP: purchases are paid from a shared preprod demo wallet. Run the MCP locally to pay from your own wallet.",
-    }
+        apiUrl: self,
+        dataDir,
+        demoMnemonic: process.env.MCP_BUYER_MNEMONIC,
+      });
+      const oauth = createOAuth(db, accounts, process.env.PUBLIC_URL ?? "https://api.simpuru.xyz");
+      const bf = blockfrost(need("BLOCKFROST_PROJECT_ID"));
+      startAgentWatchers(accounts, dataDir);
+      return {
+        oauth,
+        optionsFor: (owner: string) => {
+          const account = accounts.get(owner);
+          if (!account) throw new Error(`no account for ${owner}`);
+          return {
+            buyer: accounts.buyerFor(owner),
+            api: self,
+            dailyBudgetLovelace: account.dailyBudgetLovelace,
+            ...(owner === DEMO_OWNER
+              ? {
+                  walletNote:
+                    "Paid from the shared preprod demo wallet. Sign in with your own wallet to use your own agent wallet.",
+                }
+              : {}),
+            account: {
+              owner,
+              agentAddress: account.agentAddress,
+              maxPerPaymentLovelace: account.maxPerPaymentLovelace,
+              balance: () => lovelaceAt(bf, account.agentAddress),
+              ...(owner === DEMO_OWNER
+                ? {}
+                : { withdrawToOwner: () => sendAllTo(accounts.signerFor(owner), owner) }),
+            },
+          };
+        },
+      };
+    })()
   : undefined;
 
 export default {
   port,
-  fetch: createApp(db, paywall, mcp).fetch,
+  fetch: createApp(db, paywall, hosted).fetch,
   // A paid request waits for the chain (settlement takes 20-60 s); Bun's default would cut it at 10 s.
   idleTimeout: 255,
 };

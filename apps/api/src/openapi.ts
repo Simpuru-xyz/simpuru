@@ -319,11 +319,14 @@ export const openApiSpec = {
           '| `buy_listing` | listing price | `{ id, mode: "instant" \\| "protected" }` |',
           "| `my_purchases` | free | `{}` |",
           "| `get_purchase_status` | free | `{ tx }` |",
+          "| `my_wallet` | free | `{}`: agent wallet address to fund, balance, limits |",
+          "| `withdraw_to_owner` | fee only | `{}`: send what's left back to the owner |",
           "",
-          "Hosted purchases are paid from a shared preprod demo wallet (≤ 10 tADA each, ≤ 30 tADA a day).",
+          "Sign-in first (OAuth, see MCP sign-in): the agent then spends from the owner's own agent wallet within their limits, or from the shared demo wallet (≤ 10 tADA each, ≤ 30 tADA a day).",
           "Run `apps/mcp` locally (stdio) to pay from your own wallet.",
         ].join("\n"),
         operationId: "mcp",
+        security: [{ mcpOAuth: [] }],
         requestBody: {
           required: true,
           content: json({
@@ -340,6 +343,165 @@ export const openApiSpec = {
           }),
         },
         responses: { 200: { description: "JSON-RPC response", content: json({ type: "object" }) } },
+      },
+    },
+    "/.well-known/oauth-protected-resource": {
+      get: {
+        tags: ["MCP sign-in"],
+        summary: "Protected resource metadata (RFC 9728)",
+        operationId: "resourceMetadata",
+        responses: {
+          200: {
+            description: "Which authorization server protects /mcp",
+            content: json({ type: "object" }),
+          },
+        },
+      },
+    },
+    "/.well-known/oauth-protected-resource/mcp": {
+      get: {
+        tags: ["MCP sign-in"],
+        summary: "Same metadata, path-suffixed form",
+        operationId: "resourceMetadataMcp",
+        responses: { 200: { description: "Metadata", content: json({ type: "object" }) } },
+      },
+    },
+    "/.well-known/oauth-authorization-server": {
+      get: {
+        tags: ["MCP sign-in"],
+        summary: "Authorization server metadata (RFC 8414)",
+        operationId: "authServerMetadata",
+        responses: {
+          200: {
+            description: "Endpoints, PKCE S256, public clients",
+            content: json({ type: "object" }),
+          },
+        },
+      },
+    },
+    "/oauth/register": {
+      post: {
+        tags: ["MCP sign-in"],
+        summary: "Dynamic client registration (RFC 7591)",
+        operationId: "registerClient",
+        requestBody: {
+          required: true,
+          content: json({
+            type: "object",
+            properties: {
+              redirect_uris: { type: "array", items: { type: "string" } },
+              client_name: { type: "string" },
+            },
+            required: ["redirect_uris"],
+          }),
+        },
+        responses: {
+          201: {
+            description: "client_id (public client, no secret)",
+            content: json({ type: "object" }),
+          },
+          400: error("Redirect URIs must be https or loopback"),
+        },
+      },
+    },
+    "/oauth/authorize": {
+      get: {
+        tags: ["MCP sign-in"],
+        summary: "Consent page",
+        description:
+          "The owner connects a Cardano wallet (CIP-30) and signs a one-time challenge, or picks the shared demo wallet, and sets limits (per purchase, per day). Simpuru creates the owner's agent wallet on first sign-in.",
+        operationId: "authorize",
+        parameters: [
+          "response_type",
+          "client_id",
+          "redirect_uri",
+          "code_challenge",
+          "code_challenge_method",
+          "state",
+        ].map((name) => ({
+          name,
+          in: "query",
+          required: name !== "state",
+          schema: { type: "string" },
+        })),
+        responses: {
+          200: {
+            description: "HTML consent page",
+            content: { "text/html": { schema: { type: "string" } } },
+          },
+          400: { description: "Bad request" },
+        },
+      },
+    },
+    "/oauth/challenge": {
+      get: {
+        tags: ["MCP sign-in"],
+        summary: "The digest the wallet signs",
+        description:
+          '`sha256("simpuru:connect:v1\\n" + owner + "\\n" + nonce)` for this request; also turns the wallet\'s hex address into bech32.',
+        operationId: "challenge",
+        parameters: [
+          { name: "request", in: "query", required: true, schema: { type: "string" } },
+          {
+            name: "address",
+            in: "query",
+            required: true,
+            schema: { type: "string" },
+            description: "Hex address from CIP-30 getChangeAddress()",
+          },
+        ],
+        responses: {
+          200: { description: "{ owner, digest }", content: json({ type: "object" }) },
+          400: error("Expired request or not a preprod address"),
+        },
+      },
+    },
+    "/oauth/approve": {
+      post: {
+        tags: ["MCP sign-in"],
+        summary: "Finish the sign-in",
+        operationId: "approve",
+        requestBody: {
+          required: true,
+          content: json({
+            type: "object",
+            properties: {
+              request: { type: "string" },
+              mode: { type: "string", enum: ["wallet", "demo"] },
+              owner: { type: "string" },
+              key: { type: "string", description: "COSE_Key from CIP-30 signData" },
+              signature: { type: "string", description: "COSE_Sign1 from CIP-30 signData" },
+              maxPerPaymentAda: { type: "integer", minimum: 1, maximum: 100 },
+              dailyBudgetAda: { type: "integer", minimum: 1, maximum: 500 },
+            },
+            required: ["request", "mode", "maxPerPaymentAda", "dailyBudgetAda"],
+          }),
+        },
+        responses: {
+          200: {
+            description: "{ redirect, agentAddress, owner }: go back to the MCP client",
+            content: json({ type: "object" }),
+          },
+          400: error("Expired request or bad limits"),
+          401: error("The wallet signature didn't check out"),
+        },
+      },
+    },
+    "/oauth/token": {
+      post: {
+        tags: ["MCP sign-in"],
+        summary: "Token endpoint",
+        description:
+          "`authorization_code` (with the PKCE `code_verifier`) or `refresh_token` (rotated). Access tokens last 7 days.",
+        operationId: "token",
+        requestBody: {
+          required: true,
+          content: { "application/x-www-form-urlencoded": { schema: { type: "object" } } },
+        },
+        responses: {
+          200: { description: "access_token, refresh_token", content: json({ type: "object" }) },
+          400: error("invalid_grant"),
+        },
       },
     },
     "/disputes/resolve": {
@@ -384,6 +546,17 @@ export const openApiSpec = {
   },
   components: {
     securitySchemes: {
+      mcpOAuth: {
+        type: "oauth2",
+        description: "OAuth 2.1 with PKCE; MCP clients handle it.",
+        flows: {
+          authorizationCode: {
+            authorizationUrl: "https://api.simpuru.xyz/oauth/authorize",
+            tokenUrl: "https://api.simpuru.xyz/oauth/token",
+            scopes: { mcp: "Shop on Simpuru with the owner's agent wallet" },
+          },
+        },
+      },
       arbiterToken: {
         type: "http",
         scheme: "bearer",

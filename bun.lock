@@ -30,6 +30,7 @@
       "dependencies": {
         "@evolution-sdk/evolution": "^0.5.9",
         "@modelcontextprotocol/sdk": "1.32.1",
+        "@scure/bip39": "2.4.0",
         "@simpuru/agent": "workspace:*",
         "@simpuru/core": "workspace:*",
         "@simpuru/escrow": "workspace:*",
