@@ -16,13 +16,13 @@ Every row is a real Cardano preprod transaction. Explorer: `https://preprod.card
 |---|---|---|
 | Lock into our escrow | [`50a6adc6…`](https://preprod.cardanoscan.io/transaction/50a6adc66d0451fc2ca1709b9bd518a862108d2dc5b2532098085ab2dc9a29fd) | 5 tADA, quote commits to the content hash |
 | Seller agent posts `result_hash` (automatic, ~1 min) | [`11e25013…`](https://preprod.cardanoscan.io/transaction/11e25013f909aaea9e306adcf410c70980a02d3a60b2de6af45573d314a5968d) | ResultSubmitted |
-| Seller agent withdraws after `unlock_time` | pending (~08:15 UTC) | |
+| Seller agent withdraws after `unlock_time` (automatic) | [`61eb7ffd…`](https://preprod.cardanoscan.io/transaction/61eb7ffd37c64c79b68950bde150f31ad761c5f900278ec87ff0e33422e714e9) | seller paid, via Blockfrost |
 
 ### 3. Protected, seller never delivers: buyer refunded
 | Step | Tx | Notes |
 |---|---|---|
 | Lock (`demo-no-delivery`) | [`8c6d1572…`](https://preprod.cardanoscan.io/transaction/8c6d1572790cfbdd152f7ac1bc84cdfc89b3fe6e850506b9eb18fd4ebd220259) | seller posts nothing |
-| Buyer `withdrawRefund` after `submit_result_time` | pending (after 08:15 UTC) | |
+| Protection watcher refunds the buyer on its own (`watch.ts`) | [`9b789223…`](https://preprod.cardanoscan.io/transaction/9b78922320d2be04be4742a24610eb569f38788421c0d77d57d6628103853091) | same pass also refunded [`d17c506c…`](https://preprod.cardanoscan.io/transaction/d17c506c32e16fdaa9387a0c018ddab4c6de5752e1e090b1ea340065fbd123f6) and [`dae0b846…`](https://preprod.cardanoscan.io/transaction/dae0b846e820fa5b9811b1fc3f265dba31d54a3aa52d757a404b6eab412f0f00) |
 | Earlier refund of an expired lock, detected by the API as `refunded` | [`0b320b8d…`](https://preprod.cardanoscan.io/transaction/0b320b8dd8bbc0dbbc54534883bd3749e3255586fc6b55c5255a5347654d3020) | 10 tADA lock `8068f7fe…` |
 
 ### 4. Protected, wrong file: dispute, arbiter pays the buyer
@@ -31,7 +31,7 @@ Every row is a real Cardano preprod transaction. Explorer: `https://preprod.card
 | Lock (`demo-wrong-file`) | [`d7485072…`](https://preprod.cardanoscan.io/transaction/d7485072b936998df2cafe22fb003731ac8396f9f7e91fe7d4244dd62ff0ef7f) | listing commits to `990cf6bb…` |
 | Seller posts the hash of the wrong file | [`ff8b418a…`](https://preprod.cardanoscan.io/transaction/ff8b418a9921a2755793fe7c5dfdc8e3f885239a0a060221170e07919371bba1) | |
 | Buyer `verifyDelivery` → `mismatch` (`da7bd341…` ≠ `990cf6bb…`), `setRefundRequested` | [`c1e28c30…`](https://preprod.cardanoscan.io/transaction/c1e28c303d20e9107c56d423fec7bebfa2c09b1c85d0bf666e607cb8c3abe909) | Disputed |
-| Arbiter payout to the buyer | pending (after 08:45 UTC) | earlier proof: [`074da4b5…`](https://preprod.cardanoscan.io/transaction/074da4b5eda0a23af5513f9d4115f0d74f70c12e109a8353ca256bcf15ba90ec), 5.0 tADA to the buyer |
+| Arbiter payout to the buyer (decided from evidence, #43) | pending (scheduled 08:46 UTC) | earlier proof: [`074da4b5…`](https://preprod.cardanoscan.io/transaction/074da4b5eda0a23af5513f9d4115f0d74f70c12e109a8353ca256bcf15ba90ec), 5.0 tADA to the buyer |
 
 ## Time and cost (measured)
 | Path | Time | Buyer fee | Seller / arbiter fees |
