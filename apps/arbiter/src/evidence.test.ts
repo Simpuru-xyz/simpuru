@@ -43,17 +43,22 @@ describe("listingInputHash", () => {
 });
 
 describe("decide", () => {
+  const deadline = 1_000_000n;
+  const before = { evidenceDeadlineMs: deadline, nowMs: deadline - 1n };
+  const after = { evidenceDeadlineMs: deadline, nowMs: deadline + 1n };
   const escrowFor = (output: string, l = listing) => ({
     inputHash: listingInputHash(l),
     resultHash: resultHash(identifierFromPurchaser, output),
   });
+  const real = "the real report";
 
   test("seller wins when the posted output is the listed content", () => {
     const v = decide({
-      escrow: escrowFor("the real report"),
+      escrow: escrowFor(real),
       listing,
-      output: "the real report",
+      output: real,
       identifierFromPurchaser,
+      ...before,
     });
     expect(v.winner).toBe("seller");
   });
@@ -64,6 +69,7 @@ describe("decide", () => {
       listing,
       output: "junk",
       identifierFromPurchaser,
+      ...before,
     });
     expect(v).toMatchObject({
       winner: "buyer",
@@ -71,12 +77,25 @@ describe("decide", () => {
     });
   });
 
-  test("buyer wins when nobody shows an output matching the on-chain result hash", () => {
+  test("a buyer withholding the real delivery gets no verdict before the evidence deadline", () => {
+    // The seller delivered the listed content; the caller sends something else.
     const v = decide({
-      escrow: escrowFor("what the seller hashed"),
+      escrow: escrowFor(real),
       listing,
-      output: "the real report",
+      output: "made up",
       identifierFromPurchaser,
+      ...before,
+    });
+    expect(v).toMatchObject({ winner: null, checks: { outputIsWhatSellerPosted: false } });
+  });
+
+  test("after the deadline, a seller that never showed its posted output loses", () => {
+    const v = decide({
+      escrow: escrowFor("never shown"),
+      listing,
+      output: real,
+      identifierFromPurchaser,
+      ...after,
     });
     expect(v).toMatchObject({ winner: "buyer", checks: { outputIsWhatSellerPosted: false } });
   });
@@ -84,10 +103,11 @@ describe("decide", () => {
   test("buyer wins when the escrow was locked for a different listing", () => {
     const other = { id: "lst_2", contentHash: listing.contentHash };
     const v = decide({
-      escrow: escrowFor("the real report", other),
+      escrow: escrowFor(real, other),
       listing,
-      output: "the real report",
+      output: real,
       identifierFromPurchaser,
+      ...before,
     });
     expect(v).toMatchObject({ winner: "buyer", checks: { escrowIsForListing: false } });
   });

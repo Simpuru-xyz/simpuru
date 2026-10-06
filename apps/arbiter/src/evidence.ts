@@ -7,8 +7,12 @@
 //      `output` is what the seller put its name to on chain;
 //   3. sha256(output) is the listing's `contentHash`, so what was delivered is what was sold.
 //
-// The seller wins only if all three hold. If nobody can show an output matching the
-// on-chain result hash, the seller cannot prove delivery and the buyer wins.
+// The seller wins only if all three hold.
+//
+// Evidence comes from whoever calls the arbiter, so an output that does not match the
+// seller's on-chain result hash proves nothing either way: it may be the buyer withholding
+// the real delivery. Such a call gets no verdict until `evidenceDeadlineMs`; only after it,
+// with still no matching output shown, does the seller lose for failing to prove delivery.
 import { contentHash, resultHash } from "@simpuru/core/hash";
 import { commitmentPartDigest, computeInputHash } from "@x402/cardano";
 
@@ -19,12 +23,17 @@ export interface DisputeEvidence {
   listing: { id: string; contentHash: string };
   /** What was delivered, as received. */
   output: string;
+  /** The lock tx hash (team convention), traced from chain, never taken from the caller. */
   identifierFromPurchaser: string;
+  /** Until this time (POSIX ms) an output not matching the posted result hash gets no verdict. */
+  evidenceDeadlineMs: bigint;
+  nowMs: bigint;
 }
 
 export type Verdict =
   | { winner: "seller"; checks: Checks }
-  | { winner: "buyer"; checks: Checks; reason: string };
+  | { winner: "buyer"; checks: Checks; reason: string }
+  | { winner: null; checks: Checks; reason: string; evidenceDeadline: string };
 
 interface Checks {
   escrowIsForListing: boolean;
@@ -62,10 +71,18 @@ export function decide(e: DisputeEvidence): Verdict {
     return { winner: "buyer", checks, reason: "the escrow was not locked for this listing" };
   }
   if (!checks.outputIsWhatSellerPosted) {
+    if (e.nowMs < e.evidenceDeadlineMs) {
+      return {
+        winner: null,
+        checks,
+        reason: "this output is not what the seller posted on chain; send the delivered output",
+        evidenceDeadline: new Date(Number(e.evidenceDeadlineMs)).toISOString(),
+      };
+    }
     return {
       winner: "buyer",
       checks,
-      reason: "no output matching the seller's on-chain result hash was shown",
+      reason: "by the evidence deadline nobody showed the output the seller posted on chain",
     };
   }
   if (!checks.outputMatchesListing) {

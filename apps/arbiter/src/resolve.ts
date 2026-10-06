@@ -6,6 +6,7 @@
 import { PrivateKey } from "@evolution-sdk/evolution";
 import {
   findEscrowUtxo,
+  lockTxOf,
   mnemonicFor,
   payoutIntent,
   signIntent,
@@ -19,12 +20,15 @@ export interface ResolveRequest {
   ref: string;
   listing: DisputeEvidence["listing"];
   output: string;
-  identifierFromPurchaser: string;
 }
+
+/** How long after the dispute window opens the seller has to show its delivered output. */
+export const EVIDENCE_GRACE_MS = 10n * 60_000n;
 
 export type ResolveResult =
   | { status: "paid"; verdict: Verdict; payout: Payout; tx: string }
-  | { status: "signed"; verdict: Verdict; payout: Payout; opensAt: string };
+  | { status: "signed"; verdict: Verdict; payout: Payout; opensAt: string }
+  | { status: "no_verdict"; verdict: Verdict };
 
 interface Payout {
   buyerLovelace: string;
@@ -40,8 +44,11 @@ export async function resolve(req: ResolveRequest): Promise<ResolveResult> {
     escrow: { inputHash: view.inputHash, resultHash: view.resultHash },
     listing: req.listing,
     output: req.output,
-    identifierFromPurchaser: req.identifierFromPurchaser,
+    identifierFromPurchaser: await lockTxOf(req.ref),
+    evidenceDeadlineMs: view.externalDisputeUnlockTime + EVIDENCE_GRACE_MS,
+    nowMs: BigInt(Date.now()),
   });
+  if (verdict.winner === null) return { status: "no_verdict", verdict };
 
   // Buyer wins: everything back. Seller wins: everything but the buyer's collateral.
   const total = utxo.assets.lovelace;
