@@ -1,0 +1,68 @@
+// Resolve one disputed escrow: read it from chain, decide from evidence, sign the
+// payout with the arbiter key, and submit it once the dispute window is open.
+//
+// The caller supplies evidence, never the split: the split follows from the verdict,
+// and the signature covers that exact split for that exact UTxO.
+import { PrivateKey } from "@evolution-sdk/evolution";
+import {
+  findEscrowUtxo,
+  mnemonicFor,
+  payoutIntent,
+  signIntent,
+  viewOf,
+  withdrawDisputed,
+} from "@simpuru/escrow";
+import { type DisputeEvidence, decide, type Verdict } from "./evidence";
+
+export interface ResolveRequest {
+  /** Disputed escrow UTxO, `txHash#index`. */
+  ref: string;
+  listing: DisputeEvidence["listing"];
+  output: string;
+  identifierFromPurchaser: string;
+}
+
+export type ResolveResult =
+  | { status: "paid"; verdict: Verdict; payout: Payout; tx: string }
+  | { status: "signed"; verdict: Verdict; payout: Payout; opensAt: string };
+
+interface Payout {
+  buyerLovelace: string;
+  sellerLovelace: string;
+}
+
+export async function resolve(req: ResolveRequest): Promise<ResolveResult> {
+  const utxo = await findEscrowUtxo(req.ref);
+  const view = viewOf(utxo);
+  if (view.state !== 3n) throw new Error(`escrow ${req.ref} is not Disputed`);
+
+  const verdict = decide({
+    escrow: { inputHash: view.inputHash, resultHash: view.resultHash },
+    listing: req.listing,
+    output: req.output,
+    identifierFromPurchaser: req.identifierFromPurchaser,
+  });
+
+  // Buyer wins: everything back. Seller wins: everything but the buyer's collateral.
+  const total = utxo.assets.lovelace;
+  const buyerLovelace = verdict.winner === "buyer" ? total : view.collateralReturnLovelace;
+  const sellerLovelace = total - buyerLovelace;
+  const payout = {
+    buyerLovelace: buyerLovelace.toString(),
+    sellerLovelace: sellerLovelace.toString(),
+  };
+
+  const arbiterKey = PrivateKey.fromMnemonicCardano(mnemonicFor("arbiter"));
+  const signature = signIntent(arbiterKey, payoutIntent(utxo, buyerLovelace, sellerLovelace));
+
+  const opensAt = view.externalDisputeUnlockTime + 1_000n;
+  if (BigInt(Date.now()) <= opensAt) {
+    return { status: "signed", verdict, payout, opensAt: new Date(Number(opensAt)).toISOString() };
+  }
+  const tx = await withdrawDisputed(req.ref, {
+    buyerLovelace,
+    sellerLovelace,
+    signatures: [signature],
+  });
+  return { status: "paid", verdict, payout, tx };
+}
