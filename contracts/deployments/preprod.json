@@ -1,0 +1,18 @@
+{
+  "network": "cardano:preprod",
+  "validator": "vested_pay.vested_pay.spend",
+  "blueprint": "masumi-network/masumi-payment-service@d74b2c319228bcbef36632de37875c388dcee7ce smart-contracts/payment-v2/plutus.json",
+  "derivedWith": "@x402/cardano@2.28.0 masumiEscrowAddress",
+  "deployment": {
+    "requiredAdmins": "1",
+    "adminVkeys": ["f7c7b7455aa07fb60a9635f198eb896ef5948fae88a1a000ff89178b"],
+    "cooldownPeriod": "60000"
+  },
+  "scriptHash": "887aa8305de5257fe963f4bc44ed5f01921d99a527a46f5dc04762da",
+  "escrowAddress": "addr_test1wzy842psthjj2llfv06tc38dtuqey8ve55n6gm6acprk9ksc7d963",
+  "arbiter": {
+    "keyHash": "f7c7b7455aa07fb60a9635f198eb896ef5948fae88a1a000ff89178b",
+    "address": "addr_test1vrmu0d69t2s8lds2jc6lrx8t39h0t9y046y2rgqql7y30zcj2plet"
+  },
+  "referenceScript": null
+}

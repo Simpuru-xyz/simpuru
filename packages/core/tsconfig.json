@@ -1,1 +1,4 @@
-{ "extends": "@simpuru/tsconfig/base.json", "include": ["src"] }
+{
+  "extends": "@simpuru/tsconfig/base.json",
+  "include": ["src", "../../contracts/deployments/*.json"]
+}
