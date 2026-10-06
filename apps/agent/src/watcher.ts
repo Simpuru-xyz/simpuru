@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname } from "node:path";
 import { Address, type UTxO } from "@evolution-sdk/evolution";
 import {
+  errorText,
   loadDeployment,
   lockTxOf,
   readClient,
@@ -171,7 +172,7 @@ export function createWatcher(cfg: WatcherConfig) {
         }
         pendingUntil.set(lockTx, now + SETTLE_MS);
       } catch (error) {
-        log({ action: "error", why: `${next.kind} failed: ${String(error).slice(0, 300)}` });
+        log({ action: "error", why: `${next.kind} failed: ${errorText(error).slice(0, 600)}` });
         pendingUntil.set(lockTx, now + SETTLE_MS);
       }
     }
