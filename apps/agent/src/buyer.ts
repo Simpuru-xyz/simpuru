@@ -227,7 +227,9 @@ export function createBuyer(cfg: BuyerConfig) {
       appendFileSync(cfg.logPath, `${JSON.stringify(record)}\n`);
       // Keep what we received: the protection watcher needs it to check the seller's
       // result hash and, in a dispute, to show the arbiter.
-      if (record.escrow) {
+      // The tx hash comes from the server's settlement response, so it is checked before it
+      // becomes a file name (a hostile server could send "../..").
+      if (record.escrow && /^[0-9a-f]{64}$/.test(record.txHash)) {
         const dir = join(dirname(cfg.logPath), "deliveries");
         mkdirSync(dir, { recursive: true });
         writeFileSync(join(dir, record.txHash), r.body);

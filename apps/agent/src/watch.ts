@@ -22,6 +22,7 @@ const purchases = (): PurchaseRecord[] =>
 const watcher = createWatcher({
   purchases,
   delivery: (lockTx) => {
+    if (!/^[0-9a-f]{64}$/.test(lockTx)) return undefined; // purchase log lines are file names here
     const path = join(dataDir, "deliveries", lockTx);
     return existsSync(path) ? readFileSync(path, "utf8") : undefined;
   },
