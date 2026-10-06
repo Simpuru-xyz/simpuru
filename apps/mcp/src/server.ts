@@ -73,6 +73,15 @@ export interface SimpuruMcpOptions {
   dailyBudgetLovelace: bigint;
   /** Shown by my_purchases, e.g. that a hosted server pays from a shared demo wallet. */
   walletNote?: string;
+  /** Hosted, signed-in owner: their agent wallet (my_wallet, withdraw_to_owner). */
+  account?: {
+    owner: string;
+    agentAddress: string;
+    maxPerPaymentLovelace: bigint;
+    balance: () => Promise<bigint>;
+    /** Sends what's left back to the owner; absent for the shared demo wallet. */
+    withdrawToOwner?: () => Promise<{ tx: string; lovelace: bigint }>;
+  };
 }
 
 /** The Simpuru tools on a fresh MCP server; the caller picks the transport (stdio or HTTP). */
@@ -81,6 +90,7 @@ export function createSimpuruMcp({
   api,
   dailyBudgetLovelace,
   walletNote,
+  account,
 }: SimpuruMcpOptions) {
   const mcp = new McpServer({ name: "simpuru", version: "0.1.0" });
 
@@ -235,6 +245,48 @@ export function createSimpuruMcp({
       });
     },
   );
+
+  if (account) {
+    mcp.registerTool(
+      "my_wallet",
+      {
+        title: "My agent wallet",
+        description:
+          "Free. The wallet this agent spends from: its address (send tADA here to fund it), balance, limits and owner.",
+        annotations: { readOnlyHint: true },
+      },
+      async () =>
+        text({
+          owner: account.owner,
+          agentWallet: account.agentAddress,
+          balance: ada(await account.balance()),
+          maxPerPurchase: ada(account.maxPerPaymentLovelace),
+          dailyBudget: ada(dailyBudgetLovelace),
+          spentToday: ada(buyer.spentToday()),
+          fund: "Send preprod tADA to agentWallet from your own wallet or the Cardano preprod faucet.",
+        }),
+    );
+    if (account.withdrawToOwner) {
+      const withdraw = account.withdrawToOwner;
+      mcp.registerTool(
+        "withdraw_to_owner",
+        {
+          title: "Send the agent wallet back to its owner",
+          description:
+            "Moves everything left in the agent wallet (minus a small fee reserve) back to the owner's own wallet.",
+          annotations: { destructiveHint: false, idempotentHint: false },
+        },
+        async () => {
+          try {
+            const r = await withdraw();
+            return text({ sent: ada(r.lovelace), to: account.owner, tx: explorerTx(r.tx) });
+          } catch (error) {
+            return fail(`Withdraw failed: ${String(error).slice(0, 200)}`);
+          }
+        },
+      );
+    }
+  }
 
   return mcp;
 }

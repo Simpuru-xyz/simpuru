@@ -1,12 +1,25 @@
 import { expect, test } from "bun:test";
-import type { SimpuruMcpOptions } from "@simpuru/mcp";
+import { createAccounts } from "./accounts";
 import { createApp } from "./app";
 import { openDb } from "./db";
+import { createOAuth } from "./oauth";
 import { openApiSpec } from "./openapi";
 import type { Paywall } from "./paywall";
 
 // Stubs only so the optional routes get registered; nothing is called.
-const app = createApp(openDb(":memory:"), {} as Paywall, {} as SimpuruMcpOptions);
+const db = openDb(":memory:");
+const accounts = createAccounts(db, {
+  secret: "s",
+  blockfrostProjectId: "x",
+  apiUrl: "http://x",
+  dataDir: "/tmp",
+});
+const app = createApp(db, {} as Paywall, {
+  oauth: createOAuth(db, accounts, "http://x"),
+  optionsFor: () => {
+    throw new Error("not called");
+  },
+});
 const documented = openApiSpec.paths as Record<string, Record<string, unknown>>;
 
 test("every API route is in the OpenAPI spec", () => {
