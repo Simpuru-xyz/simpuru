@@ -11,10 +11,15 @@
 import crypto from "node:crypto";
 import { loadDeployment } from "@simpuru/escrow";
 import { type ResolveRequest, resolve } from "./resolve";
+import { createStore } from "./store";
 
 const port = Number(process.env.ARBITER_PORT ?? 4023);
 const token = process.env.ARBITER_TOKEN;
 if (!token || token.length < 24) throw new Error("ARBITER_TOKEN must be set (24+ chars)");
+
+const store = createStore(
+  process.env.ARBITER_STORE ?? new URL("../data/arbiter.json", import.meta.url).pathname,
+);
 
 function authorized(request: Request): boolean {
   const given = Buffer.from(request.headers.get("authorization") ?? "");
@@ -48,7 +53,7 @@ const server = Bun.serve({
           return Response.json({ error: String(error) }, { status: 400 });
         }
         try {
-          return Response.json(await resolve(req));
+          return Response.json(await resolve(req, store));
         } catch (error) {
           return Response.json({ error: String(error) }, { status: 422 });
         }

@@ -2,8 +2,11 @@
 // payout with the arbiter key, and submit it once the dispute window is open.
 //
 // The caller supplies evidence, never the split: the split follows from the verdict,
-// and the signature covers that exact split for that exact UTxO.
+// and the signature covers that exact split for that exact UTxO. Evidence that
+// matches the seller's posted result hash is remembered (store.ts), so a later
+// caller cannot replace it, and each escrow is paid out once.
 import { PrivateKey } from "@evolution-sdk/evolution";
+import { resultHash } from "@simpuru/core/hash";
 import {
   findEscrowUtxo,
   lockTxOf,
@@ -14,6 +17,7 @@ import {
   withdrawDisputed,
 } from "@simpuru/escrow";
 import { type DisputeEvidence, decide, type Verdict } from "./evidence";
+import type { Store } from "./store";
 
 export interface ResolveRequest {
   /** Disputed escrow UTxO, `txHash#index`. */
@@ -35,16 +39,27 @@ interface Payout {
   sellerLovelace: string;
 }
 
-export async function resolve(req: ResolveRequest): Promise<ResolveResult> {
+export function resolve(req: ResolveRequest, store: Store): Promise<ResolveResult> {
+  return store.exclusive(req.ref, () => resolveOnce(req, store));
+}
+
+async function resolveOnce(req: ResolveRequest, store: Store): Promise<ResolveResult> {
+  const paid = store.payoutFor(req.ref);
+  if (paid) throw new Error(`escrow ${req.ref} was already paid out in ${paid}`);
   const utxo = await findEscrowUtxo(req.ref);
   const view = viewOf(utxo);
   if (view.state !== 3n) throw new Error(`escrow ${req.ref} is not Disputed`);
 
+  const lockTx = await lockTxOf(req.ref);
+  if (resultHash(lockTx, req.output) === view.resultHash) store.recordEvidence(lockTx, req.output);
+  // Once matching evidence exists, it is the evidence, whatever this caller sent.
+  const output = store.evidenceFor(lockTx) ?? req.output;
+
   const verdict = decide({
     escrow: { inputHash: view.inputHash, resultHash: view.resultHash },
     listing: req.listing,
-    output: req.output,
-    identifierFromPurchaser: await lockTxOf(req.ref),
+    output,
+    identifierFromPurchaser: lockTx,
     evidenceDeadlineMs: view.externalDisputeUnlockTime + EVIDENCE_GRACE_MS,
     nowMs: BigInt(Date.now()),
   });
@@ -71,5 +86,6 @@ export async function resolve(req: ResolveRequest): Promise<ResolveResult> {
     sellerLovelace,
     signatures: [signature],
   });
+  store.recordPayout(req.ref, tx);
   return { status: "paid", verdict, payout, tx };
 }
