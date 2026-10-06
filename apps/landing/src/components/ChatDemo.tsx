@@ -171,13 +171,17 @@ export default function ChatDemo() {
   return (
     <section ref={ref} className="w-full bg-white px-4 py-16 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-[1300px]">
-        <h2 className="mb-10 text-3xl leading-[1.11] font-normal tracking-[-0.02em] text-[#141414] sm:text-4xl md:text-5xl">
+        <h2
+          data-reveal
+          className="mb-10 text-3xl leading-[1.11] font-normal tracking-[-0.02em] text-[#141414] sm:text-4xl md:text-5xl"
+        >
           One line in.
           <br />
           <span className="text-[#8b8b8d]">A protected prompt out.</span>
         </h2>
 
         <div
+          data-reveal
           className="relative overflow-hidden rounded-[14px] px-3 py-6 sm:px-10 sm:py-10"
           style={{
             background: [

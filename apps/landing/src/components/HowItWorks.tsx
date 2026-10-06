@@ -36,7 +36,7 @@ export default function HowItWorks() {
   return (
     <section id="how-it-works" className="w-full bg-white px-4 py-16 sm:px-6 sm:py-24">
       <div className="mx-auto flex max-w-6xl flex-col gap-12 sm:gap-16">
-        <div className="max-w-xl">
+        <div data-reveal className="max-w-xl">
           <p className="mb-3 text-xs font-medium tracking-widest text-gray-500 uppercase">
             How it works
           </p>
@@ -45,7 +45,10 @@ export default function HowItWorks() {
           </h2>
         </div>
 
-        <ol className="flex flex-col items-stretch gap-5 lg:flex-row lg:items-end">
+        <ol
+          data-reveal-group
+          className="flex flex-col items-stretch gap-5 lg:flex-row lg:items-end"
+        >
           {STEPS.map((step, index) => (
             <li
               key={step.title}

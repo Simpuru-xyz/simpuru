@@ -71,7 +71,10 @@ export default function AgentOnboarding() {
 
   return (
     <section id="for-agents" className="w-full bg-white px-4 py-16 sm:px-6 sm:py-24">
-      <div className="relative mx-auto min-h-[220px] max-w-6xl overflow-hidden rounded-[28px] border border-[rgba(13,36,72,0.15)] bg-[#d8e5f2]">
+      <div
+        data-reveal
+        className="relative mx-auto min-h-[220px] max-w-6xl overflow-hidden rounded-[28px] border border-[rgba(13,36,72,0.15)] bg-[#d8e5f2]"
+      >
         <video
           className="absolute inset-0 h-full w-full object-cover"
           autoPlay

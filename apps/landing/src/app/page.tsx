@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import HowItWorks from "@/components/HowItWorks";
 import InstantVsProtected from "@/components/InstantVsProtected";
 import Nav from "@/components/Nav";
+import ScrollAnimations from "@/components/ScrollAnimations";
 import SiteFooter from "@/components/SiteFooter";
 import { APP_URL } from "@/lib/links";
 
@@ -89,6 +90,7 @@ export default function Home() {
       <AgentOnboarding />
       <ChatDemo />
       <SiteFooter />
+      <ScrollAnimations />
     </div>
   );
 }

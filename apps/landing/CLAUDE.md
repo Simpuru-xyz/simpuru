@@ -25,7 +25,9 @@ Still to build for #25: preprod proof links (from #19), dark mode.
 
 - App routes go through `APP_URL` (`NEXT_PUBLIC_APP_URL`) in `src/lib/links.ts`; explorer links
   only to `preprod.cardanoscan.io` (`explorerTx`).
-- Staggered entrances start at `opacity: 0`; keep the reduced-motion rules in `globals.css`.
+- Scroll in/out uses GSAP ScrollTrigger (`src/components/ScrollAnimations.tsx`): add `data-reveal`
+  to an element, or `data-reveal-group` to stagger its children. Reduced motion skips it.
+- Hero entrances are CSS and start at `opacity: 0`; keep the reduced-motion rules in `globals.css`.
 - `AGENTS.md` is managed by `next dev`; leave its marked block alone.
 - Verify with `bun run lint`, `bun run typecheck` and `bun run build` before committing.
 

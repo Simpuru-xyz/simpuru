@@ -184,7 +184,9 @@ function GlassWordmark() {
 export default function SiteFooter() {
   return (
     <footer className="flex w-full flex-col items-center gap-0 overflow-hidden bg-[#F0F1F3] px-4 pt-16 pb-0">
-      <FooterCard />
+      <div data-reveal className="w-full">
+        <FooterCard />
+      </div>
       <GlassWordmark />
     </footer>
   );

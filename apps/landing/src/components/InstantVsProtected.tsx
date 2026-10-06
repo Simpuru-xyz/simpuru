@@ -11,7 +11,10 @@ export default function InstantVsProtected() {
   return (
     <section id="instant-vs-protected" className="w-full bg-[#F5F5F5] px-4 py-16 sm:px-6 sm:py-24">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-12 grid grid-cols-1 items-start gap-8 md:mb-16 md:grid-cols-2 md:gap-12">
+        <div
+          data-reveal-group
+          className="mb-12 grid grid-cols-1 items-start gap-8 md:mb-16 md:grid-cols-2 md:gap-12"
+        >
           <div>
             <h2 className="mb-8 text-4xl leading-tight font-medium tracking-[-0.03em] text-black md:text-5xl">
               Two ways to pay.
@@ -31,7 +34,7 @@ export default function InstantVsProtected() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div data-reveal-group className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div
             className="relative flex min-h-80 flex-col justify-between overflow-hidden rounded-2xl bg-cover bg-center p-7 lg:col-span-2"
             style={{ backgroundImage: "url('/media/protected.webp')" }}
