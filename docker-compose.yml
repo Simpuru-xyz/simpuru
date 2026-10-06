@@ -1,0 +1,18 @@
+# API on a VPS: `docker compose up -d --build`. Its own project, network and data dir.
+# Listens on 127.0.0.1 only; the host's reverse proxy terminates TLS for api.simpuru.xyz.
+# Needs .env next to this file with SELLER_MNEMONIC and BLOCKFROST_PROJECT_ID (never commit it).
+name: simpuru
+services:
+  api:
+    build: .
+    env_file: .env
+    volumes:
+      - ./data:/data
+    ports:
+      - "127.0.0.1:${API_HOST_PORT:-4021}:4021"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:4021/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
