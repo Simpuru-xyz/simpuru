@@ -31,7 +31,7 @@ Every row is a real Cardano preprod transaction. Explorer: `https://preprod.card
 | Lock (`demo-wrong-file`) | [`d7485072…`](https://preprod.cardanoscan.io/transaction/d7485072b936998df2cafe22fb003731ac8396f9f7e91fe7d4244dd62ff0ef7f) | listing commits to `990cf6bb…` |
 | Seller posts the hash of the wrong file | [`ff8b418a…`](https://preprod.cardanoscan.io/transaction/ff8b418a9921a2755793fe7c5dfdc8e3f885239a0a060221170e07919371bba1) | |
 | Buyer `verifyDelivery` → `mismatch` (`da7bd341…` ≠ `990cf6bb…`), `setRefundRequested` | [`c1e28c30…`](https://preprod.cardanoscan.io/transaction/c1e28c303d20e9107c56d423fec7bebfa2c09b1c85d0bf666e607cb8c3abe909) | Disputed |
-| Arbiter payout to the buyer (decided from evidence, #43) | pending (scheduled 08:46 UTC) | earlier proof: [`074da4b5…`](https://preprod.cardanoscan.io/transaction/074da4b5eda0a23af5513f9d4115f0d74f70c12e109a8353ca256bcf15ba90ec), 5.0 tADA to the buyer |
+| Arbiter decides **buyer** from evidence (#43) and pays out after the dispute window | [`7132086b…`](https://preprod.cardanoscan.io/transaction/7132086b6142a805e0018458800d4053eae7a865f9f58d1eb924fc6ad1ca3d1b) | earlier proof: [`074da4b5…`](https://preprod.cardanoscan.io/transaction/074da4b5eda0a23af5513f9d4115f0d74f70c12e109a8353ca256bcf15ba90ec), 5.0 tADA to the buyer |
 
 ## Time and cost (measured)
 | Path | Time | Buyer fee | Seller / arbiter fees |
