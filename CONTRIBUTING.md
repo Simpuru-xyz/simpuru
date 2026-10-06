@@ -8,8 +8,8 @@ Four people, 36 hours, one `main` that always works. These rules keep it that wa
 |---|---|---|
 | Backend: contracts, escrow, arbiter, buyer protection | `contracts/`, `packages/escrow`, `apps/arbiter`, `apps/agent` | @ghozzza |
 | Backend: API, MCP, shared core | `apps/api`, `apps/mcp`, `packages/core` | @yeheskieltame |
-| Frontend: app | `apps/web` | @Lexirieru |
-| Frontend: landing page | `apps/landing` | @AdityaWisnuu |
+| Frontend: app | `apps/web` | @AdityaWisnuu |
+| Frontend: landing page | `apps/landing` | @Lexirieru |
 
 `CODEOWNERS` asks the owner to review every PR that touches their area.
 

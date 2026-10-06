@@ -11,8 +11,8 @@ Status: work in progress (TOKEN2049 Origins Hackathon, Cardano preprod).
 
 | Path | What | Owner |
 |---|---|---|
-| `apps/landing` | Landing page | @AdityaWisnuu |
-| `apps/web` | Web app (Next.js) | @Lexirieru |
+| `apps/landing` | Landing page | @Lexirieru |
+| `apps/web` | Web app (Next.js) | @AdityaWisnuu |
 | `apps/api` | HTTP API, x402 paywall, facilitator, seller agent (Hono on Bun) | @yeheskieltame |
 | `apps/mcp` | MCP server with paid tools | @yeheskieltame |
 | `apps/agent` | Buyer agent and protection watcher | @ghozzza |
