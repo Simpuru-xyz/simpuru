@@ -9,6 +9,8 @@ bun run dev    # http://localhost:4021, needs SELLER_MNEMONIC in the root .env
 bun test
 ```
 
+Full reference: **[/docs](https://api.simpuru.xyz/docs)** (Swagger UI) and `/openapi.json` (OpenAPI 3.1, `src/openapi.ts`). `openapi.test.ts` fails if a route is added without documenting it.
+
 | Route | |
 |---|---|
 | `GET /health` | `{ ok, network }` |

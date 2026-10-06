@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { type Db, getListing } from "./db";
 import { listingsRoutes } from "./listings";
+import { docsHtml, openApiSpec } from "./openapi";
 import { ownedContent, PROOF_HEADER, PURCHASE_HEADER } from "./owned";
 import type { Paywall } from "./paywall";
 import { purchasesRoutes } from "./purchases";
@@ -22,6 +23,8 @@ export function createApp(db: Db, paywall?: Paywall, mcp?: SimpuruMcpOptions) {
     }),
   );
   app.get("/health", (c) => c.json({ ok: true, network: NETWORK }));
+  app.get("/openapi.json", (c) => c.json(openApiSpec));
+  app.get("/docs", (c) => c.html(docsHtml));
 
   // Returning buyers who prove they paid skip the gate.
   app.use("/listings/:id/unlock", ownedContent(db));
