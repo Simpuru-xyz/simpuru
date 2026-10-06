@@ -5,7 +5,7 @@ type Row = { label: string; instant: string; protected: string };
 /**
  * The two payment paths the API offers in every 402 (apps/api): `default`
  * (instant) and `masumi` (protected). Numbers follow the preprod setup in
- * contracts/README.md and apps/agent/README.md; keep them in step.
+ * contracts/README.md and apps/agent/README.md.
  */
 const ROWS: Row[] = [
   {
@@ -119,20 +119,13 @@ export default function InstantVsProtected() {
         </h2>
         <p className="mb-12 max-w-2xl text-base text-gray-600 sm:text-lg">
           Every listing offers both. Instant is the plain payment you know. Protected waits a little
-          longer and costs the seller a small fee, and in return you never pay for something you did
-          not get.
+          longer, and in return you never pay for something you did not get.
         </p>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <PathCard kind="instant" />
           <PathCard kind="protected" />
         </div>
-
-        <p className="mt-6 max-w-2xl text-sm text-gray-500">
-          Protected payments are held by the Masumi escrow contract on Cardano. The seller pays
-          about 1.35 tADA in network fees per protected sale, so it makes most sense from around 5
-          tADA up.
-        </p>
       </div>
     </section>
   );
