@@ -26,7 +26,7 @@ LAYOUT + EXACT COPY
     left NEURA · right "Research · Models · API"
 - Stage: 100svh, position relative, overflow hidden.
 - Canvas fills the stage. The sphere's center sits at (62% width, 44% height); its radius is 34% of min(width, height).
-- Text block absolute, left var(--pad), bottom calc(var(--pad) * 1.6), max-width 14ch:
+- Text block absolute, left var(--pad), bottom calc(var(--pad) * 1.6). Put max-width: 14ch on the h1 itself (so ch is measured at the statement size) and let the sub wrap freely:
     h1: "Intelligence,<br>made visible."
     p:  A model you can watch think.
 
@@ -38,7 +38,7 @@ PARTICLE ENGINE
     • radial "breath": r = 1 + 0.035·sin(time·0.6 + phase) + 0.02·sin(time·1.7 + y·6.0)
     • a slow traveling wave adds 0.03·sin(4.0·x + time) to r so the surface shimmers
     • perspective projection, camera at z = 3.2, fov 38°
-    • gl_PointSize = size · dpr · (1.0 / depth) · 2.2
+    • gl_PointSize = size · dpr · (3.2 / depth), so front points land around 2–3.5 device px and back points around 1.2 px (bigger reads as fog, smaller reads as dust)
 - Fragment shader: round soft point (smoothstep from .5 to .1 on distance to center), alpha = .25 + .75·(front-facing ? 1 : .35), color from the vertex. Additive blending (gl.ONE, gl.ONE). Depth test off.
 - The sphere keeps its pixel-crispness: canvas backing size = CSS size × min(devicePixelRatio, 2).
 - Points facing away are dimmed, which is what makes the depth read without fog.

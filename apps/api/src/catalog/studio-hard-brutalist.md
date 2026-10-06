@@ -26,11 +26,11 @@ LAYOUT (one screen, 100svh, no scroll)
     top-right over cell 4: EST. 2019 / LISBON
 
 SWAP ENGINE (the signature; do not fake it with a GIF)
-- Every 900ms one random cell from rows 1–2 changes: it picks a new background from {yellow, black, blue, red} different from its current one, and its glyph color becomes the contrasting pair (yellow on black/blue, black on yellow/red).
+- One global tick every 900ms: one random cell from rows 1–2 changes (row 3, the headline cell, is always yellow and never swaps): it picks a new background from {yellow, black, blue, red} different from its current one, and its glyph color becomes the contrasting pair (yellow on black/blue, black on yellow/red).
 - Cells with a glyph keep their glyph; empty cells occasionally (20% chance) gain one of ✶ → ● for one cycle.
 - The change is a hard cut, no fade, no transition. That is the style.
-- Never let two adjacent cells share the same color after a swap (re-roll if they would).
-- Pointer: hovering a cell triggers its swap immediately and resets the 900ms timer for that cell.
+- Prefer a color that differs from the cell's left, right, top and bottom neighbours (rows 1–2 only). If every candidate clashes, keep the cell as it is this tick. The starting layout may have equal neighbours; the rule only governs swaps.
+- Pointer: hovering a cell swaps it immediately (same color rule), and the global tick skips that cell for the next 900ms so it never changes twice in a row.
 
 MOTION / ENTRANCE
 - On load the grid lines draw first: each line scales from 0 → 1 along its axis (scaleX for horizontals, scaleY for verticals), 500ms steps(6) easing (stepped, mechanical), staggered 40ms.
