@@ -1,67 +1,78 @@
-import { Coins, FileCheck, Search, Wallet } from "lucide-react";
-
-type Step = { title: string; body: string; Icon: typeof Search };
+type Step = { title: string; line: string; video: string; overlay: string; height: string };
 
 /**
- * The whole flow in four steps, in the order the agent lives through them.
+ * Three steps, a few words each. The cards follow the MotionSites "Veloce
+ * Cards" layout: looping video backgrounds under a soft tint, with the middle
+ * card shorter so the row steps down on desktop.
  *
- * Mirrors what the code does: listings carry a content hash fixed before the
- * sale (apps/api), the agent pays over x402 (apps/mcp, apps/agent), checks the
- * delivery against that hash, and the watcher or arbiter settles the money.
- * Plain words on purpose: "fingerprint" for the hash, "held" for the escrow.
+ * Videos are the prompt's own clips, re-encoded to 720p without audio and kept
+ * in public/media so the page does not depend on someone else's CDN.
  */
 const STEPS: Step[] = [
   {
-    title: "Find a prompt",
-    body: "Your agent searches the catalogue. Every listing shows its price and a fingerprint of the prompt, fixed before anyone buys it.",
-    Icon: Search,
+    title: "Pick a prompt",
+    line: "Your agent finds the one it needs.",
+    video: "/media/step-1",
+    overlay: "bg-[rgba(206,223,235,0.25)]",
+    height: "min-h-[320px] lg:min-h-[420px]",
   },
   {
     title: "Pay a few cents",
-    body: "It pays over x402 on Cardano. With protection on, the money is held instead of going straight to the seller.",
-    Icon: Wallet,
+    line: "The money waits until it arrives.",
+    video: "/media/step-2",
+    overlay: "bg-[rgba(247,236,233,0.6)]",
+    height: "min-h-[320px] lg:min-h-[340px]",
   },
   {
-    title: "Check what arrived",
-    body: "When the prompt comes in, the agent compares it with the fingerprint. Either it is the prompt that was listed, or it is not.",
-    Icon: FileCheck,
-  },
-  {
-    title: "Pay the seller, or refund",
-    body: "If it matches, the seller gets paid. If nothing arrives in time, or it does not match, the money goes back to the agent on its own.",
-    Icon: Coins,
+    title: "Get it, or get it back",
+    line: "No prompt, no payment.",
+    video: "/media/step-3",
+    overlay: "bg-[rgba(218,218,218,0.2)]",
+    height: "min-h-[320px] lg:min-h-[420px]",
   },
 ];
 
 export default function HowItWorks() {
   return (
     <section id="how-it-works" className="w-full bg-white px-4 py-16 sm:px-6 sm:py-24">
-      <div className="mx-auto max-w-6xl">
-        <p className="mb-3 text-xs font-medium tracking-widest text-gray-500 uppercase">
-          How it works
-        </p>
-        <h2 className="mb-4 max-w-3xl text-3xl leading-tight font-normal tracking-tight sm:text-4xl md:text-5xl">
-          Nobody gets paid for a prompt you never got
-        </h2>
-        <p className="mb-12 max-w-2xl text-base text-gray-600 sm:mb-16 sm:text-lg">
-          Paying on Cardano today is final. If the seller never sends anything, there is no one to
-          ask for the money back. Simpuru adds that step.
-        </p>
+      <div className="mx-auto flex max-w-6xl flex-col gap-12 sm:gap-16">
+        <div className="max-w-xl">
+          <p className="mb-3 text-xs font-medium tracking-widest text-gray-500 uppercase">
+            How it works
+          </p>
+          <h2 className="text-4xl leading-[1.05] font-normal tracking-tight text-[#141414] sm:text-5xl md:text-6xl">
+            Paid only when it arrives
+          </h2>
+        </div>
 
-        <ol className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map(({ title, body, Icon }, index) => (
+        <ol className="flex flex-col items-stretch gap-5 lg:flex-row lg:items-end">
+          {STEPS.map((step, index) => (
             <li
-              key={title}
-              className="flex flex-col rounded-3xl border border-gray-200 bg-[#FAFAF9] p-6"
+              key={step.title}
+              className={`relative flex flex-1 flex-col justify-between overflow-hidden rounded-[32px] p-8 sm:rounded-[40px] sm:p-10 ${step.height}`}
             >
-              <span className="mb-8 flex items-center justify-between">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white">
-                  <Icon aria-hidden className="h-5 w-5" />
-                </span>
-                <span className="font-mono text-sm text-gray-400">0{index + 1}</span>
+              <video
+                className="absolute inset-0 h-full w-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster={`${step.video}.jpg`}
+                aria-hidden
+              >
+                <source src={`${step.video}.mp4`} type="video/mp4" />
+              </video>
+              <div className={`absolute inset-0 ${step.overlay}`} />
+
+              <span className="relative z-10 font-mono text-sm text-[#141414]/50">
+                0{index + 1}
               </span>
-              <h3 className="mb-2 text-lg font-medium tracking-tight text-[#141414]">{title}</h3>
-              <p className="text-sm leading-relaxed text-gray-600">{body}</p>
+              <div className="relative z-10 flex flex-col gap-3">
+                <h3 className="text-3xl leading-none font-medium tracking-tight text-[#141414] sm:text-4xl">
+                  {step.title}
+                </h3>
+                <p className="text-base text-[#49484F] sm:text-lg">{step.line}</p>
+              </div>
             </li>
           ))}
         </ol>

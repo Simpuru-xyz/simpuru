@@ -17,6 +17,8 @@ Still to build for #25: preprod proof links (from #19), dark mode.
   "on-chain" or "hash" in the hero; the developer section may be technical.
 - Credit the stack accurately: x402 on Cardano, escrow from Masumi (`vested_pay`). Do not claim a
   Sokosumi listing; our locks are not visible there.
+- Few words per block. Section visuals come from the MotionSites library (owner's licence); keep
+  the assets in `public/` (videos re-encoded to 720p, no audio) instead of hotlinking.
 - Agent setup snippets mirror `apps/mcp/README.md` and `apps/agent/README.md`. Change them together.
 
 ## Notes
