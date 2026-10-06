@@ -35,6 +35,8 @@ export interface PurchaseRecord {
     address: string;
     blockchainIdentifier: string;
     inputHash: string;
+    /** The seller-signed request commitment; its listing part names the content hash. */
+    inputCommitment: unknown;
     deadlines: EscrowDeadlines;
   };
 }
@@ -210,6 +212,7 @@ export function createBuyer(cfg: BuyerConfig) {
                 address: ESCROW.address,
                 blockchainIdentifier: String(r.selected?.extra?.blockchainIdentifier ?? ""),
                 inputHash: terms.inputHash ?? "",
+                inputCommitment: r.selected?.extra?.inputCommitment ?? null,
                 deadlines: {
                   payBy: terms.payByTime ?? "",
                   submitResult: terms.submitResultTime ?? "",
