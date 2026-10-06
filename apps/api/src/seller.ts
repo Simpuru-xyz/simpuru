@@ -65,27 +65,33 @@ const sellerNonceOf = (p: OpenPurchase) =>
 
 type Blockfrost = (path: string) => Promise<unknown>;
 
-/** Who got the money in the tx that spent `ref`: the buyer (refunded) or someone else (withdrawn). */
-async function closingOf(bf: Blockfrost, ref: string, payer: string) {
+type TxOutput = { address: string; amount: { unit: string; quantity: string }[] };
+
+/**
+ * Who got the escrow's money in the tx that closed it. Only buyer and seller outputs count: the
+ * tx submitter's change (an arbiter paying the fee, say) is neither party's win.
+ */
+export function classifyClosing(outputs: TxOutput[], buyer: string, seller: string) {
+  const lovelaceTo = (address: string) =>
+    outputs
+      .filter((o) => o.address === address)
+      .reduce(
+        (n, o) => n + BigInt(o.amount.find((a) => a.unit === "lovelace")?.quantity ?? "0"),
+        0n,
+      );
+  return lovelaceTo(buyer) > lovelaceTo(seller) ? "refunded" : "withdrawn";
+}
+
+/** The tx that spent `ref`, and whether it refunded the buyer or paid the seller. */
+async function closingOf(bf: Blockfrost, ref: string, buyer: string, seller: string) {
   const [txHash, index] = ref.split("#");
   const spent = (await bf(`/txs/${txHash}/utxos`)) as {
     outputs: { output_index: number; consumed_by_tx?: string | null }[];
   };
   const closingTx = spent.outputs.find((o) => String(o.output_index) === index)?.consumed_by_tx;
   if (!closingTx) return null;
-  const closing = (await bf(`/txs/${closingTx}/utxos`)) as {
-    outputs: { address: string; amount: { unit: string; quantity: string }[] }[];
-  };
-  const lovelaceTo = (match: (a: string) => boolean) =>
-    closing.outputs
-      .filter((o) => match(o.address))
-      .reduce(
-        (n, o) => n + BigInt(o.amount.find((a) => a.unit === "lovelace")?.quantity ?? "0"),
-        0n,
-      );
-  const toBuyer = lovelaceTo((a) => a === payer);
-  const toOthers = lovelaceTo((a) => a !== payer);
-  return { closingTx, status: toBuyer > toOthers ? "refunded" : "withdrawn" };
+  const closing = (await bf(`/txs/${closingTx}/utxos`)) as { outputs: TxOutput[] };
+  return { closingTx, status: classifyClosing(closing.outputs, buyer, seller) };
 }
 
 /** One pass over open protected purchases. Errors are logged and retried on the next pass. */
@@ -132,7 +138,8 @@ export async function sellerTick(db: Db, bf: Blockfrost, now = Date.now()) {
         addEvent(db, p.tx_hash, "withdrawn", closingTx);
         console.log(`[seller] ${p.tx_hash.slice(0, 8)} withdrawn ${closingTx}`);
       } else if (action.kind === "closed" && p.last_ref) {
-        const closed = await closingOf(bf, p.last_ref, p.payer);
+        const seller = getListing(db, p.listing_id)?.sellerAddress ?? "";
+        const closed = await closingOf(bf, p.last_ref, p.payer, seller);
         if (closed) {
           updatePurchase(db, p.tx_hash, { status: closed.status, closingTx: closed.closingTx });
           addEvent(db, p.tx_hash, closed.status, closed.closingTx);

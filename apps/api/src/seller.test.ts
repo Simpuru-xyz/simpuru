@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { OpenPurchase } from "./purchases";
-import { type LockView, nextSellerAction } from "./seller";
+import { classifyClosing, type LockView, nextSellerAction } from "./seller";
 
 const NOW = 1_800_000_000_000;
 const min = (m: number) => BigInt(NOW + m * 60_000);
@@ -69,5 +69,46 @@ describe("nextSellerAction", () => {
 
   test("lock gone: closed", () => {
     expect(nextSellerAction(null, purchase(), NOW).kind).toBe("closed");
+  });
+});
+
+describe("classifyClosing", () => {
+  const out = (address: string, lovelace: number) => ({
+    address,
+    amount: [{ unit: "lovelace", quantity: String(lovelace) }],
+  });
+  const BUYER = "addr_test1buyer";
+  const SELLER = "addr_test1seller";
+  const ARBITER = "addr_test1arbiter";
+
+  test("arbiter pays the buyer: the arbiter's own change does not count", () => {
+    // preprod 7132086b…: 5 tADA to the buyer, 10.3 tADA change back to the arbiter
+    expect(
+      classifyClosing(
+        [out(BUYER, 5_000_000), out(ARBITER, 7_309_864), out(ARBITER, 2_982_398)],
+        BUYER,
+        SELLER,
+      ),
+    ).toBe("refunded");
+  });
+
+  test("seller withdraws (its change lands with it too)", () => {
+    expect(classifyClosing([out(BUYER, 1_200_000), out(SELLER, 9_000_000)], BUYER, SELLER)).toBe(
+      "withdrawn",
+    );
+  });
+
+  test("buyer refunds itself", () => {
+    expect(classifyClosing([out(BUYER, 4_359_994)], BUYER, SELLER)).toBe("refunded");
+  });
+
+  test("arbiter pays the seller", () => {
+    expect(
+      classifyClosing(
+        [out(SELLER, 4_000_000), out(BUYER, 1_000_000), out(ARBITER, 8_000_000)],
+        BUYER,
+        SELLER,
+      ),
+    ).toBe("withdrawn");
   });
 });
