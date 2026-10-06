@@ -5,7 +5,7 @@ import { createApp } from "./app";
 import { openDb } from "./db";
 import { encodeProof, PROOF_HEADER, PURCHASE_HEADER } from "./owned";
 import { insertPurchase } from "./purchases";
-import { seed } from "./seed";
+import { addListing } from "./test-helpers";
 
 // Public BIP-39 test vectors, never funded.
 const alice = toMasumiSellerSigner({
@@ -16,11 +16,12 @@ const bob = toMasumiSellerSigner({
   mnemonic: `${"zoo ".repeat(23)}vote`,
   network: "cardano:preprod",
 });
-const LISTING = "lumen-aurora-hero";
+const LISTING = "hero-prompt";
 
 const setup = (status = "settled") => {
   const db = openDb(":memory:");
-  seed(db, `addr_test1${"q".repeat(98)}`);
+  addListing(db, LISTING, { content: "Build ONE standalone HTML file for a hero." });
+  addListing(db, "other-listing");
   insertPurchase(db, {
     txHash: "ab".repeat(32),
     listingId: LISTING,
@@ -52,16 +53,13 @@ test("a buyer who paid gets the content again without paying", async () => {
   const res = await unlock(setup(), await proof());
   expect(res.status).toBe(200);
   expect(res.headers.get(PURCHASE_HEADER)).toBe("ab".repeat(32));
-  expect(await res.text()).toStartWith('Build ONE standalone HTML file for "Lumen"');
+  expect(await res.text()).toStartWith("Build ONE standalone HTML file");
 });
 
 test.each([
   ["no proof", async () => undefined],
   ["someone who never paid", async () => proof(bob)],
-  [
-    "a proof for another listing",
-    async () => proof(alice, alice.sellerAddress, "editorial-portfolio-grid"),
-  ],
+  ["a proof for another listing", async () => proof(alice, alice.sellerAddress, "other-listing")],
   [
     "an expired proof",
     async () => proof(alice, alice.sellerAddress, LISTING, Date.now() - 10 * 60_000),
