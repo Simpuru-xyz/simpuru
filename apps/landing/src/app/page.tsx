@@ -78,7 +78,7 @@ export default function Home() {
           </h1>
 
           <p
-            className="animate-fade-in-up mx-auto mb-6 max-w-3xl px-2 text-base text-gray-600 sm:mb-8 sm:text-lg md:text-xl"
+            className="animate-fade-in-up mx-auto mb-10 max-w-3xl px-2 text-base text-gray-600 sm:mb-14 sm:text-lg md:text-xl"
             style={{ animationDelay: "0.4s", opacity: 0 }}
           >
             Buy one design prompt for a few cents, or let your agent buy it for you. If it never
