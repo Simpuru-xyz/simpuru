@@ -27,7 +27,9 @@
     "apps/api": {
       "name": "@simpuru/api",
       "dependencies": {
+        "@evolution-sdk/evolution": "^0.5.9",
         "@simpuru/core": "workspace:*",
+        "@simpuru/escrow": "workspace:*",
         "@x402/cardano": "2.28.0",
         "@x402/core": "2.28.0",
         "@x402/hono": "2.28.0",
