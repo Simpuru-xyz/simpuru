@@ -1,5 +1,5 @@
 import { Database } from "bun:sqlite";
-import type { DeliveryMode, Listing } from "@simpuru/core";
+import type { Category, DeliveryMode, Listing } from "@simpuru/core";
 
 export type ListingRow = Listing & { content: string };
 
@@ -26,10 +26,12 @@ export function openDb(path = process.env.DB_PATH ?? "data/simpuru.db") {
     terms TEXT NOT NULL,
     created_at INTEGER NOT NULL
   )`);
-  try {
-    db.run("ALTER TABLE listings ADD COLUMN preview_media TEXT");
-  } catch {
-    // already there
+  for (const col of ["preview_media TEXT", "category TEXT"]) {
+    try {
+      db.run(`ALTER TABLE listings ADD COLUMN ${col}`);
+    } catch {
+      // already there
+    }
   }
   // Columns added after the first release, hence ALTER (a no-op once they exist).
   for (const col of [
@@ -69,6 +71,8 @@ type Row = {
   content: string;
   content_hash: string;
   preview_media: string | null;
+  category: string | null;
+  created_at: number;
 };
 
 const toListing = (r: Row): ListingRow => ({
@@ -80,6 +84,8 @@ const toListing = (r: Row): ListingRow => ({
   modes: JSON.parse(r.modes) as DeliveryMode[],
   contentHash: r.content_hash,
   ...(r.preview_media ? { previewMedia: r.preview_media } : {}),
+  ...(r.category ? { category: r.category as Category } : {}),
+  createdAt: String(r.created_at),
   content: r.content,
 });
 
@@ -94,8 +100,8 @@ export const getListing = (db: Db, id: string) => {
 export const insertListing = (db: Db, l: ListingRow) =>
   db
     .query(
-      `INSERT INTO listings (id, title, description, price_lovelace, seller_address, modes, content, content_hash, preview_media, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO listings (id, title, description, price_lovelace, seller_address, modes, content, content_hash, preview_media, category, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       l.id,
@@ -107,8 +113,35 @@ export const insertListing = (db: Db, l: ListingRow) =>
       l.content,
       l.contentHash,
       l.previewMedia ?? null,
+      l.category ?? null,
       Date.now(),
     );
 
 /** Public view: never leak the paid content. */
 export const publicListing = ({ content: _, ...listing }: ListingRow): Listing => listing;
+
+/** Sales count and seller reputation, both derived from purchases (see `Listing` in core). */
+export function withStats(db: Db, listing: Listing): Listing {
+  const sales =
+    db
+      .query<{ n: number }, [string]>(
+        "SELECT count(*) AS n FROM purchases WHERE listing_id = ? AND status != 'refunded'",
+      )
+      .get(listing.id)?.n ?? 0;
+  const outcome = db
+    .query<{ withdrawn: number | null; refunded: number | null }, [string]>(
+      `SELECT sum(p.status = 'withdrawn') AS withdrawn, sum(p.status = 'refunded') AS refunded
+       FROM purchases p JOIN listings l ON l.id = p.listing_id
+       WHERE l.seller_address = ? AND p.mode = 'protected'`,
+    )
+    .get(listing.sellerAddress);
+  const withdrawn = outcome?.withdrawn ?? 0;
+  const basis = withdrawn + (outcome?.refunded ?? 0);
+  return {
+    ...listing,
+    sales,
+    ...(basis > 0
+      ? { sellerReputation: { score: Math.round((100 * withdrawn) / basis), basis } }
+      : {}),
+  };
+}

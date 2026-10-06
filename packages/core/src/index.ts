@@ -8,6 +8,20 @@ export const X402_NETWORK = "cardano:preprod" as const;
 /** `instant` = x402 `default` (pay, get content). `protected` = x402 `masumi` (pay into escrow). */
 export type DeliveryMode = "instant" | "protected";
 
+/** Fixed list a listing's category must come from (the catalogue filter). */
+export const CATEGORIES = [
+  "Landing Page",
+  "Hero",
+  "Portfolio",
+  "SaaS",
+  "Fintech",
+  "3D",
+  "AI",
+  "Editorial",
+  "Wellness",
+] as const;
+export type Category = (typeof CATEGORIES)[number];
+
 export interface Listing {
   id: string;
   title: string;
@@ -20,6 +34,16 @@ export interface Listing {
   contentHash: string;
   /** Optional https URL of a recording of what the content produces (mp4, webm, webp, gif). Free to view. */
   previewMedia?: string;
+  category?: Category;
+  /** Unix ms, as a string. */
+  createdAt?: string;
+  /** Purchases that were not refunded. */
+  sales?: number;
+  /**
+   * From the seller's closed escrows: score = 100 * withdrawn / (withdrawn + refunded), where a
+   * dispute the seller lost counts as refunded. `basis` = how many closed escrows. Absent until one.
+   */
+  sellerReputation?: { score: number; basis: number };
 }
 
 /** vested_pay datum `state`, in constructor order (index = on-chain value). */

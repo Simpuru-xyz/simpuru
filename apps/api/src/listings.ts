@@ -1,7 +1,7 @@
-import type { DeliveryMode } from "@simpuru/core";
+import { CATEGORIES, type Category, type DeliveryMode } from "@simpuru/core";
 import { contentHash } from "@simpuru/core/hash";
 import { Hono } from "hono";
-import { type Db, getListing, insertListing, listListings, publicListing } from "./db";
+import { type Db, getListing, insertListing, listListings, publicListing, withStats } from "./db";
 
 // Ledger min-UTxO is ~0.97 tADA. The protected path costs the seller ~1.35 tADA in escrow fees,
 // so below ~5 tADA it makes no sense.
@@ -18,6 +18,7 @@ type NewListing = {
   modes: DeliveryMode[];
   content: string;
   previewMedia?: string;
+  category?: Category;
 };
 
 export function validateNewListing(
@@ -50,6 +51,8 @@ export function validateNewListing(
     (typeof b.previewMedia !== "string" || !isPreviewUrl(b.previewMedia))
   )
     return { ok: false, error: "previewMedia: an https URL ending in .mp4, .webm, .webp or .gif" };
+  if (b.category !== undefined && !CATEGORIES.includes(b.category as Category))
+    return { ok: false, error: `category: one of ${CATEGORIES.join(", ")}` };
   const price = BigInt(b.priceLovelace);
   const min = modes.includes("protected") ? MIN_PRICE_PROTECTED : MIN_PRICE_INSTANT;
   if (price < min) return { ok: false, error: `priceLovelace: at least ${min} for these modes` };
@@ -63,6 +66,7 @@ export function validateNewListing(
       modes: [...new Set(modes as DeliveryMode[])],
       content: b.content,
       ...(typeof b.previewMedia === "string" ? { previewMedia: b.previewMedia } : {}),
+      ...(b.category !== undefined ? { category: b.category as Category } : {}),
     },
   };
 }
@@ -81,11 +85,13 @@ export function isPreviewUrl(value: string) {
 export function listingsRoutes(db: Db) {
   const app = new Hono();
 
-  app.get("/", (c) => c.json(listListings(db).map(publicListing)));
+  app.get("/", (c) => c.json(listListings(db).map((l) => withStats(db, publicListing(l)))));
 
   app.get("/:id", (c) => {
     const listing = getListing(db, c.req.param("id"));
-    return listing ? c.json(publicListing(listing)) : c.json({ error: "not found" }, 404);
+    return listing
+      ? c.json(withStats(db, publicListing(listing)))
+      : c.json({ error: "not found" }, 404);
   });
 
   // ponytail: no seller auth yet, anyone can list. Add a signed-address check when listings get abused.
