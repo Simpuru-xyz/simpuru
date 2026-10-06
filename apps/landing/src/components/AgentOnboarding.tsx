@@ -1,66 +1,39 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import { useRef, useState } from "react";
 import CopyButton from "@/components/CopyButton";
 import { MCP_DOCS_URL } from "@/lib/links";
 
 /**
- * Agent onboarding: the landing section where a visitor with an agent copies
- * one block and is wired into the catalogue.
+ * Connect your agent: one card, one command to copy.
  *
- * Every snippet mirrors apps/mcp/README.md and apps/agent/README.md. The MCP
- * server runs next to the agent over stdio and holds the agent's own wallet,
- * because a generic MCP host cannot pay an x402 402 by itself.
+ * Layout follows the MotionSites "Community CTA" card (video background, copy
+ * on the left, a pill row where the form was). The commands mirror
+ * apps/mcp/README.md and apps/agent/README.md; change them together. The MCP
+ * server runs next to the agent over stdio and holds the agent's own wallet.
  *
- * Tabs follow the WAI-ARIA tabs pattern: roving tabindex, arrow-key navigation
- * with selection following focus, labelled panels. The copy control keeps its
- * named states and aria-live region.
+ * Tabs follow the WAI-ARIA tabs pattern: roving tabindex, arrow keys, labelled
+ * panel.
  */
 
-export type OnboardingTarget = {
-  id: string;
-  label: string;
-  intro: string;
-  snippet: string;
-  note: string;
-};
+export type OnboardingTarget = { id: string; label: string; command: string };
 
 export const ONBOARDING_TARGETS: OnboardingTarget[] = [
   {
     id: "claude-code",
     label: "Claude Code",
-    intro: "From a clone of the repo, with .env filled in and the API running.",
-    snippet: `claude mcp add simpuru -- bun --env-file="$PWD/.env" "$PWD/apps/mcp/src/index.ts"`,
-    note: "Then ask: “find a landing page prompt on Simpuru and buy it with buyer protection”. my_purchases shows what it bought and how much of today's budget is left.",
+    command: `claude mcp add simpuru -- bun --env-file="$PWD/.env" "$PWD/apps/mcp/src/index.ts"`,
   },
   {
-    id: "mcp-json",
-    label: "Claude Desktop · Cursor",
-    intro: "Same server, as an entry in the client's MCP config.",
-    snippet: `{
-  "mcpServers": {
-    "simpuru": {
-      "command": "bun",
-      "args": [
-        "--env-file=<repo>/.env",
-        "<repo>/apps/mcp/src/index.ts"
-      ]
-    }
-  }
-}`,
-    note: "Replace <repo> with the absolute path to your clone. Config file names differ per client, but most accept this shape.",
+    id: "cursor",
+    label: "Cursor · Claude Desktop",
+    command: `{"mcpServers":{"simpuru":{"command":"bun","args":["--env-file=<repo>/.env","<repo>/apps/mcp/src/index.ts"]}}}`,
   },
   {
-    id: "buyer-cli",
-    label: "Buyer CLI",
-    intro: "The same purchase without an MCP host, straight from the terminal.",
-    snippet: `bun run buy <listingId> protected
-
-# needs BUYER_MNEMONIC and BLOCKFROST_PROJECT_ID in .env
-# refuses before signing: an escrow other than ours, a price other than
-# the listed one, more than MAX_PER_PAYMENT_LOVELACE per payment
-# (default 20 tADA), more than DAILY_BUDGET_LOVELACE per day (default 50 tADA)`,
-    note: "Every purchase is logged with its tx hash and deadlines, so the watcher can refund it if the prompt never arrives.",
+    id: "cli",
+    label: "Terminal",
+    command: "bun run buy <listingId> protected",
   },
 ];
 
@@ -70,7 +43,6 @@ export default function AgentOnboarding() {
 
   const active = ONBOARDING_TARGETS.find((t) => t.id === activeId) ?? ONBOARDING_TARGETS[0];
 
-  // Selection follows focus (WAI-ARIA tabs, automatic activation).
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const count = ONBOARDING_TARGETS.length;
     const index = ONBOARDING_TARGETS.findIndex((t) => t.id === activeId);
@@ -98,83 +70,81 @@ export default function AgentOnboarding() {
   };
 
   return (
-    <section
-      id="for-agents"
-      className="relative z-20 mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-24"
-    >
-      <p className="mb-3 text-xs font-medium tracking-widest text-gray-500 uppercase">For agents</p>
-      <h2 className="mb-4 text-3xl leading-tight font-normal tracking-tight sm:text-4xl md:text-5xl">
-        Connect your agent
-      </h2>
-      <p className="mb-3 max-w-2xl text-base text-gray-600 sm:text-lg">
-        Every listing commits to a hash of its content before it is sold, so the agent can prove
-        whether what arrived is what it paid for. Pay instantly for small things, or through escrow
-        when it matters.
-      </p>
-      <p className="mb-8 max-w-2xl text-sm text-gray-500">
-        Everything runs on Cardano preprod with test ADA. Instant purchases settle straight to the
-        seller; protected ones lock in an escrow script until the seller is paid or the buyer is
-        refunded.
-      </p>
-
-      <div
-        role="tablist"
-        aria-label="Choose your agent"
-        onKeyDown={onKeyDown}
-        className="mb-6 flex flex-wrap gap-2"
-      >
-        {ONBOARDING_TARGETS.map((target) => {
-          const selected = target.id === activeId;
-          return (
-            <button
-              key={target.id}
-              ref={(el) => {
-                tabRefs.current[target.id] = el;
-              }}
-              type="button"
-              role="tab"
-              id={`agent-tab-${target.id}`}
-              aria-selected={selected}
-              aria-controls={`agent-panel-${target.id}`}
-              tabIndex={selected ? 0 : -1}
-              onClick={() => setActiveId(target.id)}
-              className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none ${
-                selected
-                  ? "border-black bg-black text-white"
-                  : "border-gray-300 bg-white text-gray-700 hover:border-gray-500 hover:text-black"
-              }`}
-            >
-              {target.label}
-            </button>
-          );
-        })}
-      </div>
-
-      <div
-        role="tabpanel"
-        id={`agent-panel-${active.id}`}
-        aria-labelledby={`agent-tab-${active.id}`}
-      >
-        <p className="mb-4 max-w-2xl text-sm text-gray-600">{active.intro}</p>
-
-        <div className="overflow-hidden rounded-2xl bg-gray-950">
-          <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-2.5">
-            <span className="truncate text-xs text-gray-400">{active.label}</span>
-            <CopyButton text={active.snippet} label={active.label} />
-          </div>
-          <pre className="overflow-x-auto p-4 text-[13px] leading-relaxed text-gray-100">
-            <code>{active.snippet}</code>
-          </pre>
-        </div>
-
-        <p className="mt-3 max-w-2xl text-xs text-gray-500">{active.note}</p>
-
-        <a
-          href={MCP_DOCS_URL}
-          className="mt-4 inline-block text-sm text-gray-700 underline underline-offset-4 transition-colors hover:text-black"
+    <section id="for-agents" className="w-full bg-white px-4 py-16 sm:px-6 sm:py-24">
+      <div className="relative mx-auto min-h-[220px] max-w-6xl overflow-hidden rounded-[28px] border border-[rgba(13,36,72,0.15)] bg-[#d8e5f2]">
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="/media/connect.jpg"
+          aria-hidden
         >
-          MCP setup on GitHub
-        </a>
+          <source src="/media/connect.mp4" type="video/mp4" />
+        </video>
+
+        <div className="relative z-10 max-w-2xl p-6 text-[#08063C] sm:p-10 md:p-12">
+          <h2 className="mb-3 text-3xl leading-tight font-bold tracking-[-0.015em] sm:text-4xl">
+            Connect your agent
+          </h2>
+          <p className="mb-7 max-w-md text-base leading-relaxed">
+            One command. Then your agent can buy prompts on its own.
+          </p>
+
+          <div
+            role="tablist"
+            aria-label="Where your agent runs"
+            onKeyDown={onKeyDown}
+            className="mb-3 flex flex-wrap gap-2"
+          >
+            {ONBOARDING_TARGETS.map((target) => {
+              const selected = target.id === activeId;
+              return (
+                <button
+                  key={target.id}
+                  ref={(el) => {
+                    tabRefs.current[target.id] = el;
+                  }}
+                  type="button"
+                  role="tab"
+                  id={`agent-tab-${target.id}`}
+                  aria-selected={selected}
+                  aria-controls="agent-panel"
+                  tabIndex={selected ? 0 : -1}
+                  onClick={() => setActiveId(target.id)}
+                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#08063C] focus-visible:outline-none ${
+                    selected
+                      ? "bg-[#08063C] text-white"
+                      : "bg-white/60 text-[#08063C] hover:bg-white/90"
+                  }`}
+                >
+                  {target.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div
+            role="tabpanel"
+            id="agent-panel"
+            aria-labelledby={`agent-tab-${active.id}`}
+            className="flex flex-col gap-2 sm:flex-row sm:items-center"
+          >
+            <code className="min-w-0 flex-1 overflow-x-auto rounded-full border border-[rgba(195,210,235,0.75)] bg-white/95 px-5 py-3 font-mono text-[13px] whitespace-nowrap shadow-[0_1px_5px_rgba(100,110,180,0.07)]">
+              {active.command}
+            </code>
+            <CopyButton text={active.command} label={active.label} tone="light" />
+          </div>
+
+          <a
+            href={MCP_DOCS_URL}
+            className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold hover:underline"
+          >
+            Setup guide
+            <ArrowRight aria-hidden className="h-4 w-4" />
+          </a>
+        </div>
       </div>
     </section>
   );

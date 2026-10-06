@@ -12,7 +12,21 @@ const RESET_MS = 2500;
  * result is announced rather than implied by an icon swap. A refusal (denied
  * permission, insecure context) says so and stays retryable.
  */
-export default function CopyButton({ text, label }: { text: string; label: string }) {
+const TONES = {
+  dark: "bg-white/10 px-3.5 py-1.5 text-xs text-white hover:bg-white/20 focus-visible:ring-white focus-visible:ring-offset-gray-950",
+  light:
+    "bg-[#f8f9fc] px-6 py-3 text-sm text-[#08063C] shadow-[0_2px_10px_rgba(100,110,180,0.15)] hover:-translate-y-px hover:bg-[#eef0f5] focus-visible:ring-[#08063C]",
+} as const;
+
+export default function CopyButton({
+  text,
+  label,
+  tone = "dark",
+}: {
+  text: string;
+  label: string;
+  tone?: keyof typeof TONES;
+}) {
   const [state, setState] = useState<CopyState>("idle");
   const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -47,7 +61,7 @@ export default function CopyButton({ text, label }: { text: string; label: strin
         type="button"
         onClick={copy}
         aria-label={`Copy the ${label} setup block`}
-        className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950 focus-visible:outline-none"
+        className={`inline-flex shrink-0 items-center gap-1.5 rounded-full font-medium whitespace-nowrap transition-all focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${TONES[tone]}`}
       >
         {state === "copied" ? (
           <Check aria-hidden className="h-3.5 w-3.5" />
