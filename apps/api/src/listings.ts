@@ -17,6 +17,7 @@ type NewListing = {
   sellerAddress: string;
   modes: DeliveryMode[];
   content: string;
+  previewMedia?: string;
 };
 
 export function validateNewListing(
@@ -44,6 +45,11 @@ export function validateNewListing(
     return { ok: false, error: `modes: non-empty subset of ${MODES.join(", ")}` };
   if (typeof b.priceLovelace !== "string" || !/^[1-9][0-9]{0,15}$/.test(b.priceLovelace))
     return { ok: false, error: "priceLovelace: positive integer string" };
+  if (
+    b.previewMedia !== undefined &&
+    (typeof b.previewMedia !== "string" || !isPreviewUrl(b.previewMedia))
+  )
+    return { ok: false, error: "previewMedia: an https URL ending in .mp4, .webm, .webp or .gif" };
   const price = BigInt(b.priceLovelace);
   const min = modes.includes("protected") ? MIN_PRICE_PROTECTED : MIN_PRICE_INSTANT;
   if (price < min) return { ok: false, error: `priceLovelace: at least ${min} for these modes` };
@@ -56,8 +62,20 @@ export function validateNewListing(
       sellerAddress: b.sellerAddress,
       modes: [...new Set(modes as DeliveryMode[])],
       content: b.content,
+      ...(typeof b.previewMedia === "string" ? { previewMedia: b.previewMedia } : {}),
     },
   };
+}
+
+/** A recording the browser can play inline: https, a media extension, sane length. */
+export function isPreviewUrl(value: string) {
+  if (value.length > 2048) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && /\.(mp4|webm|webp|gif)$/i.test(url.pathname);
+  } catch {
+    return false;
+  }
 }
 
 export function listingsRoutes(db: Db) {

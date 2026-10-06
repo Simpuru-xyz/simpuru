@@ -1,65 +1,82 @@
 import { contentHash } from "@simpuru/core/hash";
 import { type Db, insertListing, listListings } from "./db";
 
-// Deterministic sample dataset, so its hash is stable across machines.
-const ordersCsv = () => {
-  const rows = ["order_id,city,item,qty,price_ada"];
-  const cities = ["Jakarta", "Singapore", "Bandung", "Surabaya", "Yogyakarta"];
-  const items = ["sticker", "tote", "poster", "mug", "tee"];
-  for (let i = 1; i <= 100; i++) {
-    rows.push(`${i},${cities[i % 5]},${items[(i * 3) % 5]},${(i % 4) + 1},${(i % 7) + 2}`);
-  }
-  return `${rows.join("\n")}\n`;
-};
-
+// Design prompts: paste one into a coding agent and it builds the page. The prompt text is what
+// is sold (and hashed); `previewMedia` is a free recording of the result, set by the seller.
 const SEED = [
   {
-    id: "orders-dataset-100",
-    title: "Sample dataset: 100 synthetic shop orders (CSV)",
+    id: "aurora-saas-hero",
+    title: "Aurora SaaS hero with a slow gradient sky",
     description:
-      "Clean CSV for testing analytics agents. Same bytes every time, so the hash proves you got it.",
+      "A dark landing hero: drifting aurora gradient, a glass nav, one headline, two CTAs. Built for a dev-tool launch.",
     priceLovelace: "6000000",
     modes: ["instant", "protected"] as const,
-    content: ordersCsv(),
+    content: `Build a landing page hero section for a developer tool called "Northwind".
+
+Stack: one HTML file, Tailwind via CDN, no JavaScript framework. Must work at 375px and 1440px.
+
+Background: near-black (#07080c). Behind everything, three large blurred blobs (teal #2dd4bf, violet #8b5cf6, blue #3b82f6) at 35% opacity, filter blur(120px), drifting on separate 18-26 s CSS keyframe loops (translate and scale only, ease-in-out, alternate). Respect prefers-reduced-motion: no drift.
+
+Nav: sticky, 64px tall, glass effect (white/5 background, backdrop-blur-md, a 1px white/10 bottom border). Wordmark left, four links center (Docs, Pricing, Changelog, Blog), "Sign in" ghost button right.
+
+Hero copy, centered, max-width 760px:
+- small pill above the headline: "v2.0 is live" with a pulsing teal dot
+- headline, 64px desktop / 40px mobile, tight leading, white: "Ship the boring parts faster"
+- subline, 18px, white/60: "Northwind writes the glue code between your services so your team can work on the product."
+- two buttons: primary white with black text "Start free", secondary white/10 with a border "Read the docs"
+
+Below the buttons, a 1200px wide product screenshot placeholder: rounded-2xl, 1px white/10 border, a soft teal glow underneath (box-shadow), tilted 8 degrees on the X axis with perspective, straightening to 0 on scroll into view (IntersectionObserver, 600 ms ease-out).
+
+Typography: Inter from Google Fonts. Contrast must pass WCAG AA for all text.
+`,
   },
   {
-    id: "landing-copy-pack",
-    title: "Landing page copy pack: developer tool",
-    description: "Hero, three feature blocks and a CTA, ready to paste.",
+    id: "editorial-portfolio-grid",
+    title: "Editorial portfolio grid with hover reveals",
+    description:
+      "A magazine-style work grid for a designer: oversized serif titles, image cards that reveal the project on hover.",
     priceLovelace: "2000000",
     modes: ["instant"] as const,
-    content: [
-      "# Ship the boring parts faster",
-      "Your stack, minus the glue code.",
-      "",
-      "## One command setup",
-      "From clone to running in under a minute.",
-      "## Types end to end",
-      "Change the API, see every caller that breaks.",
-      "## Logs you can read",
-      "Structured, searchable, and quiet until something is wrong.",
-      "",
-      "[Start building]",
-      "",
-    ].join("\n"),
+    content: `Build a portfolio "Selected work" section for an independent designer.
+
+Stack: one HTML file, plain CSS (no framework), a few lines of vanilla JS at most.
+
+Layout: warm off-white page (#f4f1ea), ink text (#151412). A 12-column grid with 24px gutters, max-width 1320px. The section title "Selected work, 2021-2026" is set in Fraunces at 96px desktop / 48px mobile, weight 300, letter-spacing -0.02em, spanning all 12 columns.
+
+Six project cards in an asymmetric rhythm: row 1 spans 7 + 5 columns, row 2 spans 4 + 4 + 4, row 3 spans 12 (wide). Each card:
+- an image area with a fixed aspect ratio (4:5 for narrow cards, 16:9 for the wide one), using a solid color placeholder per project
+- below it: project name in Fraunces 28px, then client and year in a 13px uppercase mono (JetBrains Mono), letter-spacing 0.08em
+
+Hover (pointer devices only, @media (hover: hover)): the image scales to 1.04 over 500 ms with a cubic-bezier(.2,.7,.2,1); a caption panel slides up from the bottom of the image with a one-line project summary; the cursor becomes a 72px black circle with the word "View" (a custom cursor div that follows the pointer with a slight lag).
+
+On touch devices the caption is always visible under the image instead.
+
+Focus states must be visible for keyboard users; every card is a link with a meaningful accessible name.
+`,
   },
   {
-    id: "cardano-address-regex",
-    title: "Cardano bech32 address checker (TypeScript)",
-    description: "A small, tested function that tells mainnet, preprod and stake addresses apart.",
+    id: "kinetic-pricing-section",
+    title: "Kinetic pricing section with a monthly/yearly toggle",
+    description:
+      "Three pricing tiers, an animated billing toggle, numbers that roll when the price changes, a highlighted middle plan.",
     priceLovelace: "10000000",
     modes: ["protected"] as const,
-    content: `export type CardanoAddressKind = "mainnet" | "testnet" | "stake_mainnet" | "stake_testnet" | "invalid";
+    content: `Build a pricing section with three tiers and a monthly / yearly toggle.
 
-const BECH32 = "[02-9ac-hj-np-z]";
+Stack: React + TypeScript + Tailwind, a single component file "Pricing.tsx" with no extra dependencies.
 
-export function cardanoAddressKind(addr: string): CardanoAddressKind {
-  if (new RegExp(\`^addr1\${BECH32}{50,110}$\`).test(addr)) return "mainnet";
-  if (new RegExp(\`^addr_test1\${BECH32}{50,110}$\`).test(addr)) return "testnet";
-  if (new RegExp(\`^stake1\${BECH32}{50,60}$\`).test(addr)) return "stake_mainnet";
-  if (new RegExp(\`^stake_test1\${BECH32}{50,60}$\`).test(addr)) return "stake_testnet";
-  return "invalid";
-}
+Toggle: a pill switch centered above the cards, labels "Monthly" and "Yearly (save 20%)". The active background is a sliding thumb that moves with a spring-like transition (CSS transition 350 ms, cubic-bezier(.34,1.56,.64,1)). It is a real radio group: arrow keys switch, the state is announced to screen readers.
+
+Tiers (monthly / yearly per month):
+- Starter: $0 / $0 — 1 project, community support
+- Team: $24 / $19 — unlimited projects, 10 seats, priority support (highlighted)
+- Scale: $79 / $63 — SSO, audit log, 99.9% SLA, dedicated support
+
+Cards: equal height, rounded-3xl, 1px border. The highlighted Team card is lifted 12px, has a 2px gradient border (indigo to fuchsia, done with a background-clip trick, not an image) and a "Most popular" badge.
+
+Price animation: when the billing period changes, each price rolls to its new value digit by digit like an odometer (each digit is a vertical strip of 0-9 translated with transform, 400 ms, digits staggered by 40 ms). With prefers-reduced-motion the value just swaps.
+
+Each card ends with a full-width button; feature lists use check icons drawn as inline SVG. Mobile: cards stack, the highlighted card comes first.
 `,
   },
 ];
@@ -99,10 +116,10 @@ export function deliveredContent(listing: { id: string; content: string }) {
   return listing.content;
 }
 
-/** Inserts the sample listings once, and the demo listings if missing, owned by `sellerAddress`. */
+/** Inserts every seed and demo listing that is missing, owned by `sellerAddress`. */
 export function seed(db: Db, sellerAddress: string) {
   const existing = new Set(listListings(db).map((l) => l.id));
-  const rows = existing.size === 0 ? [...SEED, ...DEMO] : DEMO.filter((d) => !existing.has(d.id));
+  const rows = [...SEED, ...DEMO].filter((d) => !existing.has(d.id));
   for (const s of rows) {
     insertListing(db, {
       ...s,

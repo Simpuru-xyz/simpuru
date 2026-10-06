@@ -34,7 +34,7 @@ const setup = () => {
   seed(db, SELLER);
   insertPurchase(db, {
     txHash: LOCK,
-    listingId: "orders-dataset-100",
+    listingId: "aurora-saas-hero",
     mode: "protected",
     payer: alice.sellerAddress,
     status: "FundsLocked",
@@ -48,7 +48,7 @@ const proofFrom = async (signer: typeof alice) => {
   const address = signer.sellerAddress;
   const { key, signature } = await signer.signTerms(
     address,
-    unlockProofDigest("orders-dataset-100", address, timestamp),
+    unlockProofDigest("aurora-saas-hero", address, timestamp),
   );
   return encodeProof({ address, timestamp, key, signature });
 };

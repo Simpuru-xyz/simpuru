@@ -16,7 +16,7 @@ const bob = toMasumiSellerSigner({
   mnemonic: `${"zoo ".repeat(23)}vote`,
   network: "cardano:preprod",
 });
-const LISTING = "orders-dataset-100";
+const LISTING = "aurora-saas-hero";
 
 const setup = (status = "settled") => {
   const db = openDb(":memory:");
@@ -52,7 +52,7 @@ test("a buyer who paid gets the content again without paying", async () => {
   const res = await unlock(setup(), await proof());
   expect(res.status).toBe(200);
   expect(res.headers.get(PURCHASE_HEADER)).toBe("ab".repeat(32));
-  expect(await res.text()).toStartWith("order_id,city");
+  expect(await res.text()).toStartWith("Build a landing page hero");
 });
 
 test.each([
@@ -60,7 +60,7 @@ test.each([
   ["someone who never paid", async () => proof(bob)],
   [
     "a proof for another listing",
-    async () => proof(alice, alice.sellerAddress, "landing-copy-pack"),
+    async () => proof(alice, alice.sellerAddress, "editorial-portfolio-grid"),
   ],
   [
     "an expired proof",
