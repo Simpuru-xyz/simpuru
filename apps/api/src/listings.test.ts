@@ -67,6 +67,7 @@ describe("listings", () => {
     ["preview over http", { ...valid, previewMedia: "http://cdn.example.com/a.mp4" }],
     ["preview that is not media", { ...valid, previewMedia: "https://cdn.example.com/a.html" }],
     ["preview that is not a URL", { ...valid, previewMedia: "a.mp4" }],
+    ["unknown category", { ...valid, category: "Crypto" }],
   ])("rejects %s", async (_, body) => {
     expect((await post(fresh(), body)).status).toBe(400);
   });
@@ -90,6 +91,45 @@ describe("preview media", () => {
       unknown
     >;
     expect("previewMedia" in l).toBe(false);
+  });
+});
+
+describe("catalogue stats", () => {
+  test("seeded listings carry category and createdAt, sales start at 0, no reputation yet", async () => {
+    const l = (await (await fresh().request("/listings/aurora-saas-hero")).json()) as Record<
+      string,
+      unknown
+    >;
+    expect(l.category).toBe("Hero");
+    expect(Number(l.createdAt)).toBeGreaterThan(0);
+    expect(l.sales).toBe(0);
+    expect("sellerReputation" in l).toBe(false);
+  });
+
+  test("sales skip refunds; reputation = withdrawn / (withdrawn + refunded)", async () => {
+    const db = openDb(":memory:");
+    seed(db, SELLER);
+    const { insertPurchase } = await import("./purchases");
+    const buy = (tx: string, status: string) =>
+      insertPurchase(db, {
+        txHash: tx.repeat(64),
+        listingId: "aurora-saas-hero",
+        mode: "protected",
+        payer: "addr_test1b",
+        status,
+        terms: "{}",
+      });
+    buy("a", "withdrawn");
+    buy("b", "withdrawn");
+    buy("c", "withdrawn");
+    buy("d", "refunded");
+    buy("e", "FundsLocked");
+    const l = (await (await createApp(db).request("/listings/aurora-saas-hero")).json()) as Record<
+      string,
+      unknown
+    >;
+    expect(l.sales).toBe(4);
+    expect(l.sellerReputation).toEqual({ score: 75, basis: 4 });
   });
 });
 
