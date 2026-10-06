@@ -21,6 +21,21 @@ import { escrowScriptStep } from "./script";
 
 const TX_WINDOW_MS = 5 * 60_000;
 
+/**
+ * Wallet UTxOs that hold only ADA. Coin selection and collateral then never pick a UTxO carrying
+ * tokens: with one as collateral the collateral return falls below min-UTxO and the build fails
+ * (seen on preprod, 6 Oct 2026: a seller wallet holding test tokens could not submit results).
+ */
+async function adaOnlyUtxos(wallet: ReturnType<typeof walletClient>) {
+  const utxos = await wallet.getWalletUtxos();
+  const ada = utxos.filter((u) => {
+    const tokens = (u.assets as { multiAsset?: { size?: number } }).multiAsset;
+    return !tokens || tokens.size === 0;
+  });
+  if (ada.length === 0) throw new Error("wallet has no ADA-only UTxO to build with");
+  return ada;
+}
+
 export function keyHashOf(role: Role) {
   return KeyHash.fromPrivateKey(PrivateKey.fromMnemonicCardano(mnemonicFor(role)));
 }
@@ -97,7 +112,7 @@ async function continueEscrow(c: Continuation): Promise<string> {
         assets: utxo.assets,
         datum: inlineDatum(nextDatum),
       })
-      .build({ changeAddress: await wallet.address() });
+      .build({ changeAddress: await wallet.address(), availableUtxos: await adaOnlyUtxos(wallet) });
     const hash = await (await tx.sign()).submit();
     return Buffer.from(hash.hash).toString("hex");
   });
@@ -295,7 +310,10 @@ export async function withdrawDisputed(
         });
       }
     }
-    const tx = await builder.build({ changeAddress: await wallet.address() });
+    const tx = await builder.build({
+      changeAddress: await wallet.address(),
+      availableUtxos: await adaOnlyUtxos(wallet),
+    });
     const hash = await (await tx.sign()).submit();
     return Buffer.from(hash.hash).toString("hex");
   });
@@ -355,7 +373,10 @@ async function closeEscrow(t: Terminal): Promise<string> {
         });
       }
     }
-    const tx = await builder.build({ changeAddress: await wallet.address() });
+    const tx = await builder.build({
+      changeAddress: await wallet.address(),
+      availableUtxos: await adaOnlyUtxos(wallet),
+    });
     const hash = await (await tx.sign()).submit();
     return Buffer.from(hash.hash).toString("hex");
   });
