@@ -2,6 +2,7 @@ import { createApp } from "./app";
 import { openDb } from "./db";
 import { createPaywall } from "./paywall";
 import { seed } from "./seed";
+import { startSellerAgent } from "./seller";
 
 const need = (k: string) => {
   const v = process.env[k];
@@ -15,6 +16,7 @@ const paywall = createPaywall(db, {
   blockfrostProjectId: need("BLOCKFROST_PROJECT_ID"),
 });
 seed(db, paywall.sellerAddress);
+startSellerAgent(db, need("BLOCKFROST_PROJECT_ID"));
 
 export default {
   port: Number(process.env.PORT ?? 4021),

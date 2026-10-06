@@ -38,3 +38,22 @@ a CIP-8 signature over `unlockProofDigest(listingId, address, timestamp)` from `
 made with its payment key, at most 5 min old. If `purchases` has a non-refunded purchase of that
 listing by that address, the content comes back with `X-Simpuru-Purchase: <tx>` and no 402.
 Anything else falls through to the gate. `@simpuru/agent` does this automatically before paying.
+
+### Seller agent (protected purchases)
+
+Runs inside the API every 30 s (`src/seller.ts`). For each open protected purchase it finds the lock
+by its seller nonce (the lock moves to a new UTxO on every action) and:
+
+- posts `result_hash = purchaseResultHash(lockTx, content)` right after delivery (`submitResult`)
+- collects after `unlock_time` (`withdraw`)
+- never concedes by itself; a dispute waits for the arbiter
+- records every on-chain step as a purchase event, and when the lock is spent by someone else, finds the
+  spending tx (Blockfrost `consumed_by_tx`) and marks it `refunded` or `withdrawn`
+
+### Purchases (for the web)
+
+| Route | |
+|---|---|
+| `GET /purchases/:id` | `PurchaseView` = `Purchase` from `@simpuru/core` + `verification?` (`id` = payment/lock tx) |
+| `GET /purchases?seller=addr` | purchases of listings that address sells, newest first |
+| `POST /purchases/:id/verification` | `{ verification: "ok" \| "mismatch" \| "no_result_yet" }`, buyer only (`X-Simpuru-Proof`) |

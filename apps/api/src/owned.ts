@@ -1,7 +1,8 @@
 import { UNLOCK_PROOF_MAX_AGE_MS, unlockProofDigest } from "@simpuru/core/hash";
 import { verifySellerTermsSignature } from "@x402/cardano";
 import type { MiddlewareHandler } from "hono";
-import { type Db, findPurchase, getListing } from "./db";
+import { type Db, getListing } from "./db";
+import { findPurchase } from "./purchases";
 
 /** Headers a returning buyer sends; see `unlockProofDigest`. */
 export const PROOF_HEADER = "X-Simpuru-Proof";
