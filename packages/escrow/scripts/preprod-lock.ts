@@ -2,7 +2,10 @@
 //   seller issues a signed quote  ->  buyer's x402 client builds and signs the lock
 //   ->  we broadcast it  ->  we read the escrow UTxO back and decode its datum.
 //
-//   bun packages/escrow/scripts/preprod-lock.ts [submitAfterMin=30] [amountTada=5]
+//   bun packages/escrow/scripts/preprod-lock.ts [submitAfterMin=30] [amountTada=5] [listingId contentHash]
+//
+// With a listing, the commitment is the one the paywall issues (apps/api/src/paywall.ts),
+// so the escrow's input_hash binds it to that listing, as in production.
 //
 // Deadlines are minutes from now: pay-by 10, submit-result `submitAfterMin`,
 // unlock +15 after that, external dispute +15 after that.
@@ -20,6 +23,11 @@ const NETWORK = "cardano:preprod";
 const submitAfterMin = BigInt(process.argv[2] ?? "30");
 const amount = BigInt(process.argv[3] ?? "5") * 1_000_000n;
 const MIN = 60_000n;
+const [listingId, listingContentHash] = process.argv.slice(4);
+const commitmentPart =
+  listingId && listingContentHash
+    ? { name: "listing", content: { listingId, contentHash: listingContentHash } }
+    : { name: "body", content: { item: "preprod-proof", issue: 3 } };
 
 const ours = loadDeployment();
 const now = BigInt(Date.now());
@@ -32,14 +40,7 @@ const requirements = await issueMasumiRequirements({
   maxTimeoutSeconds: 900,
   sellerAddress: seller.sellerAddress,
   signTerms: seller.signTerms,
-  commitment: [
-    {
-      name: "body",
-      canonicalization: "jcs",
-      mediaType: "application/json",
-      content: { item: "preprod-proof", issue: 3 },
-    },
-  ],
+  commitment: [{ ...commitmentPart, canonicalization: "jcs", mediaType: "application/json" }],
   payByTime: (now + 10n * MIN).toString(),
   submitResultTime: (now + submitAfterMin * MIN).toString(),
   unlockTime: (now + (submitAfterMin + 15n) * MIN).toString(),
