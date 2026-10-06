@@ -14,8 +14,11 @@ every claim below links a preprod transaction.
 claude mcp add --transport http simpuru https://api.simpuru.xyz/mcp
 ```
 
-Then ask Claude: *"Find a hero section prompt on Simpuru and buy it with buyer protection."*
-The hosted MCP pays from a shared preprod demo wallet.
+Your MCP client opens a Simpuru sign-in: connect your Cardano wallet (preprod), set limits, and Simpuru
+gives your agent its own wallet to spend from (or pick the shared demo wallet). Then ask Claude:
+*"Find a prompt on Simpuru and buy it with buyer protection."*
+
+**Sell:** anyone can list a prompt, signed with their wallet ([`POST /listings`](https://api.simpuru.xyz/docs)).
 
 **Site:** [simpuru.xyz](https://simpuru.xyz) · **App:** [app.simpuru.xyz](https://app.simpuru.xyz) · **API docs (Swagger):** [api.simpuru.xyz/docs](https://api.simpuru.xyz/docs) · OpenAPI 3.1: [`/openapi.json`](https://api.simpuru.xyz/openapi.json)
 
