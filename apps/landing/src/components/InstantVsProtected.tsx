@@ -4,7 +4,7 @@ import { APP_URL } from "@/lib/links";
 /**
  * The two payment paths every listing offers (apps/api: `masumi` and
  * `default`). Layout follows the MotionSites "Halo Benefits" section: heading
- * and one line on top, then a wide image card next to a dark one. Protected
+ * and one line on top, then a wide image card next to a video card. Protected
  * gets the image because it is the default and the reason Simpuru exists.
  */
 export default function InstantVsProtected() {
@@ -44,11 +44,27 @@ export default function InstantVsProtected() {
             </p>
           </div>
 
-          <div className="flex min-h-80 flex-col justify-between rounded-2xl bg-[#2B2644] p-7">
-            <p className="text-2xl leading-snug font-medium tracking-[-0.02em] text-white">
+          {/* Video from the MotionSites "Nexora Features" prompt: a fast glowing
+              stream through the dunes, for the path where money moves at once. */}
+          <div className="relative flex min-h-80 flex-col justify-between overflow-hidden rounded-2xl bg-[#2B2644] p-7">
+            <video
+              className="absolute inset-0 h-full w-full object-cover"
+              autoPlay
+              loop
+              muted
+              playsInline
+              poster="/media/instant.jpg"
+              aria-hidden
+            >
+              <source src="/media/instant.mp4" type="video/mp4" />
+            </video>
+            {/* Darkens top and bottom so the white text stays readable on the
+                light dunes, while the glowing stream shows through the middle. */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#2B2644]/80 via-[#2B2644]/10 to-[#2B2644]/85" />
+            <p className="relative z-10 text-2xl leading-snug font-medium tracking-[-0.02em] text-white">
               Instant
             </p>
-            <p className="text-base leading-relaxed text-white/60">
+            <p className="relative z-10 text-base leading-relaxed text-white/80">
               Paid straight to the seller. Fast, but final.
             </p>
           </div>
