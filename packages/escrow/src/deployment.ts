@@ -16,8 +16,9 @@ export function loadDeployment(network = "preprod"): EscrowDeployment {
   return JSON.parse(readFileSync(path, "utf8")) as EscrowDeployment;
 }
 
-/** For x402's `validateCustomMasumiDeployment`: allow exactly our escrow, nothing else. */
-export function isOurDeployment(claim: { network: string; payTo: string }): boolean {
-  const ours = loadDeployment();
-  return claim.network === ours.network && claim.payTo === ours.escrowAddress;
-}
+/**
+ * For x402's `validateCustomMasumiDeployment`: allow exactly our escrow. Re-exported from
+ * `@simpuru/core/escrow`, which pins the address **and** the admins, keys and cooldown, so
+ * there is one check, the strict one.
+ */
+export { isOurDeployment } from "@simpuru/core/escrow";
