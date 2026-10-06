@@ -9,7 +9,7 @@ import { explorerTx, type Listing } from "@simpuru/core";
 import { z } from "zod";
 
 const buyer = buyerFromEnv();
-const api = process.env.SIMPURU_API_URL ?? "http://localhost:4021";
+const api = process.env.SIMPURU_API_URL ?? "https://api.simpuru.xyz";
 const ada = (lovelace: string | bigint) => `${Number(lovelace) / 1_000_000} tADA`;
 const when = (ms: string) => new Date(Number(ms)).toISOString();
 const text = (value: unknown) => ({
