@@ -6,6 +6,7 @@ import { listingsRoutes } from "./listings";
 import { ownedContent, PROOF_HEADER, PURCHASE_HEADER } from "./owned";
 import type { Paywall } from "./paywall";
 import { purchasesRoutes } from "./purchases";
+import { deliveredContent } from "./seed";
 
 export function createApp(db: Db, paywall?: Paywall) {
   const app = new Hono();
@@ -32,7 +33,7 @@ export function createApp(db: Db, paywall?: Paywall) {
     });
     app.get("/listings/:id/unlock", (c) => {
       const listing = getListing(db, c.req.param("id"));
-      return listing ? c.text(listing.content) : c.json({ error: "not found" }, 404);
+      return listing ? c.text(deliveredContent(listing)) : c.json({ error: "not found" }, 404);
     });
   }
 

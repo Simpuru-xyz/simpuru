@@ -64,10 +64,46 @@ export function cardanoAddressKind(addr: string): CardanoAddressKind {
   },
 ];
 
-/** Inserts the sample listings once, owned by `sellerAddress`. */
+// Two deliberately bad sellers, so the protection paths can be shown on preprod.
+// The listing commits to the real content; what happens at delivery is the fault.
+export const DEMO_FAULTS: Record<string, "no_delivery" | "wrong_file"> = {
+  "demo-no-delivery": "no_delivery",
+  "demo-wrong-file": "wrong_file",
+};
+const DEMO = [
+  {
+    id: "demo-no-delivery",
+    title: "Demo: a seller who never delivers",
+    description:
+      "Protected only. The seller takes the order and never posts a result, so the buyer is refunded.",
+    priceLovelace: "5000000",
+    modes: ["protected"] as const,
+    content: "The file you would have received.\n",
+  },
+  {
+    id: "demo-wrong-file",
+    title: "Demo: a seller who delivers the wrong file",
+    description:
+      "Protected only. The seller delivers something else than it listed, so the buyer disputes.",
+    priceLovelace: "5000000",
+    modes: ["protected"] as const,
+    content: "The file that was listed.\n",
+  },
+];
+
+/** What the seller actually hands over: the content, unless the listing is a demo fault. */
+export function deliveredContent(listing: { id: string; content: string }) {
+  const fault = DEMO_FAULTS[listing.id];
+  if (fault === "no_delivery") return "";
+  if (fault === "wrong_file") return "Not the file that was listed.\n";
+  return listing.content;
+}
+
+/** Inserts the sample listings once, and the demo listings if missing, owned by `sellerAddress`. */
 export function seed(db: Db, sellerAddress: string) {
-  if (listListings(db).length > 0) return;
-  for (const s of SEED) {
+  const existing = new Set(listListings(db).map((l) => l.id));
+  const rows = existing.size === 0 ? [...SEED, ...DEMO] : DEMO.filter((d) => !existing.has(d.id));
+  for (const s of rows) {
     insertListing(db, {
       ...s,
       modes: [...s.modes],
