@@ -6,6 +6,7 @@ import { type Db, insertListing, listListings } from "./db";
 const SEED = [
   {
     id: "aurora-saas-hero",
+    previewMedia: "https://app.simpuru.xyz/mock/aurora-saas.webm",
     category: "Hero" as const,
     title: "Aurora SaaS hero with a slow gradient sky",
     description:
@@ -33,6 +34,7 @@ Typography: Inter from Google Fonts. Contrast must pass WCAG AA for all text.
   },
   {
     id: "editorial-portfolio-grid",
+    previewMedia: "https://app.simpuru.xyz/mock/editorial-portfolio-grid.webm",
     category: "Portfolio" as const,
     title: "Editorial portfolio grid with hover reveals",
     description:
@@ -58,6 +60,7 @@ Focus states must be visible for keyboard users; every card is a link with a mea
   },
   {
     id: "kinetic-pricing-section",
+    previewMedia: "https://app.simpuru.xyz/mock/kinetic-pricing-section.webm",
     category: "SaaS" as const,
     title: "Kinetic pricing section with a monthly/yearly toggle",
     description:
@@ -128,6 +131,12 @@ export function seed(db: Db, sellerAddress: string) {
   for (const s of [...SEED, ...DEMO])
     db.query("UPDATE listings SET category = ? WHERE id = ? AND category IS NULL").run(
       s.category,
+      s.id,
+    );
+  // Previews arrived after the first seed too.
+  for (const s of SEED)
+    db.query("UPDATE listings SET preview_media = ? WHERE id = ? AND preview_media IS NULL").run(
+      s.previewMedia,
       s.id,
     );
   const rows = [...SEED, ...DEMO].filter((d) => !existing.has(d.id));
