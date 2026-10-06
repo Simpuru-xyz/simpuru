@@ -1,4 +1,3 @@
-import { Zap } from "lucide-react";
 import Link from "next/link";
 import AgentOnboarding from "@/components/AgentOnboarding";
 import ChatDemo from "@/components/ChatDemo";
@@ -43,18 +42,6 @@ export default function Home() {
         <Nav />
 
         <main className="relative z-20 mx-auto max-w-7xl px-4 pt-6 pb-16 text-center sm:px-6 sm:pt-12 sm:pb-32">
-          <div
-            className="animate-fade-in-up mb-5 inline-flex items-center gap-2 sm:mb-8"
-            style={{ animationDelay: "0.2s", opacity: 0 }}
-          >
-            <span className="flex h-6 w-6 items-center justify-center rounded border border-gray-300">
-              <Zap className="h-4 w-4 fill-black" />
-            </span>
-            <span className="text-xs font-medium text-black sm:text-sm">
-              x402 on Cardano. Escrow by Masumi.
-            </span>
-          </div>
-
           <h1
             className="animate-fade-in-up mb-4 text-[38px] leading-[1.1] font-normal tracking-tight sm:mb-5 sm:text-6xl md:text-7xl lg:text-[80px]"
             style={{ animationDelay: "0.3s", opacity: 0 }}
