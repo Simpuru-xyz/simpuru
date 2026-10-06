@@ -13,8 +13,20 @@ Owner: @yeheskieltame
 | `get_listing` | free | one listing with its committed content hash |
 | `buy_listing` | listing price | `id`, `mode` (`protected` default, or `instant`); returns content, tx, hash check, refund deadlines |
 | `my_purchases` | free | purchase log, spent today vs budget |
+| `get_purchase_status` | free | escrow state, every on-chain step, deadlines |
 
-## Add it to Claude Code
+## Use the hosted server (no setup)
+
+```bash
+claude mcp add --transport http simpuru https://api.simpuru.xyz/mcp
+```
+
+Then ask: *"Find a hero section prompt on Simpuru and buy it with buyer protection."* The hosted
+server pays from a shared **preprod demo wallet** (max 10 tADA per purchase, 30 tADA per day), so it
+works without a wallet of your own. Cursor / Claude Desktop: add `https://api.simpuru.xyz/mcp` as a
+streamable HTTP MCP server.
+
+## Run it locally with your own wallet
 
 ```bash
 # from the repo root with .env filled (BUYER_MNEMONIC, BLOCKFROST_PROJECT_ID).

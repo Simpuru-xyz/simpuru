@@ -4,6 +4,6 @@ WORKDIR /app
 COPY . .
 RUN bun install --frozen-lockfile
 WORKDIR /app/apps/api
-ENV NODE_ENV=production PORT=4021 DB_PATH=/data/simpuru.db
+ENV NODE_ENV=production PORT=4021 DB_PATH=/data/simpuru.db DATA_DIR=/data
 EXPOSE 4021
 CMD ["bun", "src/index.ts"]
