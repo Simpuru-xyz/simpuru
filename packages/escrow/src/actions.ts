@@ -104,6 +104,23 @@ async function continueEscrow(c: Continuation): Promise<string> {
 }
 
 /**
+ * The whole error, causes included. SDK errors wrap the provider's answer several
+ * levels down (TransactionBuilderError → ProviderError → HttpResponseError), and
+ * `String(error)` keeps only the top message, which hides why a tx was rejected.
+ */
+export function errorText(error: unknown): string {
+  const parts: string[] = [];
+  const seen = new Set<unknown>();
+  let current: unknown = error;
+  while (current && !seen.has(current) && parts.length < 10) {
+    seen.add(current);
+    parts.push(current instanceof Error ? current.message : String(current));
+    current = (current as { cause?: unknown }).cause;
+  }
+  return parts.join(" <- ");
+}
+
+/**
  * Public Koios is load-balanced and one backend can lag minutes behind
  * (observed on preprod, 6 Oct 2026: 2 of 6 queries still showed the buyer's
  * pre-lock UTxO). Coin selection then picks an already-spent input and the
@@ -116,7 +133,7 @@ async function withStaleUtxoRetry<T>(build: () => Promise<T>, attempts = 5): Pro
     try {
       return await build();
     } catch (error) {
-      const text = String(error);
+      const text = errorText(error);
       const stale = /missing from UTxO set|Unknown transaction input|BadInputsUTxO/.test(text);
       // Transport failures, not verdicts: a script that really fails comes back as an
       // evaluation error with a reason and is never retried.
