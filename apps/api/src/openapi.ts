@@ -16,6 +16,12 @@ const txHash = {
   description: "Cardano transaction hash.",
 };
 const hash = { type: "string", pattern: "^[0-9a-f]{64}$", description: "Lowercase hex SHA-256." };
+const proofHeader = {
+  type: "string",
+  contentEncoding: "base64",
+  contentMediaType: "application/json",
+  contentSchema: { $ref: "#/components/schemas/UnlockProof" },
+};
 const idParam = (description: string) => ({
   name: "id",
   in: "path",
@@ -40,8 +46,10 @@ export const openApiSpec = {
       "",
       "Every on-chain claim can be checked on `https://preprod.cardanoscan.io/transaction/<hash>`.",
     ].join("\n"),
-    license: { name: "MIT" },
+    license: { name: "MIT", identifier: "MIT" },
   },
+  // Public by default; the arbiter operation declares its own bearer token.
+  security: [],
   servers: [
     { url: "https://api.simpuru.xyz", description: "Production (Cardano preprod)" },
     { url: "http://localhost:4021", description: "Local `bun run dev` in apps/api" },
@@ -61,7 +69,7 @@ export const openApiSpec = {
       name: "Arbiter (internal)",
       description: "Dispute settlement service, `apps/arbiter`, port 4023. Not public.",
     },
-    { name: "System" },
+    { name: "System", description: "Health." },
   ],
   paths: {
     "/health": {
@@ -147,7 +155,7 @@ export const openApiSpec = {
             name: "X-Simpuru-Proof",
             in: "header",
             required: false,
-            schema: { type: "string" },
+            schema: proofHeader,
             description: "Base64 JSON `UnlockProof` (see schema): proves the caller already paid.",
           },
         ],
@@ -231,7 +239,7 @@ export const openApiSpec = {
             name: "X-Simpuru-Proof",
             in: "header",
             required: true,
-            schema: { type: "string" },
+            schema: proofHeader,
             description: "Base64 JSON `UnlockProof` from the payer.",
           },
         ],
