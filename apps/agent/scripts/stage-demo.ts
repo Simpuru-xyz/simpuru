@@ -1,12 +1,12 @@
-// Stage the live demo (#49): one escrow per protected path, bought so each gate opens
-// at a chosen second of the stage slot, plus a pre-stage check read from chain.
+// Stage the demo recording (#49): one escrow per protected path, bought so each gate opens
+// at a chosen second of the recording (the "slot"), plus a pre-stage check read from chain.
 //
 //   bun apps/agent/scripts/stage-demo.ts plan  --slot 2026-10-07T10:00:00Z
 //   bun apps/agent/scripts/stage-demo.ts run   --slot 2026-10-07T10:00:00Z
 //   bun apps/agent/scripts/stage-demo.ts check [--json]
 //
-// Options (plan/run): --refund-at 60 --seller-at 120 --arbiter-at 180  (seconds after the
-// slot start each gate opens), --refund-listing / --seller-listing / --arbiter-listing.
+// Options (plan/run): --seller-at 60 --refund-at 120 --arbiter-at 180  (seconds after the
+// slot start each gate opens; the order of the video, docs/demo.md), --refund-listing / --seller-listing / --arbiter-listing.
 // Run from the repo root so .env loads (BUYER_MNEMONIC, BLOCKFROST_PROJECT_ID, SIMPURU_API_URL).
 // `run` must start at least ~46 min before the slot; it sleeps until each buy is due.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -32,13 +32,13 @@ function plan() {
   return planStage({
     slotMs: Date.parse(slot),
     gateOffsetSec: {
-      refund: Number(opt("refund-at", "60")),
-      seller: Number(opt("seller-at", "120")),
+      refund: Number(opt("refund-at", "120")),
+      seller: Number(opt("seller-at", "60")),
       arbiter: Number(opt("arbiter-at", "180")),
     },
     listings: {
       refund: opt("refund-listing", "demo-no-delivery") as string,
-      seller: opt("seller-listing", "orders-dataset-100") as string,
+      seller: opt("seller-listing", "aurora-saas-hero") as string,
       arbiter: opt("arbiter-listing", "demo-wrong-file") as string,
     },
   });
