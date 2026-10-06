@@ -11,10 +11,11 @@ Status: work in progress (TOKEN2049 Origins Hackathon, Cardano preprod).
 
 | Path | What | Owner |
 |---|---|---|
+| `apps/landing` | Landing page | @AdityaWisnuu |
 | `apps/web` | Web app (Next.js) | @Lexirieru |
 | `apps/api` | HTTP API, x402 paywall, facilitator, seller agent (Hono on Bun) | @yeheskieltame |
 | `apps/mcp` | MCP server with paid tools | @yeheskieltame |
-| `apps/agent` | Buyer agent and protection watcher | @AdityaWisnuu |
+| `apps/agent` | Buyer agent and protection watcher | @ghozzza |
 | `apps/arbiter` | Dispute arbiter service | @ghozzza |
 | `packages/escrow` | Escrow codecs and transaction builders | @ghozzza |
 | `packages/core` | Shared types and helpers | @yeheskieltame |
