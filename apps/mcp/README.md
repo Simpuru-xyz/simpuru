@@ -9,7 +9,7 @@ Owner: @yeheskieltame
 
 | Tool | Cost | |
 |---|---|---|
-| `search_listings` | free | catalogue, optional `query` |
+| `search_listings` | free | catalogue with filters: `query`, `category`, `mode`, `maxPriceAda`, `minReputation` (0-100), `sort` |
 | `get_listing` | free | one listing with its committed content hash |
 | `buy_listing` | listing price | `id`, `mode` (`protected` default, or `instant`); returns content, tx, hash check, refund deadlines |
 | `my_purchases` | free | purchase log, spent today vs budget |
