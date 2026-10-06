@@ -3,6 +3,8 @@
 // own_ref = (0x11 * 32, 0), empty buyer and seller values. If our CBOR differed
 // from Aiken's cbor.serialise by a single byte, these signatures would not verify.
 import { describe, expect, test } from "bun:test";
+import { Data } from "@evolution-sdk/evolution";
+import { blake2b } from "@noble/hashes/blake2.js";
 import {
   assetValueData,
   disputeIntentHash,
@@ -91,5 +93,32 @@ describe("dispute intent matches the validator's own vectors", () => {
         other,
       ),
     ).toBe(false);
+  });
+});
+
+// The vectors above all use empty values, which encode the same in every CBOR style (a0),
+// so they could not catch a map-encoding mismatch. This one has a non-empty value, and the
+// validator itself accepted a payout signed over exactly this intent on preprod:
+// tx 074da4b5eda0a23af5513f9d4115f0d74f70c12e109a8353ca256bcf15ba90ec.
+describe("dispute intent with a non-empty value", () => {
+  const ownRef = outputReferenceData(
+    "4525304ddf22e8eb382eb19d9d20f0100dcacc18d2250cfbe6517ef05b605fff",
+    0n,
+  );
+  const buyer = assetValueData({ lovelace: 5_000_000n });
+  const seller = assetValueData({});
+
+  test("matches the intent the validator accepted on preprod", () => {
+    expect(Buffer.from(disputeIntentHash(ownRef, buyer, seller)).toString("hex")).toBe(
+      "2997941cdbd1b1844a0c7e927aea4c1c42bf56065416f43dbf8fe43a",
+    );
+  });
+
+  test("the SDK's default encoding would not (maps written indefinite)", () => {
+    const withdrawal = Data.constr(0n, [ownRef, buyer, seller]);
+    const viaDefault = blake2b(Data.toCBORBytes(withdrawal), { dkLen: 28 });
+    expect(Buffer.from(viaDefault).toString("hex")).not.toBe(
+      "2997941cdbd1b1844a0c7e927aea4c1c42bf56065416f43dbf8fe43a",
+    );
   });
 });

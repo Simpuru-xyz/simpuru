@@ -6,7 +6,7 @@
 //   ["Signature1", protected_headers, h'', intent]
 // (or over blake2b_224(intent), the hashed mode). Anyone may then submit the
 // payout transaction; the signature binds it to one UTxO through `own_ref`.
-import { Data, PrivateKey, VKey } from "@evolution-sdk/evolution";
+import { type CBOR, Data, PrivateKey, VKey } from "@evolution-sdk/evolution";
 import { blake2b } from "@noble/hashes/blake2.js";
 
 /** `{1: -8}`: alg EdDSA, the bare protected-header map key-in-hand tooling uses. */
@@ -35,13 +35,29 @@ export function outputReferenceData(txHashHex: string, index: bigint): Data.Data
 
 const blake2b224 = (bytes: Uint8Array) => blake2b(bytes, { dkLen: 28 });
 
+/**
+ * The encoding of Plutus's `serialiseData` builtin, which Aiken's `cbor.serialise` calls:
+ * indefinite-length lists and constructor fields, but definite-length maps. None of the
+ * SDK presets is this: its default writes maps indefinite (bf…ff), which hashes to a
+ * different intent the moment a value is non-empty. Empty values encode the same either
+ * way (a0), which is why the validator's own all-empty vectors could not catch it.
+ */
+export const PLUTUS_DATA_OPTIONS: CBOR.CodecOptions = {
+  mode: "custom",
+  useIndefiniteArrays: true,
+  useIndefiniteMaps: false,
+  useDefiniteForEmpty: true,
+  sortMapKeys: false,
+  useMinimalEncoding: true,
+};
+
 export function disputeIntentHash(
   ownRef: Data.Data,
   buyerValue: Data.Data,
   sellerValue: Data.Data,
 ): Uint8Array {
   const withdrawal = Data.constr(0n, [ownRef, buyerValue, sellerValue]);
-  return blake2b224(Buffer.from(Data.toCBORHex(withdrawal), "hex"));
+  return blake2b224(Data.toCBORBytes(withdrawal, PLUTUS_DATA_OPTIONS));
 }
 
 function cborByteString(bytes: Uint8Array): Buffer {
