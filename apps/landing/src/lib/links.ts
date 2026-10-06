@@ -5,6 +5,12 @@
  * pointing somewhere we left.
  */
 
+/** The app (apps/web): catalogue, purchases, seller dashboard. */
+export const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
+  /\/+$/,
+  "",
+);
+
 export const REPO_URL = "https://github.com/Simpuru-xyz/simpuru";
 
 /** The MCP server, as an agent connects to it. */

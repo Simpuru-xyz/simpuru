@@ -1,16 +1,16 @@
 import { Github, Globe } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { MCP_DOCS_URL, REPO_URL } from "@/lib/links";
+import { APP_URL, MCP_DOCS_URL, REPO_URL } from "@/lib/links";
 
 const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] = [
   {
     heading: "Product",
     links: [
-      { label: "Catalogue", href: "/listings" },
-      { label: "Sell something", href: "/seller" },
-      { label: "Your purchases", href: "/purchases" },
-      { label: "Connect an agent", href: "/connect" },
+      { label: "Catalogue", href: `${APP_URL}/listings` },
+      { label: "Sell a prompt", href: `${APP_URL}/seller` },
+      { label: "Your purchases", href: `${APP_URL}/purchases` },
+      { label: "Connect an agent", href: "#for-agents" },
     ],
   },
   {
@@ -37,7 +37,7 @@ const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] =
 
 const SOCIALS: { label: string; href: string; Icon: typeof Github }[] = [
   { label: "Source on GitHub", href: REPO_URL, Icon: Github },
-  { label: "Browse the catalogue", href: "/listings", Icon: Globe },
+  { label: "The app", href: APP_URL, Icon: Globe },
 ];
 
 /** The layered card holding the directories. */

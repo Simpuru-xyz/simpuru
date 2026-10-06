@@ -5,6 +5,7 @@ import ChatDemo from "@/components/ChatDemo";
 import Footer from "@/components/Footer";
 import Nav from "@/components/Nav";
 import SiteFooter from "@/components/SiteFooter";
+import { APP_URL } from "@/lib/links";
 
 const VIDEO_SRC = "/media/hero.mp4";
 
@@ -83,7 +84,7 @@ export default function Home() {
           </p>
 
           <Link
-            href="/listings"
+            href={`${APP_URL}/listings`}
             className="animate-fade-in-up inline-block rounded-full bg-black px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800 sm:px-8 sm:text-base"
             style={{ animationDelay: "0.5s", opacity: 0 }}
           >
