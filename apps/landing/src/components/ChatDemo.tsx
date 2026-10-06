@@ -124,99 +124,170 @@ function useInView<T extends HTMLElement>() {
   return [ref, inView] as const;
 }
 
+/** A plain person mark for the agent's side of the conversation. */
+function AgentAvatar() {
+  return (
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2a2a2a]">
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden
+        className="h-4 w-4"
+        fill="none"
+        stroke="#f2f2f2"
+        strokeWidth="1.8"
+      >
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+
+/** Simpuru's side: a gradient disc in the section's lilac and sky tones. */
+function SimpuruAvatar() {
+  return (
+    <span
+      aria-hidden
+      className="h-8 w-8 shrink-0 rounded-full"
+      style={{
+        background: "linear-gradient(105deg, #b9a7f0 0%, #9d8ae0 40%, #8fb8ea 70%, #bfe0f5 100%)",
+      }}
+    />
+  );
+}
+
 /**
  * What buying a prompt looks like from inside an agent.
  *
- * The section above this one explains the wiring; this one shows the result,
- * which is the part a reader remembers.
+ * Layout follows the chat panel of the MotionSites "DeepThink" prompt: a dark
+ * chat card inside a soft gradient panel, avatars on each side, a "live" dot,
+ * and a pill input at the bottom. The panel is recoloured from yellow/teal to
+ * the lilac and sky of the sections above. All of it is CSS and inline SVG.
  */
 export default function ChatDemo() {
   const [ref, inView] = useInView<HTMLDivElement>();
   const { typed, typingIndex, thinking } = useTypedTranscript(inView);
 
   return (
-    <section ref={ref} className="w-full bg-[#F4F2EF] px-6 py-24 sm:px-8 sm:py-32">
-      <div className="mx-auto max-w-3xl">
-        <p className="mb-3 text-sm tracking-widest text-gray-500 uppercase">In practice</p>
-        <h2 className="mb-4 text-4xl font-normal tracking-tight text-[#141414] sm:text-5xl">
-          One line in, a protected prompt out
+    <section ref={ref} className="w-full bg-white px-4 py-16 sm:px-6 sm:py-24">
+      <div className="mx-auto max-w-[1300px]">
+        <h2 className="mb-4 text-3xl leading-[1.11] font-normal tracking-[-0.02em] text-[#141414] sm:text-4xl md:text-5xl">
+          One line in.
+          <br />
+          <span className="text-[#8b8b8d]">A protected prompt out.</span>
         </h2>
-        <p className="mb-14 max-w-2xl text-base leading-relaxed text-gray-600">
-          No checkout, no card. The agent asks, Simpuru quotes the price, and the seller is only
-          paid once the prompt arrives as promised. If it does not, the money goes back on its own.
+        <p className="mb-10 max-w-xl text-base text-[#6b6b6d] sm:mb-12 sm:text-lg">
+          No checkout, no card. No prompt, no payment.
         </p>
 
-        <div className="flex flex-col gap-5">
-          {TRANSCRIPT.map((entry, index) => {
-            const isAgent = entry.speaker === "agent";
-            const startsRun = index === 0 || TRANSCRIPT[index - 1]?.speaker !== entry.speaker;
-            const shown = typed[index] ?? "";
-            const started = shown.length > 0 || index === typingIndex;
+        <div
+          className="relative overflow-hidden rounded-[14px] px-3 py-6 sm:px-10 sm:py-10"
+          style={{
+            background: [
+              "radial-gradient(120% 150% at 9% 52%, #b7a6ee 0%, #a796e2 22%, rgba(167,150,226,0) 56%)",
+              "radial-gradient(120% 150% at 95% 50%, #9cc4ee 0%, #86b2e4 34%, rgba(134,178,228,0) 64%)",
+              "radial-gradient(80% 110% at 42% 6%, rgba(236,214,240,0.7) 0%, rgba(236,214,240,0) 42%)",
+              "linear-gradient(96deg, #b4a3ec 0%, #c3b4ee 32%, #a9c3ec 62%, #8fb6e6 100%)",
+            ].join(", "),
+          }}
+        >
+          <div className="mb-4 flex items-center gap-2 px-1 text-sm font-medium text-[#0b0c07]">
+            <span className="h-2 w-2 rounded-full bg-[#23d92c] shadow-[0_0_6px_rgba(45,220,55,0.65)]" />
+            Live purchase
+          </div>
 
-            return (
-              <div
-                key={entry.text}
-                className={`flex flex-col ${isAgent ? "items-start" : "items-end"}`}
-              >
-                {startsRun && (
-                  <span
-                    className={`mb-2 px-3 font-mono text-xs text-gray-500 transition-opacity duration-300 ${
-                      started ? "opacity-100" : "opacity-0"
-                    }`}
-                  >
-                    {SPEAKER[entry.speaker]}
-                  </span>
-                )}
-                {/*
-                  Every bubble is laid out from the start and only faded in, so
-                  the section's height never changes while the transcript types.
-                  Adding them as they arrive made the page jump under the reader.
-                */}
+          <div className="mx-auto flex max-w-[814px] flex-col gap-4 rounded-[18px] bg-[#0d0d0d] p-4 sm:p-6">
+            {TRANSCRIPT.map((entry, index) => {
+              const isAgent = entry.speaker === "agent";
+              const shown = typed[index] ?? "";
+              const started = shown.length > 0 || index === typingIndex;
+
+              return (
                 <div
-                  className={`max-w-[85%] rounded-3xl px-6 py-4 text-lg leading-snug tracking-tight transition-opacity duration-300 sm:text-xl ${
-                    started ? "opacity-100" : "opacity-0"
-                  } ${isAgent ? "bg-black/[0.06] text-[#141414]" : "bg-[#141414] text-[#F4F2EF]"}`}
+                  key={entry.text}
+                  className={`flex items-end gap-2.5 transition-opacity duration-300 ${
+                    isAgent ? "flex-row-reverse" : ""
+                  } ${started ? "opacity-100" : "opacity-0"}`}
                 >
-                  <span className="font-light">{shown || entry.text}</span>
-                  {index === typingIndex && (
-                    <span className="ml-1 inline-block h-[0.7em] w-[0.06em] animate-pulse bg-current align-middle" />
-                  )}
-
-                  {entry.showsWork && (
+                  {isAgent ? <AgentAvatar /> : <SimpuruAvatar />}
+                  <div className="flex max-w-[78%] flex-col gap-1">
                     <span
-                      className={`mt-4 block overflow-hidden rounded-2xl transition-opacity duration-700 ${
-                        shown.length === entry.text.length ? "opacity-100" : "opacity-0"
-                      }`}
+                      className={`font-mono text-[11px] text-white/40 ${isAgent ? "text-right" : ""}`}
                     >
-                      {/*
-                        `unoptimized` on purpose: this is an animated WebP and
-                        the optimizer would flatten it to a still frame.
-                      */}
-                      <Image
-                        src={PROMPT_PREVIEW}
-                        alt="The landing page this prompt produces"
-                        width={1280}
-                        height={720}
-                        unoptimized
-                        className="block aspect-[16/9] w-full object-cover"
-                      />
+                      {SPEAKER[entry.speaker]}
                     </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                    {/*
+                      Every bubble is laid out from the start and only faded in,
+                      so the card's height never changes while the transcript
+                      types and the page does not jump under the reader.
+                    */}
+                    <div className="rounded-[15px] bg-[#1c1c1c] px-4 py-3 text-[15px] leading-[1.42] text-[#efefef] sm:text-base">
+                      <span>{shown || entry.text}</span>
+                      {index === typingIndex && (
+                        <span className="ml-1 inline-block h-[0.8em] w-[0.08em] animate-pulse bg-current align-middle" />
+                      )}
 
-        <div className="mt-8 flex h-3 items-center justify-end gap-1.5 pr-6">
-          {thinking &&
-            [0, 1, 2].map((dot) => (
-              <span
-                key={dot}
-                className="h-2 w-2 animate-pulse rounded-full bg-black/40"
-                style={{ animationDelay: `${dot * 0.15}s` }}
-              />
-            ))}
+                      {entry.showsWork && (
+                        <span
+                          className={`mt-3 block overflow-hidden rounded-xl transition-opacity duration-700 ${
+                            shown.length === entry.text.length ? "opacity-100" : "opacity-0"
+                          }`}
+                        >
+                          {/*
+                            `unoptimized` on purpose: this is an animated WebP and
+                            the optimizer would flatten it to a still frame.
+                          */}
+                          <Image
+                            src={PROMPT_PREVIEW}
+                            alt="The landing page this prompt produces"
+                            width={1280}
+                            height={720}
+                            unoptimized
+                            className="block aspect-[16/9] w-full object-cover"
+                          />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="flex h-3 items-center gap-1.5 pl-11">
+              {thinking &&
+                [0, 1, 2].map((dot) => (
+                  <span
+                    key={dot}
+                    className="h-1.5 w-1.5 animate-pulse rounded-full bg-white/50"
+                    style={{ animationDelay: `${dot * 0.15}s` }}
+                  />
+                ))}
+            </div>
+
+            {/* Decorative: the demo has no input, it only shows what one looks like. */}
+            <div
+              aria-hidden
+              className="flex h-12 items-center gap-3 rounded-full bg-[#fdfdfd] pr-1.5 pl-5"
+            >
+              <span className="flex-1 truncate text-sm text-[#6b6b6d]">
+                Ask your agent for a design prompt…
+              </span>
+              <span className="send-ring relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full p-[1.5px]">
+                <span className="relative z-10 flex h-full w-full items-center justify-center rounded-full bg-[#141414]">
+                  <svg
+                    aria-hidden
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="#fafafa"
+                    strokeWidth="2"
+                  >
+                    <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </section>

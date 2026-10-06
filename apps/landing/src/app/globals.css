@@ -77,3 +77,29 @@ body {
     animation: none;
   }
 }
+
+/* Chat demo send button: a gradient light sweeps around the ring. The button
+   itself never moves; only the ring's background layer rotates. */
+.send-ring {
+  overflow: hidden;
+}
+
+.send-ring::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: conic-gradient(from 0deg, #b9a7f0, #8fb8ea, #bfe0f5, #9d8ae0, #b9a7f0);
+  animation: send-ring-sweep 10s linear infinite;
+}
+
+@keyframes send-ring-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .send-ring::before {
+    animation: none;
+  }
+}
