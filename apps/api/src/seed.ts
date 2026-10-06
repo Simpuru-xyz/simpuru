@@ -124,8 +124,19 @@ export function deliveredContent(listing: { id: string; content: string }) {
   return listing.content;
 }
 
-/** Inserts every seed and demo listing that is missing, owned by `sellerAddress`. */
-export function seed(db: Db, sellerAddress: string) {
+/**
+ * Inserts every seed and demo listing that is missing. Seed prompts belong to `sellerAddress`;
+ * the deliberately bad demo listings to `demoSellerAddress`, so their refunds count against that
+ * seller's reputation, not the honest one's.
+ */
+export function seed(db: Db, sellerAddress: string, demoSellerAddress = sellerAddress) {
+  // Demo listings created before they had their own seller move to it once.
+  for (const d of DEMO)
+    db.query("UPDATE listings SET seller_address = ? WHERE id = ? AND seller_address != ?").run(
+      demoSellerAddress,
+      d.id,
+      demoSellerAddress,
+    );
   const existing = new Set(listListings(db).map((l) => l.id));
   // Listings seeded before categories existed get theirs once.
   for (const s of [...SEED, ...DEMO])
@@ -144,7 +155,7 @@ export function seed(db: Db, sellerAddress: string) {
     insertListing(db, {
       ...s,
       modes: [...s.modes],
-      sellerAddress,
+      sellerAddress: s.id in DEMO_FAULTS ? demoSellerAddress : sellerAddress,
       contentHash: contentHash(s.content),
     });
   }

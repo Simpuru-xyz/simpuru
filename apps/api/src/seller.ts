@@ -6,7 +6,7 @@ import { Address } from "@evolution-sdk/evolution";
 import { ESCROW_STATES } from "@simpuru/core";
 import { ESCROW } from "@simpuru/core/escrow";
 import { purchaseResultHash } from "@simpuru/core/hash";
-import { readClient, submitResult, viewOf, withdraw } from "@simpuru/escrow";
+import { type Actor, readClient, submitResult, viewOf, withdraw } from "@simpuru/escrow";
 import { type Db, getListing } from "./db";
 import { addEvent, type OpenPurchase, openProtectedPurchases, updatePurchase } from "./purchases";
 import { DEMO_FAULTS, deliveredContent } from "./seed";
@@ -95,7 +95,10 @@ async function closingOf(bf: Blockfrost, ref: string, buyer: string, seller: str
 }
 
 /** One pass over open protected purchases. Errors are logged and retried on the next pass. */
-export async function sellerTick(db: Db, bf: Blockfrost, now = Date.now()) {
+/** Seller address → the key that signs for it. Listings by any other address are only watched. */
+export type SellerKeys = Map<string, Actor>;
+
+export async function sellerTick(db: Db, bf: Blockfrost, keys: SellerKeys, now = Date.now()) {
   const open = openProtectedPurchases(db);
   if (open.length === 0) return;
   // A lock moves to a new UTxO on every action; the seller nonce in its datum stays the same.
@@ -125,15 +128,18 @@ export async function sellerTick(db: Db, bf: Blockfrost, now = Date.now()) {
       }
       if (action.kind === "submit" && lock) {
         const listing = getListing(db, p.listing_id);
+        const key = listing && keys.get(listing.sellerAddress);
         // A seller who never delivers never posts a result (demo fault).
-        if (!listing || DEMO_FAULTS[listing.id] === "no_delivery") continue;
+        if (!listing || !key || DEMO_FAULTS[listing.id] === "no_delivery") continue;
         const resultHash = purchaseResultHash(p.tx_hash, deliveredContent(listing));
-        const resultTx = await submitResult(lock.ref, resultHash);
+        const resultTx = await submitResult(lock.ref, resultHash, key);
         updatePurchase(db, p.tx_hash, { resultTx, resultHash });
         console.log(`[seller] ${p.tx_hash.slice(0, 8)} result submitted ${resultTx}`);
       } else if (action.kind === "withdraw" && lock) {
+        const key = keys.get(getListing(db, p.listing_id)?.sellerAddress ?? "");
+        if (!key) continue;
         updatePurchase(db, p.tx_hash, { status: "withdrawing" });
-        const closingTx = await withdraw(lock.ref);
+        const closingTx = await withdraw(lock.ref, key);
         updatePurchase(db, p.tx_hash, { status: "withdrawn", closingTx });
         addEvent(db, p.tx_hash, "withdrawn", closingTx);
         console.log(`[seller] ${p.tx_hash.slice(0, 8)} withdrawn ${closingTx}`);
@@ -165,20 +171,26 @@ export const blockfrost =
   async (path) => {
     const res = await fetch(`https://cardano-preprod.blockfrost.io/api/v0${path}`, {
       headers: { project_id: projectId },
+      signal: AbortSignal.timeout(20_000),
     });
     if (!res.ok) throw new Error(`blockfrost ${path}: HTTP ${res.status}`);
     return res.json();
   };
 
 /** Runs `sellerTick` every `intervalMs`, one pass at a time. */
-export function startSellerAgent(db: Db, blockfrostProjectId: string, intervalMs = 30_000) {
+export function startSellerAgent(
+  db: Db,
+  blockfrostProjectId: string,
+  keys: SellerKeys,
+  intervalMs = 30_000,
+) {
   const bf = blockfrost(blockfrostProjectId);
   let running = false;
   const tick = async () => {
     if (running) return;
     running = true;
     try {
-      await sellerTick(db, bf);
+      await sellerTick(db, bf, keys);
     } catch (error) {
       console.warn(`[seller] tick failed: ${String(error).slice(0, 200)}`);
     } finally {

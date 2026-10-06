@@ -151,3 +151,41 @@ describe("demo faults", () => {
     expect(db.query("SELECT count(*) AS n FROM listings").get()).toEqual({ n: 5 });
   });
 });
+
+describe("demo seller", () => {
+  const DEMO_SELLER = `addr_test1${"z".repeat(98)}`;
+
+  test("bad demo listings belong to their own seller, and their refunds don't touch the honest one", async () => {
+    const db = openDb(":memory:");
+    seed(db, SELLER, DEMO_SELLER);
+    const { insertPurchase } = await import("./purchases");
+    const buy = (tx: string, listingId: string, status: string) =>
+      insertPurchase(db, {
+        txHash: tx.repeat(64),
+        listingId,
+        mode: "protected",
+        payer: "addr_test1b",
+        status,
+        terms: "{}",
+      });
+    buy("a", "aurora-saas-hero", "withdrawn");
+    buy("b", "demo-no-delivery", "refunded");
+    buy("c", "demo-wrong-file", "refunded");
+    const app = createApp(db);
+    const get = async (id: string) =>
+      (await (await app.request(`/listings/${id}`)).json()) as Record<string, unknown>;
+    expect((await get("demo-no-delivery")).sellerAddress).toBe(DEMO_SELLER);
+    expect((await get("aurora-saas-hero")).sellerReputation).toEqual({ score: 100, basis: 1 });
+    expect((await get("demo-wrong-file")).sellerReputation).toEqual({ score: 0, basis: 2 });
+  });
+
+  test("demo listings seeded under the honest seller move to the demo seller", () => {
+    const db = openDb(":memory:");
+    seed(db, SELLER);
+    seed(db, SELLER, DEMO_SELLER);
+    const row = db
+      .query("SELECT seller_address AS s FROM listings WHERE id = 'demo-wrong-file'")
+      .get() as { s: string };
+    expect(row.s).toBe(DEMO_SELLER);
+  });
+});
