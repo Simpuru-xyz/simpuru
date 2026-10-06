@@ -85,12 +85,14 @@ describe("preview media", () => {
     expect(l.content).toBeUndefined();
   });
 
-  test("listings without a preview omit the field", async () => {
-    const l = (await (await fresh().request("/listings/aurora-saas-hero")).json()) as Record<
-      string,
-      unknown
-    >;
-    expect("previewMedia" in l).toBe(false);
+  test("seed prompts carry their recordings; demo listings have none", async () => {
+    const app = fresh();
+    const get = async (id: string) =>
+      (await (await app.request(`/listings/${id}`)).json()) as Record<string, unknown>;
+    expect((await get("aurora-saas-hero")).previewMedia).toBe(
+      "https://app.simpuru.xyz/mock/aurora-saas.webm",
+    );
+    expect("previewMedia" in (await get("demo-no-delivery"))).toBe(false);
   });
 });
 
