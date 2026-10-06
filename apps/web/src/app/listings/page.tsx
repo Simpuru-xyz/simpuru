@@ -1,27 +1,46 @@
 "use client";
 
-import type { Listing } from "@simpuru/core";
-import { RotateCcw } from "lucide-react";
+import { ChevronDown, RotateCcw } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import ListingCard from "@/components/ListingCard";
+import ListingPreview from "@/components/ListingPreview";
 import Nav from "@/components/Nav";
 import Skeleton, { SkeletonRegion } from "@/components/Skeleton";
-import { fetchListings } from "@/lib/api";
+import { CATEGORIES, type ListingView } from "@/lib/api";
+import { fetchCatalogue } from "@/lib/mock-prompts";
 
-type LoadState =
-  | { phase: "pending" }
-  | { phase: "error" }
-  | { phase: "ready"; listings: Listing[] };
+type L = ListingView;
+const SORTS = {
+  popular: { label: "Popular", by: (a: L, b: L) => (b.sales ?? 0) - (a.sales ?? 0) },
+  newest: {
+    label: "Newest",
+    by: (a: L, b: L) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0),
+  },
+  price: {
+    label: "Price: low to high",
+    by: (a: L, b: L) => Number(BigInt(a.priceLovelace) - BigInt(b.priceLovelace)),
+  },
+} as const;
+type Sort = keyof typeof SORTS;
+
+type LoadState = { phase: "pending" } | { phase: "error" } | { phase: "ready"; listings: L[] };
+
+const pill = (active: boolean) =>
+  `shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none ${
+    active ? "bg-black text-white" : "text-gray-600 hover:bg-black/[0.05] hover:text-black"
+  }`;
 
 export default function CataloguePage() {
   const [load, setLoad] = useState<LoadState>({ phase: "pending" });
-  // Bumped by the retry control; the effect refetches on every bump.
   const [attempt, setAttempt] = useState(0);
+  const [category, setCategory] = useState<string | null>(null);
+  const [sort, setSort] = useState<Sort>("popular");
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `attempt` is the retry trigger
   useEffect(() => {
     let cancelled = false;
-    fetchListings()
+    fetchCatalogue()
       .then((listings) => {
         if (!cancelled) setLoad({ phase: "ready", listings });
       })
@@ -33,28 +52,92 @@ export default function CataloguePage() {
     };
   }, [attempt]);
 
+  const listings = load.phase === "ready" ? load.listings : [];
+  // Only categories that have something in them, in the canonical order.
+  const categories = CATEGORIES.filter((c) => listings.some((l) => l.category === c));
+  const shown = listings.filter((l) => !category || l.category === category).sort(SORTS[sort].by);
+
   return (
     <div className="min-h-screen bg-white">
       <Nav />
 
-      <main className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
-        <header className="py-8">
-          <h1 className="mb-3 text-3xl font-normal tracking-tight sm:text-4xl">Catalogue</h1>
-          <p className="max-w-2xl text-base text-gray-600">
-            Digital goods an agent can buy over x402 on Cardano. Every listing commits to the hash
-            of its content, so the buyer can prove what was delivered. Pick{" "}
-            <span className="font-medium text-black">protected</span> and the payment waits in
-            escrow until it is.
-          </p>
-        </header>
+      <main className="px-4 pb-24 sm:px-6 lg:px-10">
+        <section className="relative mt-4 overflow-hidden rounded-2xl bg-black text-white">
+          <ListingPreview
+            src="/mock/particle-ai.webm"
+            title="Simpuru"
+            className="absolute inset-0 h-full w-full opacity-70"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+          <div className="relative flex flex-col gap-4 px-6 py-10 sm:px-10 sm:py-14">
+            <h1 className="max-w-xl text-3xl font-semibold tracking-tight sm:text-5xl">
+              Prompts your agent can buy.
+            </h1>
+            <p className="max-w-lg text-sm text-white/75 sm:text-base">
+              Pay once over x402 on Cardano and reuse it forever. Anyone can sell, every seller
+              carries a reputation, and protected buys wait in escrow until delivery checks out.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/sell"
+                className="rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition-colors hover:bg-gray-200"
+              >
+                Sell a prompt
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <div className="sticky top-[65px] z-20 -mx-4 mt-6 mb-6 flex items-center justify-between gap-4 bg-white/90 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
+          <fieldset className="flex min-w-0 gap-1 overflow-x-auto [scrollbar-width:none]">
+            <legend className="sr-only">Filter by category</legend>
+            <button
+              type="button"
+              aria-pressed={category === null}
+              onClick={() => setCategory(null)}
+              className={pill(category === null)}
+            >
+              All
+            </button>
+            {categories.map((c) => (
+              <button
+                key={c}
+                type="button"
+                aria-pressed={category === c}
+                onClick={() => setCategory(category === c ? null : c)}
+                className={pill(category === c)}
+              >
+                {c}
+              </button>
+            ))}
+          </fieldset>
+          <label className="relative shrink-0">
+            <span className="sr-only">Sort</span>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as Sort)}
+              className="appearance-none rounded-full border border-gray-200 bg-white py-1.5 pr-8 pl-3.5 text-sm text-black focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none"
+            >
+              {Object.entries(SORTS).map(([key, s]) => (
+                <option key={key} value={key}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              aria-hidden
+              className="pointer-events-none absolute top-1/2 right-2.5 h-4 w-4 -translate-y-1/2 text-gray-500"
+            />
+          </label>
+        </div>
 
         {load.phase === "pending" && (
           <SkeletonRegion
             label="Loading the catalogue…"
-            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
           >
-            {["a", "b", "c"].map((key) => (
-              <Skeleton key={key} className="h-64 rounded-2xl" />
+            {["a", "b", "c", "d"].map((key) => (
+              <Skeleton key={key} className="aspect-[4/3] rounded-xl" />
             ))}
           </SkeletonRegion>
         )}
@@ -71,7 +154,7 @@ export default function CataloguePage() {
                 setLoad({ phase: "pending" });
                 setAttempt((n) => n + 1);
               }}
-              className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-4 py-2 text-xs font-medium text-black transition-colors hover:border-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none"
+              className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-4 py-2 text-xs font-medium text-black transition-colors hover:border-black"
             >
               <RotateCcw aria-hidden className="h-3.5 w-3.5" />
               Try again
@@ -79,16 +162,16 @@ export default function CataloguePage() {
           </div>
         )}
 
-        {load.phase === "ready" && load.listings.length === 0 && (
+        {load.phase === "ready" && shown.length === 0 && (
           <p className="rounded-2xl border border-gray-200 p-8 text-center text-sm text-gray-600">
-            The catalogue is empty.
+            {listings.length === 0 ? "The catalogue is empty." : `Nothing in ${category} yet.`}
           </p>
         )}
 
-        {load.phase === "ready" && load.listings.length > 0 && (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {load.listings.map((listing, i) => (
-              <ListingCard key={listing.id} listing={listing} index={i} />
+        {shown.length > 0 && (
+          <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            {shown.map((l, i) => (
+              <ListingCard key={l.id} listing={l} index={i} />
             ))}
           </div>
         )}

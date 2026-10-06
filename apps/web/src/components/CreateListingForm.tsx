@@ -5,6 +5,7 @@ import { Check, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import CopyButton from "@/components/CopyButton";
+import ListingPreview from "@/components/ListingPreview";
 import ModeBadge from "@/components/ModeBadge";
 import { adaToLovelace, createListing, RULES } from "@/lib/api";
 
@@ -20,7 +21,10 @@ function Label({ children, hint }: { children: React.ReactNode; hint?: string })
   );
 }
 
-const EMPTY = { title: "", description: "", content: "", priceAda: "" };
+const EMPTY = { title: "", description: "", content: "", priceAda: "", previewMedia: "" };
+
+/** Formats agreed on #46. */
+const PREVIEW_URL = /^https:\/\/\S+\.(mp4|webm|webp|gif)(\?\S*)?$/i;
 
 /**
  * Create a listing. The API hashes the content and returns the commitment;
@@ -59,6 +63,8 @@ export default function CreateListingForm({
     if (!RULES.address.test(sellerAddress)) return "Set a preprod seller address first.";
     if (form.title && !form.title.trim()) return "Title: not only spaces.";
     if (form.description && !form.description.trim()) return "Description: not only spaces.";
+    if (form.previewMedia && !PREVIEW_URL.test(form.previewMedia.trim()))
+      return "Preview: an https link to an mp4, webm, webp or gif.";
     if (modes.length === 0) return "Pick at least one delivery mode.";
     if (form.priceAda && !lovelace)
       return "Price: an ADA amount with up to 6 decimals, below 10 billion ADA.";
@@ -84,6 +90,7 @@ export default function CreateListingForm({
         sellerAddress,
         modes,
         content: form.content,
+        ...(form.previewMedia.trim() ? { previewMedia: form.previewMedia.trim() } : {}),
       });
       setCreated(listing);
       setForm(EMPTY);
@@ -137,7 +144,7 @@ export default function CreateListingForm({
             maxLength={RULES.title}
             value={form.title}
             onChange={(e) => set("title")(e.target.value)}
-            placeholder="Sample dataset: 100 synthetic shop orders (CSV)"
+            placeholder="Cinematic scroll hero for a fintech landing page"
             className={field}
           />
         </label>
@@ -152,25 +159,48 @@ export default function CreateListingForm({
             maxLength={RULES.description}
             value={form.description}
             onChange={(e) => set("description")(e.target.value)}
-            placeholder="What a buyer gets, in a sentence or two."
+            placeholder="What the prompt builds, in a sentence or two."
             className={field}
           />
         </label>
 
         <label className="block space-y-1.5">
-          <Label hint={`${contentBytes.toLocaleString("en-US")} bytes`}>The content itself</Label>
+          <Label hint={`${contentBytes.toLocaleString("en-US")} bytes`}>The prompt itself</Label>
           <textarea
             required
             rows={8}
             value={form.content}
             onChange={(e) => set("content")(e.target.value)}
-            placeholder="The exact bytes the buyer receives. Nobody sees this until they pay."
+            placeholder="The full prompt. Nobody sees this until they pay."
             className={`${field} font-mono text-xs`}
           />
           <span className="block text-xs text-gray-500">
-            Hashed when you list, so a buyer can prove the bytes they got are the bytes you sold.
+            Hashed when you list, so a buyer can prove the prompt they got is the prompt you sold.
           </span>
         </label>
+
+        <label className="block space-y-1.5">
+          <Label hint="optional">Preview recording</Label>
+          <input
+            type="url"
+            value={form.previewMedia}
+            onChange={(e) => set("previewMedia")(e.target.value)}
+            placeholder="https://your-site.com/preview.webm"
+            className={field}
+          />
+          <span className="block text-xs text-gray-500">
+            A recording of what the prompt produces: mp4, webm, webp or gif. It leads your card, and
+            it's public, so show the result, not the prompt.
+          </span>
+        </label>
+
+        {PREVIEW_URL.test(form.previewMedia.trim()) && (
+          <ListingPreview
+            src={form.previewMedia.trim()}
+            title={form.title || "your listing"}
+            className="aspect-[16/10] w-full rounded-xl border border-gray-200"
+          />
+        )}
 
         <fieldset className="space-y-2">
           <legend className="mb-1.5 text-sm font-medium text-black">Delivery modes</legend>

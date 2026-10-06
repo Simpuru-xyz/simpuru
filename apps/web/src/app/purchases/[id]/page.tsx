@@ -4,6 +4,7 @@ import { explorerTx, type Listing } from "@simpuru/core";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import Countdown from "@/components/Countdown";
 import ModeBadge from "@/components/ModeBadge";
 import Nav from "@/components/Nav";
@@ -55,12 +56,17 @@ export default function PurchasePage({ params }: PageProps<"/purchases/[id]">) {
       <Nav />
 
       <main className="mx-auto max-w-3xl px-4 pb-24 sm:px-6">
-        <Link
-          href="/listings"
-          className="mt-6 inline-block text-sm text-gray-500 transition-colors hover:text-black"
-        >
-          ← Back to the catalogue
-        </Link>
+        <div className="mt-6">
+          <Breadcrumbs
+            items={[
+              { label: "Catalogue", href: "/listings" },
+              ...(load.phase === "ready" && load.listing
+                ? [{ label: load.listing.title, href: `/listings/${load.listing.id}` }]
+                : []),
+              { label: "Purchase" },
+            ]}
+          />
+        </div>
 
         {load.phase === "pending" && (
           <SkeletonRegion label="Loading the purchase…" className="mt-8 space-y-4">
