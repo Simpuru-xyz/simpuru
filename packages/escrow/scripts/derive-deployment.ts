@@ -7,7 +7,7 @@
 // The address comes from @x402/cardano's own masumiEscrowAddress, the same
 // function the x402 client and facilitator use to check `payTo`, so the
 // recorded address cannot drift from what they accept.
-import { writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import * as Address from "@evolution-sdk/evolution/Address";
 import * as KeyHash from "@evolution-sdk/evolution/KeyHash";
 import * as PrivateKey from "@evolution-sdk/evolution/PrivateKey";
@@ -62,6 +62,16 @@ const record = {
 };
 
 const out = new URL("../../../contracts/deployments/preprod.json", import.meta.url).pathname;
+// Keep a deployed reference script (#18) as long as it still holds this exact validator.
+if (existsSync(out)) {
+  const previous = JSON.parse(readFileSync(out, "utf8"));
+  if (previous.scriptHash === record.scriptHash && previous.referenceScript) {
+    Object.assign(record, {
+      referenceScript: previous.referenceScript,
+      referenceScriptAddress: previous.referenceScriptAddress,
+    });
+  }
+}
 writeFileSync(out, `${JSON.stringify(record, null, 2)}\n`);
 // Format with the repo's own formatter so a regenerated record passes `bun run lint`.
 Bun.spawnSync(["bunx", "biome", "format", "--write", out]);

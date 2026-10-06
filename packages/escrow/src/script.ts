@@ -3,8 +3,19 @@
 // script hash so a spend can never attach a different script than the one
 // that owns the funds.
 import { readFileSync } from "node:fs";
-import { Data, PlutusV3, ScriptHash, UPLC } from "@evolution-sdk/evolution";
+import {
+  Address,
+  Data,
+  NativeScripts,
+  PlutusV3,
+  ScriptHash,
+  TransactionHash,
+  TransactionInput,
+  UPLC,
+  type UTxO,
+} from "@evolution-sdk/evolution";
 import type { MasumiDeployment } from "@x402/cardano";
+import { readClient } from "./chain";
 import { loadDeployment } from "./deployment";
 
 const BLUEPRINT = new URL("../../../contracts/vested_pay/plutus.json", import.meta.url).pathname;
@@ -49,4 +60,64 @@ export function escrowValidator(): PlutusV3.PlutusV3 {
     throw new Error(`applied validator hashes to ${hash}, deployment says ${ours.scriptHash}`);
   }
   return script;
+}
+
+// ---------------------------------------------------------------------------
+// Reference script (#18). The ~9.9 KB validator rides in every escrow tx unless a
+// UTxO already carries it as a reference script; then txs only reference it.
+
+/**
+ * Native script "any of nothing", which can never be satisfied: an address nobody can
+ * spend from. The reference-script UTxO lives here so no wallet's coin selection can
+ * ever consume it, and the escrow address stays free of datum-less UTxOs.
+ */
+export const NEVER = NativeScripts.makeScriptAny([]);
+
+export function unspendableAddress(): string {
+  return Address.toBech32(
+    new Address.Address({ networkId: 0, paymentCredential: ScriptHash.fromScript(NEVER) }),
+  );
+}
+
+let referenceUtxo: Promise<UTxO.UTxO | undefined> | undefined;
+
+/** The recorded reference-script UTxO, refused unless it carries exactly our validator. */
+export function referenceScriptUtxo(): Promise<UTxO.UTxO | undefined> {
+  referenceUtxo ??= (async () => {
+    const ours = loadDeployment();
+    if (!ours.referenceScript) return undefined;
+    const [txHash, index] = ours.referenceScript.split("#");
+    const input = new TransactionInput.TransactionInput({
+      transactionId: TransactionHash.fromHex(txHash ?? ""),
+      index: BigInt(index ?? "0"),
+    });
+    const [utxo] = await readClient().getUtxosByOutRef([input]);
+    if (!utxo?.scriptRef) throw new Error(`reference script ${ours.referenceScript} not found`);
+    const hash = ScriptHash.toHex(ScriptHash.fromScript(utxo.scriptRef)).toLowerCase();
+    if (hash !== ours.scriptHash) {
+      throw new Error(`reference script hashes to ${hash}, deployment says ${ours.scriptHash}`);
+    }
+    return utxo;
+  })();
+  // A failed lookup (e.g. not on chain yet) must not stick: forget it so the next call retries.
+  referenceUtxo.catch(() => {
+    referenceUtxo = undefined;
+  });
+  return referenceUtxo;
+}
+
+interface ScriptCapable<B> {
+  readFrom(params: { referenceInputs: ReadonlyArray<UTxO.UTxO> }): B;
+  attachScript(params: { script: PlutusV3.PlutusV3 }): B;
+}
+
+/**
+ * How a tx gets the escrow validator: reference it when a reference-script UTxO is
+ * recorded, otherwise attach it. `ESCROW_INLINE_SCRIPT=1` forces attaching (fee comparisons).
+ */
+export async function escrowScriptStep(): Promise<<B extends ScriptCapable<B>>(builder: B) => B> {
+  const ref = process.env.ESCROW_INLINE_SCRIPT === "1" ? undefined : await referenceScriptUtxo();
+  if (ref) return (builder) => builder.readFrom({ referenceInputs: [ref] });
+  const script = escrowValidator();
+  return (builder) => builder.attachScript({ script });
 }
