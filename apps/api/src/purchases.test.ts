@@ -5,7 +5,7 @@ import { createApp } from "./app";
 import { openDb } from "./db";
 import { encodeProof, PROOF_HEADER } from "./owned";
 import { addEvent, insertPurchase, type PurchaseView } from "./purchases";
-import { seed } from "./seed";
+import { addListing } from "./test-helpers";
 
 const alice = toMasumiSellerSigner({
   mnemonic: `${"abandon ".repeat(23)}art`,
@@ -31,7 +31,7 @@ const terms = JSON.stringify({
 
 const setup = () => {
   const db = openDb(":memory:");
-  seed(db, SELLER);
+  addListing(db, "lumen-aurora-hero", { sellerAddress: SELLER });
   insertPurchase(db, {
     txHash: LOCK,
     listingId: "lumen-aurora-hero",

@@ -7,10 +7,11 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import { createBuyer } from "@simpuru/agent";
 import { createApp } from "./app";
 import { openDb } from "./db";
-import { seed } from "./seed";
+import { addListing } from "./test-helpers";
 
 const db = openDb(":memory:");
-seed(db, `addr_test1${"q".repeat(98)}`);
+addListing(db, "kinetic-pricing-section", { title: "Kinetic pricing section", category: "SaaS" });
+addListing(db, "lumen-aurora-hero", { title: "Lumen aurora hero", category: "SaaS" });
 // Serve first so the buyer and the MCP tools can point at the real URL.
 let app: ReturnType<typeof createApp> | undefined;
 const server = Bun.serve({

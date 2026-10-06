@@ -19,7 +19,7 @@ const paywall = createPaywall(db, {
   ),
   blockfrostProjectId: need("BLOCKFROST_PROJECT_ID"),
 });
-seed(db, paywall.sellerAddress, paywall.sellerAddresses[1]);
+seed(db, paywall.sellerAddresses[1] ?? paywall.sellerAddress);
 startSellerAgent(
   db,
   need("BLOCKFROST_PROJECT_ID"),
