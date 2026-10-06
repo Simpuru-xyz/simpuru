@@ -69,7 +69,7 @@ export default function Home() {
             className="animate-fade-in-up mx-auto mb-14 max-w-3xl px-2 text-base text-gray-600 sm:mb-20 sm:text-lg md:text-xl"
             style={{ animationDelay: "0.4s", opacity: 0 }}
           >
-            Buy one design prompt for a few cents, or let your agent buy it for you. If it never
+            Buy one design prompt for a few ADA, or let your agent buy it for you. If it never
             arrives, you get your money back.
           </p>
 

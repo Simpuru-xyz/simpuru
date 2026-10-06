@@ -17,7 +17,7 @@ const STEPS: Step[] = [
     height: "min-h-[320px] lg:min-h-[420px]",
   },
   {
-    title: "Pay a few cents",
+    title: "Pay a few ADA",
     line: "The money waits until it arrives.",
     video: "/media/step-2",
     overlay: "bg-[rgba(247,236,233,0.6)]",
