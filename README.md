@@ -8,6 +8,15 @@ and gets its money back automatically when delivery fails.
 Built for the TOKEN2049 Origins Hackathon, Cardano track (Agentic Commerce). Runs on Cardano preprod;
 every claim below links a preprod transaction.
 
+## Try it
+
+```bash
+claude mcp add --transport http simpuru https://api.simpuru.xyz/mcp
+```
+
+Then ask Claude: *"Find a hero section prompt on Simpuru and buy it with buyer protection."*
+The hosted MCP pays from a shared preprod demo wallet. API: `https://api.simpuru.xyz/listings`.
+
 ## The problem
 
 x402 lets an agent pay for a resource per request, and on Cardano the `masumi` method locks the
