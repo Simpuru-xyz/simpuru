@@ -1,0 +1,17 @@
+{
+  "name": "@simpuru/arbiter",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@simpuru/core": "workspace:*",
+    "@simpuru/escrow": "workspace:*"
+  },
+  "devDependencies": {
+    "@simpuru/tsconfig": "workspace:*"
+  }
+}
