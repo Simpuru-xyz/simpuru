@@ -7,8 +7,7 @@ import ListingCard from "@/components/ListingCard";
 import ListingPreview from "@/components/ListingPreview";
 import Nav from "@/components/Nav";
 import Skeleton, { SkeletonRegion } from "@/components/Skeleton";
-import { CATEGORIES, type ListingView } from "@/lib/api";
-import { fetchCatalogue } from "@/lib/mock-prompts";
+import { CATEGORIES, fetchListings, type ListingView } from "@/lib/api";
 
 type L = ListingView;
 const SORTS = {
@@ -40,7 +39,7 @@ export default function CataloguePage() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: `attempt` is the retry trigger
   useEffect(() => {
     let cancelled = false;
-    fetchCatalogue()
+    fetchListings()
       .then((listings) => {
         if (!cancelled) setLoad({ phase: "ready", listings });
       })

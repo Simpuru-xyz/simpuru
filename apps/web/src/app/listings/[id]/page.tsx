@@ -8,8 +8,8 @@ import ListingPreview from "@/components/ListingPreview";
 import ModeBadge from "@/components/ModeBadge";
 import Nav from "@/components/Nav";
 import Skeleton, { SkeletonRegion } from "@/components/Skeleton";
-import { ENDPOINTS, formatAda, type ListingView } from "@/lib/api";
-import { compact, fetchCatalogueItem } from "@/lib/mock-prompts";
+import { ENDPOINTS, fetchListingOrNull, formatAda, type ListingView } from "@/lib/api";
+import { compact } from "@/lib/format";
 
 type LoadState =
   | { phase: "pending" }
@@ -83,7 +83,7 @@ export default function ListingPage({ params }: PageProps<"/listings/[id]">) {
 
   useEffect(() => {
     let cancelled = false;
-    fetchCatalogueItem(id)
+    fetchListingOrNull(id)
       .then((listing) => {
         if (!cancelled) setLoad(listing ? { phase: "ready", listing } : { phase: "missing" });
       })

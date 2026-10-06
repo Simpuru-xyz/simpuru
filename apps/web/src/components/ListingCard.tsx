@@ -2,7 +2,7 @@ import { ImageOff, ShieldCheck, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import ListingPreview from "@/components/ListingPreview";
 import { formatAda, type ListingView, shorten } from "@/lib/api";
-import { compact } from "@/lib/mock-prompts";
+import { compact } from "@/lib/format";
 
 /**
  * One catalogue card, Motion Sites style: the recording of what the prompt

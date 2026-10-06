@@ -61,6 +61,13 @@ export const CATEGORIES = [
 export const fetchListings = () => getJson<ListingView[]>(ENDPOINTS.listings());
 export const fetchListing = (id: string) => getJson<ListingView>(ENDPOINTS.listing(id));
 
+/** `fetchListing`, but an unknown id (404) is `null` instead of an error. */
+export const fetchListingOrNull = (id: string) =>
+  fetchListing(id).catch((e: unknown) => {
+    if (e instanceof ApiError && e.status === 404) return null;
+    throw e;
+  });
+
 export interface NewListing {
   title: string;
   description: string;
