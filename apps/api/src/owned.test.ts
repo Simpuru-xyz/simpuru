@@ -2,8 +2,9 @@ import { expect, test } from "bun:test";
 import { unlockProofDigest } from "@simpuru/core/hash";
 import { toMasumiSellerSigner } from "@x402/cardano";
 import { createApp } from "./app";
-import { insertPurchase, openDb } from "./db";
+import { openDb } from "./db";
 import { encodeProof, PROOF_HEADER, PURCHASE_HEADER } from "./owned";
+import { insertPurchase } from "./purchases";
 import { seed } from "./seed";
 
 // Public BIP-39 test vectors, never funded.

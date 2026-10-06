@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { OpenPurchase } from "./db";
+import type { OpenPurchase } from "./purchases";
 import { type LockView, nextSellerAction } from "./seller";
 
 const NOW = 1_800_000_000_000;
@@ -7,9 +7,15 @@ const min = (m: number) => BigInt(NOW + m * 60_000);
 const purchase = (over: Partial<OpenPurchase> = {}): OpenPurchase => ({
   tx_hash: "ab".repeat(32),
   listing_id: "x",
+  mode: "protected",
+  payer: "addr_test1buyer",
   status: "FundsLocked",
   terms: "{}",
   result_tx: null,
+  result_hash: null,
+  closing_tx: null,
+  last_ref: null,
+  verification: null,
   updated_at: null,
   created_at: NOW - 60_000,
   ...over,

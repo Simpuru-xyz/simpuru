@@ -5,6 +5,7 @@ import { type Db, getListing } from "./db";
 import { listingsRoutes } from "./listings";
 import { ownedContent, PROOF_HEADER, PURCHASE_HEADER } from "./owned";
 import type { Paywall } from "./paywall";
+import { purchasesRoutes } from "./purchases";
 
 export function createApp(db: Db, paywall?: Paywall) {
   const app = new Hono();
@@ -36,5 +37,6 @@ export function createApp(db: Db, paywall?: Paywall) {
   }
 
   app.route("/listings", listingsRoutes(db));
+  app.route("/purchases", purchasesRoutes(db));
   return app;
 }

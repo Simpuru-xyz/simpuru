@@ -8,7 +8,8 @@ import type { PaymentOption } from "@x402/core/http";
 import { type FacilitatorClient, x402ResourceServer } from "@x402/core/server";
 import { paymentMiddlewareFromHTTPServer, x402HTTPResourceServer } from "@x402/hono";
 import type { MiddlewareHandler } from "hono";
-import { type Db, insertPurchase, type ListingRow } from "./db";
+import type { Db, ListingRow } from "./db";
+import { insertPurchase } from "./purchases";
 
 // The issuer insists submit_result_time >= now + 15 min. With a 5 min pay-by window these
 // offsets are the earliest it allows (+1 min for slot rounding): refund ~16 min, seller paid
