@@ -42,20 +42,21 @@ Every row is a real Cardano preprod transaction. Explorer: `https://preprod.card
 | Refund, no delivery | ≥ ~16 min after the quote | ~0.64 tADA | 0 |
 | Dispute → arbiter | ≥ ~46 min after the quote | ~0.64 tADA | arbiter ~0.67 tADA |
 
-## Live stage run sheet
+## Demo video script (3 min)
 
-The demo is **live on the main stage**. Refund, seller payout and arbiter payout are gated by escrow
-deadlines (≥ 16 / 31 / 46 min after the quote), so those escrows are **staged before the slot** with
-Ghoza's script (#49) so each gate opens while we are on stage. Only the purchase itself happens live.
+The submission is a **3-minute video**. Refund, seller payout and arbiter payout are gated by escrow
+deadlines (≥ 16 / 31 / 46 min after the quote), so those escrows are **staged before recording** with
+Ghoza's script (#49), using the recording start time as the slot, so each gate opens while we record.
+The purchase itself is recorded as it happens.
 
-**T − 50 min:** `stage run --slot <time>`: buys the staged escrows against `https://api.simpuru.xyz`.
+**T − 50 min:** `stage run --slot <recording start>`: buys the staged escrows against `https://api.simpuru.xyz`.
 **T − 5 min:** `stage check`: every staged escrow shows its state and seconds until its gate opens.
-Watcher and arbiter running (Blockfrost key). Laptop: Claude Code with the Simpuru MCP, the app open on
-the catalogue, cardanoscan open.
+Watcher and arbiter running (Blockfrost key). Screen: Claude Code with the Simpuru MCP, the app open on
+the catalogue, cardanoscan open. Record in one take where possible; cut between scenes otherwise.
 
 | Time | On screen | Said |
 |---|---|---|
-| 0:00 | Landing | "An AI agent can pay on Cardano with x402. But once it has paid, nobody makes sure it gets what it paid for. x402 ends at the lock." |
+| 0:00 | Landing | (voice-over) "An AI agent can pay on Cardano with x402. But once it has paid, nobody makes sure it gets what it paid for. x402 ends at the lock." |
 | 0:20 | Claude Code: *"Find a hero section prompt on Simpuru and buy it with buyer protection."* | "It searches, picks a prompt, and pays into escrow. No card, no account." |
 | 0:50 | MCP result: content + `contentMatchesListing: true` + refund deadlines; purchase timeline in the app | "The seller committed to the hash of this prompt before it was paid. The agent just checked it." |
 | 1:20 | Staged escrow 1 timeline: `ResultSubmitted` → `withdrawn` (gate opens on stage) | "Honest seller: the seller agent collects on its own once the window closes." |
@@ -63,6 +64,6 @@ the catalogue, cardanoscan open.
 | 2:15 | Staged escrow 3: wrong file → dispute → arbiter pays the buyer | "Wrong file: the arbiter checks three hashes the seller can't change and pays the buyer back." |
 | 2:45 | README track table | "Buyer protection for x402 agents on Cardano, running on preprod today. That's Simpuru." |
 
-**Fallbacks:** if a staged gate is late, show the same path from the receipts above (every row is a real tx).
-If the live buy is slow (> 60 s), keep talking over step 1:20, since the settlement finishes in the background
+**Fallbacks:** if a staged gate is late, cut to the same path from the receipts above (every row is a real tx).
+If the buy takes longer than 60 s on camera, cut the wait: the settlement finishes in the background
 and the agent never pays twice (#31).
