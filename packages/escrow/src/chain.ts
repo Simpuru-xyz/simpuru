@@ -15,8 +15,18 @@ export function mnemonicFor(role: Role): string {
   return value;
 }
 
+export const BLOCKFROST_PREPROD = "https://cardano-preprod.blockfrost.io/api/v0";
+
+/**
+ * Blockfrost when `BLOCKFROST_PROJECT_ID` is set, public Koios otherwise. Public Koios was seen
+ * returning empty address lists, lagging minutes behind and dropping submits (see actions.ts);
+ * the builders still retry those cases on either provider.
+ */
 export function readClient() {
-  return Client.make(preprod).withKoios({ baseUrl: KOIOS_PREPROD });
+  const projectId = process.env.BLOCKFROST_PROJECT_ID;
+  return projectId
+    ? Client.make(preprod).withBlockfrost({ baseUrl: BLOCKFROST_PREPROD, projectId })
+    : Client.make(preprod).withKoios({ baseUrl: KOIOS_PREPROD });
 }
 
 export function walletClient(role: Role, addressType: "Base" | "Enterprise" = "Base") {
