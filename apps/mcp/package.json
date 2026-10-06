@@ -4,11 +4,14 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "bun --watch src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "start": "bun --env-file=../../.env src/index.ts"
   },
   "dependencies": {
-    "@simpuru/core": "workspace:*"
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "@simpuru/agent": "workspace:*",
+    "@simpuru/core": "workspace:*",
+    "zod": "4"
   },
   "devDependencies": {
     "@simpuru/tsconfig": "workspace:*"
