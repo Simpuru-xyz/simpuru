@@ -12,6 +12,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./hash": "./src/hash.ts"
+    "./hash": "./src/hash.ts",
+    "./escrow": "./src/escrow.ts"
   }
 }

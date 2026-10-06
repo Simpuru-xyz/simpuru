@@ -17,6 +17,15 @@ export function openDb(path = process.env.DB_PATH ?? "data/simpuru.db") {
     content_hash TEXT NOT NULL,
     created_at INTEGER NOT NULL
   )`);
+  db.run(`CREATE TABLE IF NOT EXISTS purchases (
+    tx_hash TEXT PRIMARY KEY,
+    listing_id TEXT NOT NULL REFERENCES listings(id),
+    mode TEXT NOT NULL,
+    payer TEXT NOT NULL,
+    status TEXT NOT NULL,
+    terms TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+  )`);
   return db;
 }
 
@@ -72,3 +81,21 @@ export const insertListing = (db: Db, l: ListingRow) =>
 
 /** Public view: never leak the paid content. */
 export const publicListing = ({ content: _, ...listing }: ListingRow): Listing => listing;
+
+export type PurchaseRow = {
+  txHash: string;
+  listingId: string;
+  mode: DeliveryMode;
+  payer: string;
+  status: string;
+  /** The accepted PaymentRequirements as JSON (the seller-signed quote on the protected path). */
+  terms: string;
+};
+
+export const insertPurchase = (db: Db, p: PurchaseRow) =>
+  db
+    .query(
+      `INSERT OR IGNORE INTO purchases (tx_hash, listing_id, mode, payer, status, terms, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .run(p.txHash, p.listingId, p.mode, p.payer, p.status, p.terms, Date.now());

@@ -5,11 +5,15 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "bun --watch src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "buy": "bun --env-file=../../.env src/buy.ts"
   },
   "dependencies": {
     "@simpuru/core": "workspace:*",
-    "@simpuru/escrow": "workspace:*"
+    "@simpuru/escrow": "workspace:*",
+    "@x402/cardano": "2.28.0",
+    "@x402/core": "2.28.0",
+    "@x402/fetch": "2.28.0"
   },
   "devDependencies": {
     "@simpuru/tsconfig": "workspace:*"
