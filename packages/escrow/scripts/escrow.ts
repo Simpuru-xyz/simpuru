@@ -3,14 +3,38 @@
 //   bun packages/escrow/scripts/escrow.ts show <txHash#index>
 //   bun packages/escrow/scripts/escrow.ts submit-result <txHash#index> <resultHashHex>
 //   bun packages/escrow/scripts/escrow.ts request-refund <txHash#index>
+//   bun packages/escrow/scripts/escrow.ts authorize-refund <txHash#index>
+//   bun packages/escrow/scripts/escrow.ts withdraw <txHash#index>
+//   bun packages/escrow/scripts/escrow.ts withdraw-refund <txHash#index>
 //
 // Every action prints the tx hash, waits for the escrow to move, and prints the
 // state it reads back from chain.
-import { Address } from "@evolution-sdk/evolution";
-import { findEscrowUtxo, setRefundRequested, submitResult, viewOf } from "../src/actions";
-import { readClient } from "../src/chain";
+import { Address, TransactionHash } from "@evolution-sdk/evolution";
+import {
+  authorizeRefund,
+  findEscrowUtxo,
+  setRefundRequested,
+  submitResult,
+  viewOf,
+  withdraw,
+  withdrawRefund,
+} from "../src/actions";
+import { type Role, readClient, walletAddress } from "../src/chain";
 import { stateName } from "../src/datum";
 import { loadDeployment } from "../src/deployment";
+
+/** Lovelace held by a role's base address. Two reads that disagree are retried (Koios lag). */
+async function balanceOf(role: Role): Promise<bigint> {
+  const address = Address.fromBech32(await walletAddress(role));
+  const read = async () =>
+    (await readClient().getUtxos(address)).reduce((n, u) => n + u.assets.lovelace, 0n);
+  for (let i = 0; i < 5; i++) {
+    const [a, b] = [await read(), await read()];
+    if (a === b) return a;
+    await Bun.sleep(3_000);
+  }
+  throw new Error(`balance of ${role} kept changing between reads`);
+}
 
 async function show(ref: string) {
   const utxo = await findEscrowUtxo(ref);
@@ -55,6 +79,34 @@ if (cmd === "show") {
   const tx = await setRefundRequested(ref);
   console.error(`submitted ${tx}`);
   console.log(JSON.stringify(await settled(tx), null, 2));
+} else if (cmd === "authorize-refund") {
+  const tx = await authorizeRefund(ref);
+  console.error(`submitted ${tx}`);
+  console.log(JSON.stringify(await settled(tx), null, 2));
+} else if (cmd === "withdraw" || cmd === "withdraw-refund") {
+  // Terminal: the escrow UTxO is gone afterwards. Proof is the money: the acting
+  // party's balance before and after, once the tx is confirmed on chain.
+  const role = cmd === "withdraw" ? "seller" : "buyer";
+  const escrowLovelace = (await findEscrowUtxo(ref)).assets.lovelace;
+  const before = await balanceOf(role);
+  const tx = cmd === "withdraw" ? await withdraw(ref) : await withdrawRefund(ref);
+  console.error(`submitted ${tx}, waiting for confirmation...`);
+  await readClient().awaitTx(TransactionHash.fromHex(tx), 10_000, 300_000);
+  const after = await balanceOf(role);
+  console.log(
+    JSON.stringify(
+      {
+        tx,
+        spent: ref,
+        escrowLovelace: escrowLovelace.toString(),
+        [`${role}Before`]: before.toString(),
+        [`${role}After`]: after.toString(),
+        [`${role}Delta`]: (after - before).toString(),
+      },
+      null,
+      2,
+    ),
+  );
 } else {
   throw new Error(`unknown command ${cmd}`);
 }

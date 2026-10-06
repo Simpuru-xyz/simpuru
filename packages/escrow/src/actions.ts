@@ -284,3 +284,110 @@ export async function withdrawDisputed(
     return Buffer.from(hash.hash).toString("hex");
   });
 }
+
+/** Seller concedes: any non-terminal state → RefundAuthorized; the buyer can then refund at once. */
+export async function authorizeRefund(ref: string): Promise<string> {
+  const utxo = await findEscrowUtxo(ref);
+  const view = viewOf(utxo);
+  return continueEscrow({
+    role: "seller",
+    utxo,
+    action: "AuthorizeRefund",
+    after: view.sellerCooldownTime,
+    next: (datum, nowMs, cooldownMs) =>
+      withFields(datum, {
+        resultHash: Data.bytearray(""),
+        sellerCooldownTime: Data.int(nowMs + cooldownMs),
+        buyerCooldownTime: Data.int(0n),
+        state: stateData("RefundAuthorized"),
+      }),
+  });
+}
+
+interface Terminal {
+  role: Role;
+  utxo: UTxO.UTxO;
+  action: "Withdraw" | "WithdrawRefund";
+  /** Validity lower bound must be after this (POSIX ms). */
+  after?: bigint;
+  /** Tagged outputs the validator requires (inline datum = own_ref). */
+  tagged: { address: Address.Address; lovelace: bigint }[];
+}
+
+/** Spends an escrow UTxO for good; untagged value goes to the acting party's wallet as change. */
+async function closeEscrow(t: Terminal): Promise<string> {
+  const wallet = walletClient(t.role);
+  const now = BigInt(Date.now());
+  const from = t.after !== undefined && t.after >= now - 60_000n ? t.after + 1_000n : now - 60_000n;
+  if (from >= now) throw new Error(`${t.action} opens at ${new Date(Number(from)).toISOString()}`);
+  const { txHash, index } = refOf(t.utxo);
+  const ownRef = outputReferenceData(txHash, index);
+
+  return withStaleUtxoRetry(async () => {
+    let builder = wallet
+      .newTx()
+      .collectFrom({ inputs: [t.utxo], redeemer: redeemer(t.action) })
+      .attachScript({ script: escrowValidator() })
+      .addSigner({ keyHash: keyHashOf(t.role) })
+      .setValidity({ from, to: now + BigInt(TX_WINDOW_MS) });
+    for (const out of t.tagged) {
+      if (out.lovelace > 0n) {
+        builder = builder.payToAddress({
+          address: out.address,
+          assets: Assets.fromLovelace(out.lovelace),
+          datum: inlineDatum(ownRef),
+        });
+      }
+    }
+    const tx = await builder.build({ changeAddress: await wallet.address() });
+    const hash = await (await tx.sign()).submit();
+    return Buffer.from(hash.hash).toString("hex");
+  });
+}
+
+/**
+ * Seller collects. ResultSubmitted after `unlock_time`, or WithdrawAuthorized at once.
+ * The buyer's collateral goes back in an output tagged with the escrow's own reference.
+ */
+export async function withdraw(ref: string): Promise<string> {
+  const utxo = await findEscrowUtxo(ref);
+  const view = viewOf(utxo);
+  if (view.state !== 1n && view.state !== 4n)
+    throw new Error(`escrow is ${view.state}, not ResultSubmitted or WithdrawAuthorized`);
+  const { buyer, seller } = payoutAddresses(utxo);
+  const tagged = [{ address: buyer, lovelace: view.collateralReturnLovelace }];
+  if (view.sellerReturnAddress) {
+    tagged.push({
+      address: seller,
+      lovelace: utxo.assets.lovelace - view.collateralReturnLovelace,
+    });
+  }
+  return closeEscrow({
+    role: "seller",
+    utxo,
+    action: "Withdraw",
+    after: view.state === 1n ? view.unlockTime : undefined,
+    tagged,
+  });
+}
+
+/**
+ * Buyer takes the money back. FundsLocked / RefundRequested after `submit_result_time`
+ * (only while no result hash is on chain), or RefundAuthorized at once.
+ */
+export async function withdrawRefund(ref: string): Promise<string> {
+  const utxo = await findEscrowUtxo(ref);
+  const view = viewOf(utxo);
+  if (view.resultHash !== "")
+    throw new Error("a result hash is on chain; the buyer's way back is a dispute");
+  if (![0n, 2n, 5n].includes(view.state))
+    throw new Error(`escrow is ${view.state}, not refundable`);
+  const { buyer } = payoutAddresses(utxo);
+  return closeEscrow({
+    role: "buyer",
+    utxo,
+    action: "WithdrawRefund",
+    after: view.state === 5n ? undefined : view.submitResultTime,
+    tagged: view.buyerReturnAddress ? [{ address: buyer, lovelace: utxo.assets.lovelace }] : [],
+  });
+}
