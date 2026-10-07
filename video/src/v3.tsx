@@ -80,16 +80,61 @@ const Line = ({ words, dark, logo }: { words: string[]; dark?: boolean; logo?: b
   );
 };
 
-/** Prompt libraries price by the month; an agent needs one prompt, once. */
+/** A mechanical counter: each digit rolls, higher digits roll only while the lower one carries. */
+const DIGIT_H = 168;
+const Odometer = ({ value, digits }: { value: number; digits: number }) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "flex-start",
+      fontFamily: sans,
+      fontSize: 160,
+      fontWeight: 600,
+      letterSpacing: -4,
+      fontVariantNumeric: "tabular-nums",
+    }}
+  >
+    <span style={{ lineHeight: `${DIGIT_H}px` }}>$</span>
+    {Array.from({ length: digits }, (_, i) => digits - 1 - i).map((k) => {
+      const unit = 10 ** k;
+      const carry = k === 0 ? 0 : Math.min(1, Math.max(0, (value % unit) - (unit - 1)));
+      const pos = k === 0 ? value : Math.floor(value / unit) + carry;
+      const show = value >= unit || k === 0;
+      return (
+        <div key={k} style={{ display: "flex" }}>
+          <div style={{ height: DIGIT_H, overflow: "hidden", width: show ? undefined : 0 }}>
+            <div style={{ transform: `translateY(${-(pos % 10) * DIGIT_H}px)` }}>
+              {["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0 "].map((d) => (
+                <div key={d} style={{ height: DIGIT_H, lineHeight: `${DIGIT_H}px` }}>
+                  {d.trim()}
+                </div>
+              ))}
+            </div>
+          </div>
+          {k === 3 && show ? <span style={{ lineHeight: `${DIGIT_H}px` }}>,</span> : null}
+        </div>
+      );
+    })}
+  </div>
+);
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const PER_MONTH = 99;
+const MONTH_FRAMES = 6;
+export const SUB_FRAMES = 12 * MONTH_FRAMES + 40;
+
+/** Prompt libraries bill by the month: the bill rolls up a year, for prompts used once. */
 const Subscriptions = () => {
   const f = useCurrentFrame();
   const head = interpolate(f, [0, 10], [0, 1], clamp);
-  const strike = interpolate(f, [52, 64], [0, 1], clamp);
-  const plans: [string, string][] = [
-    ["$19", "per month"],
-    ["$49", "per month"],
-    ["$99", "per month, billed yearly"],
-  ];
+  const t = Math.max(0, (f - 8) / MONTH_FRAMES);
+  const month = Math.min(
+    12,
+    Math.floor(t) + Easing.bezier(0.22, 1, 0.36, 1)(Math.min(1, (t % 1) * 1.6)),
+  );
+  const value = Math.round(PER_MONTH * Math.min(12, month) * 1000) / 1000;
+  const current = Math.min(11, Math.floor(t));
+  const tail = interpolate(f, [12 * MONTH_FRAMES + 12, 12 * MONTH_FRAMES + 24], [0, 1], clamp);
   return (
     <AbsoluteFill
       style={{
@@ -97,47 +142,52 @@ const Subscriptions = () => {
         justifyContent: "center",
         alignItems: "center",
         flexDirection: "column",
-        gap: 56,
+        gap: 34,
         fontFamily: sans,
       }}
     >
-      <div style={{ fontSize: 76, fontWeight: 600, letterSpacing: -2.5, opacity: head }}>
-        But prompt libraries sell subscriptions.
+      <div
+        style={{
+          fontSize: 56,
+          fontWeight: 600,
+          letterSpacing: -1.5,
+          color: C.muted,
+          opacity: head,
+        }}
+      >
+        Prompt libraries bill you every month.
       </div>
-      <div style={{ position: "relative", display: "flex", gap: 28 }}>
-        {plans.map(([price, per], i) => {
-          const p = interpolate(f, [8 + i * 7, 18 + i * 7], [0, 1], clamp);
-          return (
-            <div
-              key={price}
-              style={{
-                width: 360,
-                padding: "34px 36px",
-                borderRadius: 24,
-                background: "#fff",
-                border: `1px solid ${C.line}`,
-                opacity: p * (1 - strike * 0.55),
-                transform: `translateY(${(1 - p) * 30}px)`,
-              }}
-            >
-              <div style={{ fontSize: 76, fontWeight: 600, letterSpacing: -2 }}>{price}</div>
-              <div style={{ fontSize: 26, color: C.muted, marginTop: 4 }}>{per}</div>
-            </div>
-          );
-        })}
-        <div
-          style={{
-            position: "absolute",
-            left: -20,
-            right: -20,
-            top: "50%",
-            height: 8,
-            borderRadius: 4,
-            background: C.red,
-            transform: `scaleX(${strike})`,
-            transformOrigin: "left",
-          }}
-        />
+      <Odometer value={value} digits={4} />
+      <div style={{ display: "flex", gap: 14 }}>
+        {MONTHS.map((m, i) => (
+          <div
+            key={m}
+            style={{
+              width: 74,
+              padding: "10px 0",
+              borderRadius: 12,
+              textAlign: "center",
+              fontSize: 22,
+              fontWeight: 600,
+              background: i <= current && t > 0 ? C.ink : "#fff",
+              color: i <= current && t > 0 ? "#fff" : "#a1a1aa",
+              border: `1px solid ${C.line}`,
+            }}
+          >
+            {m}
+          </div>
+        ))}
+      </div>
+      <div
+        style={{
+          fontSize: 44,
+          fontWeight: 600,
+          letterSpacing: -1,
+          opacity: tail,
+          transform: `translateY(${(1 - tail) * 14}px)`,
+        }}
+      >
+        For prompts you used once.
       </div>
     </AbsoluteFill>
   );
@@ -209,7 +259,7 @@ const ACTS: Act[] = [
     words: ["A", "design", "prompt", "gets", "you", "there."],
     node: <Line words={["A", "design", "prompt", "gets", "you", "there."]} />,
   },
-  { len: 90, node: <Subscriptions /> },
+  { len: SUB_FRAMES, node: <Subscriptions /> },
   {
     len: 54,
     words: ["Your", "agent", "needs", "one.", "Once."],
@@ -242,7 +292,10 @@ const Opening = () => (
       <Sfx key={x.key} name="blip" at={x.at} volume={0.35} />
     ))}
     <Sfx name="swish" at={starts[2] as number} volume={0.5} />
-    <Sfx name="thud" at={(starts[2] as number) + 52} volume={0.7} />
+    {MONTHS.map((m, i) => (
+      <Sfx key={m} name="tap" at={(starts[2] as number) + 8 + i * MONTH_FRAMES} volume={0.45} />
+    ))}
+    <Sfx name="thud" at={(starts[2] as number) + 12 * MONTH_FRAMES + 12} volume={0.7} />
     <Sfx name="thud" at={starts[3] as number} volume={0.8} />
     <Sfx name="swish" at={starts[4] as number} volume={0.5} />
     {[10, 28, 46].map((d) => (
