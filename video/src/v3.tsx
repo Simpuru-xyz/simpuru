@@ -30,14 +30,6 @@ const Sfx = ({ name, at, volume = 0.6 }: { name: string; at: number; volume?: nu
 );
 
 // ── Opening: one short line per beat, word by word ───────────────────────────
-const BEATS: { words: string[]; dark?: boolean; logo?: boolean; sub?: string }[] = [
-  { words: ["Agents", "can", "pay", "now."] },
-  { words: ["x402,", "on", "Cardano."] },
-  { words: ["The", "money", "waits", "in", "escrow."], dark: true },
-  { words: ["Nobody", "checks", "what", "arrives."], dark: true },
-  { words: ["Simpuru", "checks."], logo: true },
-];
-const BEAT = 48;
 
 const Line = ({ words, dark, logo }: { words: string[]; dark?: boolean; logo?: boolean }) => {
   const f = useCurrentFrame();
@@ -88,21 +80,175 @@ const Line = ({ words, dark, logo }: { words: string[]; dark?: boolean; logo?: b
   );
 };
 
-const OPEN_FRAMES = BEATS.length * BEAT;
+/** Prompt libraries price by the month; an agent needs one prompt, once. */
+const Subscriptions = () => {
+  const f = useCurrentFrame();
+  const head = interpolate(f, [0, 10], [0, 1], clamp);
+  const strike = interpolate(f, [52, 64], [0, 1], clamp);
+  const plans: [string, string][] = [
+    ["$19", "per month"],
+    ["$49", "per month"],
+    ["$99", "per month, billed yearly"],
+  ];
+  return (
+    <AbsoluteFill
+      style={{
+        background: BG,
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+        gap: 56,
+        fontFamily: sans,
+      }}
+    >
+      <div style={{ fontSize: 76, fontWeight: 600, letterSpacing: -2.5, opacity: head }}>
+        But prompt libraries sell subscriptions.
+      </div>
+      <div style={{ position: "relative", display: "flex", gap: 28 }}>
+        {plans.map(([price, per], i) => {
+          const p = interpolate(f, [8 + i * 7, 18 + i * 7], [0, 1], clamp);
+          return (
+            <div
+              key={price}
+              style={{
+                width: 360,
+                padding: "34px 36px",
+                borderRadius: 24,
+                background: "#fff",
+                border: `1px solid ${C.line}`,
+                opacity: p * (1 - strike * 0.55),
+                transform: `translateY(${(1 - p) * 30}px)`,
+              }}
+            >
+              <div style={{ fontSize: 76, fontWeight: 600, letterSpacing: -2 }}>{price}</div>
+              <div style={{ fontSize: 26, color: C.muted, marginTop: 4 }}>{per}</div>
+            </div>
+          );
+        })}
+        <div
+          style={{
+            position: "absolute",
+            left: -20,
+            right: -20,
+            top: "50%",
+            height: 8,
+            borderRadius: 4,
+            background: C.red,
+            transform: `scaleX(${strike})`,
+            transformOrigin: "left",
+          }}
+        />
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+/** Why it needs a chain: three reasons, one card each. */
+const WhyChain = () => {
+  const f = useCurrentFrame();
+  const head = interpolate(f, [0, 10], [0, 1], clamp);
+  const reasons: [string, string, string][] = [
+    ["x402", "Pay per prompt in ADA, straight to the creator. No account, no card.", C.ink],
+    ["Escrow", "No prompt, money back. Cardano enforces it, not a support desk.", C.violet],
+    ["Reputation", "Counted from settled escrows. It can't be bought or faked.", C.green],
+  ];
+  return (
+    <AbsoluteFill
+      style={{
+        background: BG,
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+        gap: 56,
+        fontFamily: sans,
+      }}
+    >
+      <div style={{ fontSize: 76, fontWeight: 600, letterSpacing: -2.5, opacity: head }}>
+        Why it runs on Cardano.
+      </div>
+      <div style={{ display: "flex", gap: 28 }}>
+        {reasons.map(([t, b, c], i) => {
+          const p = interpolate(f, [10 + i * 18, 22 + i * 18], [0, 1], clamp);
+          return (
+            <div
+              key={t}
+              style={{
+                width: 470,
+                padding: "36px 38px",
+                borderRadius: 24,
+                background: "#fff",
+                border: `1px solid ${C.line}`,
+                opacity: p,
+                transform: `translateY(${(1 - p) * 30}px)`,
+              }}
+            >
+              <div style={{ width: 52, height: 6, borderRadius: 3, background: c }} />
+              <div style={{ fontSize: 46, fontWeight: 600, marginTop: 22, letterSpacing: -1 }}>
+                {t}
+              </div>
+              <div style={{ fontSize: 26, color: C.muted, marginTop: 12, lineHeight: 1.4 }}>
+                {b}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+type Act = { len: number; node: ReactNode; words?: string[] };
+const ACTS: Act[] = [
+  {
+    len: 50,
+    words: ["Great", "UI", "design", "is", "expensive."],
+    node: <Line words={["Great", "UI", "design", "is", "expensive."]} />,
+  },
+  {
+    len: 54,
+    words: ["A", "design", "prompt", "gets", "you", "there."],
+    node: <Line words={["A", "design", "prompt", "gets", "you", "there."]} />,
+  },
+  { len: 90, node: <Subscriptions /> },
+  {
+    len: 54,
+    words: ["Your", "agent", "needs", "one.", "Once."],
+    node: <Line dark words={["Your", "agent", "needs", "one.", "Once."]} />,
+  },
+  { len: 120, node: <WhyChain /> },
+  {
+    len: 48,
+    words: ["This", "is", "Simpuru."],
+    node: <Line logo words={["This", "is", "Simpuru."]} />,
+  },
+];
+const starts: number[] = [];
+for (let i = 0; i < ACTS.length; i++)
+  starts.push(i === 0 ? 0 : (starts[i - 1] as number) + (ACTS[i - 1] as Act).len);
+const OPEN_FRAMES = ACTS.reduce((n, a) => n + a.len, 0);
 const Opening = () => (
   <AbsoluteFill>
-    {BEATS.map((b, i) => (
-      <Sequence key={b.words.join(" ")} from={i * BEAT} durationInFrames={BEAT}>
-        <Line {...b} />
+    {ACTS.map((a, i) => (
+      <Sequence key={starts[i]} from={starts[i]} durationInFrames={a.len}>
+        {a.node}
       </Sequence>
     ))}
-    {BEATS.flatMap((b, i) =>
-      b.words.map((w, j) => ({ key: `${b.words.join(" ")}:${w}`, at: i * BEAT + j * 4 })),
-    ).map((s) => (
-      <Sfx key={s.key} name="blip" at={s.at} volume={0.35} />
+    {ACTS.flatMap((a, i) =>
+      (a.words ?? []).map((w, j) => ({
+        key: `${starts[i]}:${w}`,
+        at: (starts[i] as number) + j * 4,
+      })),
+    ).map((x) => (
+      <Sfx key={x.key} name="blip" at={x.at} volume={0.35} />
     ))}
-    <Sfx name="thud" at={2 * BEAT} volume={0.8} />
-    <Sfx name="swish" at={4 * BEAT - 4} />
+    <Sfx name="swish" at={starts[2] as number} volume={0.5} />
+    <Sfx name="thud" at={(starts[2] as number) + 52} volume={0.7} />
+    <Sfx name="thud" at={starts[3] as number} volume={0.8} />
+    <Sfx name="swish" at={starts[4] as number} volume={0.5} />
+    {[10, 28, 46].map((d) => (
+      <Sfx key={d} name="tap" at={(starts[4] as number) + d} volume={0.5} />
+    ))}
+    <Sfx name="chime" at={starts[5] as number} volume={0.5} />
   </AbsoluteFill>
 );
 
