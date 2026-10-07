@@ -2,6 +2,7 @@ import { createAccounts, DEMO_OWNER } from "./accounts";
 import { lovelaceAt, sendAllTo, startAgentWatchers } from "./agents";
 import { createApp } from "./app";
 import { openDb } from "./db";
+import { createMe } from "./me";
 import { createOAuth } from "./oauth";
 import { createPaywall } from "./paywall";
 import { seed } from "./seed";
@@ -37,15 +38,19 @@ const port = Number(process.env.PORT ?? 4021);
 // agent spends from, inside their limits. Off unless AGENT_WALLET_KEY is set.
 const dataDir = process.env.DATA_DIR ?? "data";
 const self = `http://127.0.0.1:${port}`;
-const hosted = process.env.AGENT_WALLET_KEY
+const accounts = process.env.AGENT_WALLET_KEY
+  ? createAccounts(db, {
+      secret: process.env.AGENT_WALLET_KEY,
+      blockfrostProjectId: need("BLOCKFROST_PROJECT_ID"),
+      apiUrl: self,
+      dataDir,
+      demoMnemonic: process.env.MCP_BUYER_MNEMONIC,
+    })
+  : undefined;
+// Accounts (sign in with Cardano, /me): every account gets a Simpuru wallet to spend from.
+const me = accounts ? createMe(db, accounts, blockfrost(need("BLOCKFROST_PROJECT_ID"))) : undefined;
+const hosted = accounts
   ? (() => {
-      const accounts = createAccounts(db, {
-        secret: process.env.AGENT_WALLET_KEY as string,
-        blockfrostProjectId: need("BLOCKFROST_PROJECT_ID"),
-        apiUrl: self,
-        dataDir,
-        demoMnemonic: process.env.MCP_BUYER_MNEMONIC,
-      });
       const oauth = createOAuth(db, accounts, process.env.PUBLIC_URL ?? "https://api.simpuru.xyz");
       const bf = blockfrost(need("BLOCKFROST_PROJECT_ID"));
       startAgentWatchers(accounts, dataDir);
@@ -81,7 +86,7 @@ const hosted = process.env.AGENT_WALLET_KEY
 
 export default {
   port,
-  fetch: createApp(db, paywall, hosted).fetch,
+  fetch: createApp(db, paywall, hosted, me).fetch,
   // A paid request waits for the chain (settlement takes 20-60 s); Bun's default would cut it at 10 s.
   idleTimeout: 255,
 };
