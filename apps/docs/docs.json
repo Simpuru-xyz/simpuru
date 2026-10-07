@@ -69,7 +69,11 @@
           },
           {
             "group": "For agents",
-            "pages": ["guides/connect-an-agent", "guides/spending-limits", "guides/agent-tools"]
+            "pages": [
+              "guides/connect-an-agent",
+              "guides/spending-limits",
+              "guides/agent-tools"
+            ]
           },
           {
             "group": "Learn",
@@ -80,7 +84,6 @@
               "learn/protection-watcher",
               "learn/disputes-and-the-arbiter",
               "learn/reputation",
-              "learn/agent-to-agent",
               "learn/trust-model",
               "learn/risks"
             ]
@@ -101,7 +104,12 @@
           },
           {
             "group": "Resources",
-            "pages": ["resources/deployment", "resources/proof-on-preprod", "resources/glossary"]
+            "pages": [
+              "resources/deployment",
+              "resources/proof-on-preprod",
+              "resources/agent-to-agent",
+              "resources/glossary"
+            ]
           }
         ]
       },

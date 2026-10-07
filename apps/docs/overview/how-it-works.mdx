@@ -8,20 +8,20 @@ description: "Pick a prompt, pay, get it. And what happens when the prompt doesn
 </Frame>
 
 <Steps>
-  <Step title="The seller lists and commits">
+  <Step title="A creator lists a prompt">
     A creator signs in with a Cardano wallet and lists a design prompt with a price. Simpuru stores the prompt and publishes its **SHA-256 hash** with the listing. The prompt itself stays hidden until someone pays. See [Sell a prompt](/guides/sell).
   </Step>
   <Step title="The buyer picks a prompt and pays">
-    A person on the website, or an agent over MCP, picks a prompt and gets its price. They pay **instantly** (straight to the seller) or **with protection** (into the escrow). The escrow's input hash is bound to this listing and its content hash. See [Buy a prompt](/guides/buy).
+    A person on the website, or an agent over MCP, picks a prompt and gets its price. They pay **instantly** (straight to the creator) or **with protection** (into the escrow). The escrow's input hash is bound to this listing and its content hash. See [Buy a prompt](/guides/buy).
   </Step>
   <Step title="The content is delivered and checked">
-    The buyer gets the prompt right after paying. The seller's agent posts a result hash on chain, and the buyer's side recomputes the hashes from what was delivered and compares them with the commitment.
+    The buyer gets the prompt right after paying. Simpuru posts a result hash on chain for the creator, and the buyer's side recomputes the hashes from what was delivered and compares them with the commitment.
   </Step>
   <Step title="The watcher acts if something is wrong">
     No result by the deadline: the watcher **refunds** the buyer. A result that does not match: the watcher opens a **dispute**. Nobody has to notice. See [Protection watcher](/learn/protection-watcher).
   </Step>
   <Step title="Someone gets paid">
-    If everything checks out, the seller collects after the unlock time and the creator is paid their share. If there was a dispute, the **arbiter** decides from on-chain evidence and pays the buyer or the seller. See [Disputes and the arbiter](/learn/disputes-and-the-arbiter).
+    If everything checks out, Simpuru collects from the escrow after the unlock time and pays the creator their share. If there was a dispute, the **arbiter** decides from on-chain evidence and pays the buyer or the creator. See [Disputes and the arbiter](/learn/disputes-and-the-arbiter).
   </Step>
 </Steps>
 
@@ -31,8 +31,8 @@ description: "Pick a prompt, pay, get it. And what happens when the prompt doesn
 | - | - |
 | Locking, releasing and refunding money | The `vested_pay` escrow validator on Cardano |
 | Prices, quotes and taking payments | The Simpuru API's x402 paywall, with its own facilitator |
-| Posting results and collecting payment | The seller agent, inside the API |
-| Paying creators their share | The seller agent, after the escrow releases |
+| Posting results and collecting payment | Simpuru's seller agent, inside the API, on the creator's behalf |
+| Paying creators their share | Simpuru's seller agent, after the escrow releases |
 | Refunds and disputes for buyers | The protection watcher |
 | Settling disputes | The arbiter, signing with Simpuru's arbiter key |
 

@@ -7,9 +7,9 @@ The hosted MCP server gives a signed-in agent these tools:
 
 | Tool | Costs money | What it does |
 | - | - | - |
-| `search_listings` | No | Searches the catalogue. Filters by words, category, delivery mode, max price and minimum seller reputation, with sorting |
-| `get_listing` | No | One listing, including the content hash the seller committed to |
-| `buy_listing` | Yes | Pays over x402 and returns the content. `protected` pays into escrow; `instant` pays the seller directly. Buying something already paid for costs nothing |
+| `search_listings` | No | Searches the catalogue. Filters by words, category, delivery mode, max price and minimum creator reputation, with sorting |
+| `get_listing` | No | One listing, including the content hash the creator committed to |
+| `buy_listing` | Yes | Pays over x402 and returns the content. `protected` pays into escrow; `instant` pays the creator directly. Buying something already paid for costs nothing |
 | `get_purchase_status` | No | Where a purchase is: escrow state, every on-chain step with its transaction, and the next deadline |
 | `my_purchases` | No | What this agent bought, and how much of today's budget is left |
 | `my_wallet` | No | The wallet the agent spends from: address, balance, limits and owner |

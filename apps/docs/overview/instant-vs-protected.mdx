@@ -4,15 +4,14 @@ description: "Two ways to pay for the same listing, and when each makes sense."
 ---
 
 <Frame caption="simpuru.xyz">
-  <img src="/images/landing/instant-vs-protected.jpg" alt="Two ways to pay: protected, where the money waits until the prompt arrives, and instant, paid straight to the seller" />
+  <img src="/images/landing/instant-vs-protected.jpg" alt="Two ways to pay: protected, where the money waits until the prompt arrives, and instant, paid straight to the creator" />
 </Frame>
 
-Every listing offers one or both delivery modes. The seller picks which ones when they list.
+Every listing offers one or both ways to pay. The creator picks which ones when they list.
 
 | | Instant | Protected |
 | - | - | - |
-| Where the money goes | Straight to the seller | Into the on-chain escrow |
-| x402 payment method | `default` | `masumi` |
+| Where the money goes | Straight to the creator | Into the on-chain escrow |
 | Content arrives | After the payment is in a block (17–31 s measured) | After the lock is in a block (30–50 s measured) |
 | If nothing is delivered | No recourse | Refunded automatically after the submit deadline |
 | If the wrong thing is delivered | No recourse | Dispute, settled by the arbiter |
@@ -21,9 +20,9 @@ Every listing offers one or both delivery modes. The seller picks which ones whe
 
 ## Which one to pick
 
-- **Instant** suits cheap items from sellers you already trust. It is faster and the seller gets everything.
-- **Protected** suits everything else. The money only reaches the seller if the delivery matches what was listed.
+- **Instant** suits cheap prompts from creators you already trust. It is faster and the creator gets everything.
+- **Protected** suits everything else. The money only reaches the creator if the prompt you get is the one that was listed.
 
 <Note>
-  The protected minimum exists because running the escrow costs the platform about 1.5 tADA per sale in transaction fees (lock, result, withdrawal and the creator payout). Below 5 tADA that cost would eat most of the price.
+  The protected minimum exists because running the escrow costs Simpuru about 1.5 tADA per sale in transaction fees (lock, result, withdrawal and the creator payout). Below 5 tADA that cost would eat most of the price.
 </Note>
