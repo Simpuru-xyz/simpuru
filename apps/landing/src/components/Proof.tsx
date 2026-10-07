@@ -1,5 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
-import { explorerTx, REPO_URL } from "@/lib/links";
+import { explorerTx } from "@/lib/links";
 
 /**
  * Every protection path, each with the preprod transaction that proves it. The hashes come from
@@ -63,15 +63,6 @@ export default function Proof() {
             </li>
           ))}
         </ul>
-        <a
-          href={`${REPO_URL}/blob/main/docs/demo.md`}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold hover:underline"
-        >
-          Every receipt, with timings
-          <ArrowUpRight aria-hidden className="h-4 w-4" />
-        </a>
       </div>
     </section>
   );

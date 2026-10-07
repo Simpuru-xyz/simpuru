@@ -11,10 +11,20 @@ export const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:300
   "",
 );
 
+/** Sign in with a Cardano wallet, fund the Simpuru wallet, see purchases. */
+export const ACCOUNT_URL = `${APP_URL}/account`;
+
+/** Agent limits and the full MCP setup, written on the page. */
+export const AGENTS_URL = `${APP_URL}/agents`;
+
+/** List a prompt; the seller is the signed-in account. */
+export const SELL_URL = `${APP_URL}/sell`;
+
+/** The only GitHub link on the landing: the footer's "Source". */
 export const REPO_URL = "https://github.com/Simpuru-xyz/simpuru";
 
-/** Setup steps for the MCP server live next to its code until there is a docs site. */
-export const MCP_DOCS_URL = `${REPO_URL}/tree/main/apps/mcp`;
+/** Where to get test ADA. Everything runs on Cardano preprod. */
+export const FAUCET_URL = "https://docs.cardano.org/cardano-testnets/tools/faucet";
 
 /** Every escrow action links to its preprod transaction. Preprod only, never mainnet. */
 export const explorerTx = (hash: string) => `https://preprod.cardanoscan.io/transaction/${hash}`;

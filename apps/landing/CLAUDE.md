@@ -23,8 +23,11 @@ Still to build for #25: preprod proof links (from #19), dark mode.
 
 ## Notes
 
-- App routes go through `APP_URL` (`NEXT_PUBLIC_APP_URL`) in `src/lib/links.ts`; explorer links
-  only to `preprod.cardanoscan.io` (`explorerTx`).
+- App routes go through `APP_URL` (`NEXT_PUBLIC_APP_URL`) in `src/lib/links.ts` (`ACCOUNT_URL`,
+  `AGENTS_URL`, `SELL_URL`). No GitHub links on the page except the footer's "Source" (#89); setup
+  and limits live on the app's `/agents`. The nav always shows the "Testnet · preprod" badge.
+- Product model and copy follow the spec in #86 (account = Cardano wallet, Simpuru wallet balance).
+- Explorer links go only to `preprod.cardanoscan.io` (`explorerTx`).
 - Smooth scroll (Lenis) and scroll-linked in/out (GSAP ScrollTrigger, `scrub`) live in
   `src/components/ScrollAnimations.tsx`: add `data-reveal` to an element, or `data-reveal-group` to
   stagger its children. Animate transform and opacity only. Reduced motion skips both.
