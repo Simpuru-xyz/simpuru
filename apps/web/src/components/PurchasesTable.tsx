@@ -7,7 +7,7 @@ import ContentModal from "@/components/ContentModal";
 import ModeBadge from "@/components/ModeBadge";
 import { useSession } from "@/components/SessionProvider";
 import StatusBadge from "@/components/StatusBadge";
-import { fetchListings, formatAda } from "@/lib/api";
+import { fetchListingsIncluding, formatAda } from "@/lib/api";
 import type { PurchaseView } from "@/lib/purchases";
 
 const time = (ms: string) =>
@@ -52,13 +52,16 @@ export function nextDeadline(p: PurchaseView, now = Date.now()) {
 export default function PurchasesTable() {
   const { me } = useSession();
   const [listings, setListings] = useState<Map<string, Listing>>(new Map());
+  // The listings these purchases point at, as a stable key for the fetch below.
+  const ids = me?.purchases.map((p) => p.listingId).join(",") ?? "";
   const [open, setOpen] = useState<PurchaseView | null>(null);
 
   useEffect(() => {
-    fetchListings()
+    if (!ids) return;
+    fetchListingsIncluding(ids.split(","))
       .then((ls) => setListings(new Map(ls.map((l) => [l.id, l]))))
       .catch(() => {});
-  }, []);
+  }, [ids]);
 
   if (!me) return <div className="h-40 animate-pulse rounded-2xl bg-gray-100" />;
   if (me.purchases.length === 0)
