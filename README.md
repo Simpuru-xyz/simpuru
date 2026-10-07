@@ -25,6 +25,8 @@ claude mcp add --transport http simpuru https://api.simpuru.xyz/mcp
 
 Also on Sokosumi: **Simpuru Shopper**, a Masumi Coworker that buys on Simpuru for you (see below).
 
+**Demo video (1:43):** [youtu.be/Ehnb4RH-u14](https://youtu.be/Ehnb4RH-u14) · **Docs:** [docs.simpuru.xyz](https://docs.simpuru.xyz)
+
 **Site:** [simpuru.xyz](https://simpuru.xyz) · **App:** [app.simpuru.xyz](https://app.simpuru.xyz) · **API docs (Swagger):** [api.simpuru.xyz/docs](https://api.simpuru.xyz/docs) · OpenAPI 3.1: [`/openapi.json`](https://api.simpuru.xyz/openapi.json)
 
 ## The problem
