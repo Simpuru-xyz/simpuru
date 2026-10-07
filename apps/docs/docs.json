@@ -69,7 +69,11 @@
           },
           {
             "group": "For agents",
-            "pages": ["guides/connect-an-agent", "guides/spending-limits", "guides/agent-tools"]
+            "pages": [
+              "guides/connect-an-agent",
+              "guides/spending-limits",
+              "guides/agent-tools"
+            ]
           },
           {
             "group": "Learn",
@@ -101,7 +105,11 @@
           },
           {
             "group": "Resources",
-            "pages": ["resources/deployment", "resources/proof-on-preprod", "resources/glossary"]
+            "pages": [
+              "resources/deployment",
+              "resources/proof-on-preprod",
+              "resources/glossary"
+            ]
           }
         ]
       },
@@ -116,5 +124,15 @@
       "github": "https://github.com/Simpuru-xyz/simpuru",
       "website": "https://simpuru.xyz"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/quickstart",
+      "destination": "/developers/quickstart"
+    },
+    {
+      "source": "/introduction",
+      "destination": "/"
+    }
+  ]
 }
