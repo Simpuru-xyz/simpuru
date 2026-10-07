@@ -15,12 +15,15 @@ const listing = {
   modes: ["instant"],
   contentHash: "0".repeat(64),
 };
+let listingHits = 0;
 const api = Bun.serve({
   port: 0,
-  fetch: (req) =>
-    new URL(req.url).pathname === "/listings/x"
-      ? Response.json(listing)
-      : new Response("unexpected", { status: 500 }),
+  fetch: (req) => {
+    if (new URL(req.url).pathname !== "/listings/x")
+      return new Response("unexpected", { status: 500 });
+    listingHits++;
+    return Response.json(listing);
+  },
 });
 afterAll(() => api.stop());
 
@@ -69,4 +72,20 @@ test("refuses a mode the listing does not offer", async () => {
 test("unknown listing", async () => {
   const r = await buyer().buy("nope", "instant");
   expect(r.ok).toBe(false);
+});
+
+test("a retry while the first buy is still running doesn't start a second payment", async () => {
+  const b = buyer({ max: 5_000_000n });
+  listingHits = 0;
+  const [first, second] = await Promise.all([b.buy("x", "instant"), b.buy("x", "instant")]);
+  expect(second).toBe(first);
+  expect(listingHits).toBe(1);
+});
+
+test("the next buy after one finished runs again", async () => {
+  const b = buyer({ max: 5_000_000n });
+  listingHits = 0;
+  await b.buy("x", "instant");
+  await b.buy("x", "instant");
+  expect(listingHits).toBe(2);
 });
