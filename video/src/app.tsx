@@ -1094,3 +1094,150 @@ export const AppWindow = ({
     </div>
   );
 };
+
+/** simpuru.xyz, rebuilt: the orb video, the two-line headline, the shop button, the stack row. */
+export const LANDING_FRAMES = 132;
+export const LANDING_CLICK = 96;
+export const Landing = () => {
+  const f = useCurrentFrame();
+  const rise = (a: number) => {
+    const p = t(f, a, a + 14);
+    return { opacity: p, transform: `translateY(${(1 - p) * 26}px)` };
+  };
+  const press = interpolate(
+    f,
+    [LANDING_CLICK, LANDING_CLICK + 4, LANDING_CLICK + 10],
+    [0, 1, 0],
+    clamp,
+  );
+  const logos = ["x402.svg", "masumi.webp", "blockfrost.svg", "token2049.png", "cardano.svg"];
+  return (
+    <div
+      style={{
+        width: W,
+        height: H,
+        position: "relative",
+        overflow: "hidden",
+        background: "#fff",
+        fontFamily: sans,
+        color: C.ink,
+      }}
+    >
+      <OffthreadVideo
+        src={staticFile("hero.mp4")}
+        muted
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 120,
+          width: W,
+          height: H - 120,
+          objectFit: "cover",
+          opacity: 0.9,
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 120,
+          height: 260,
+          background: "linear-gradient(#fff, rgba(255,255,255,0))",
+        }}
+      />
+      <div
+        style={{
+          position: "relative",
+          height: 72,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 120px",
+        }}
+      >
+        <Img src={staticFile("logo.svg")} style={{ width: 36, height: 36 }} />
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <Badge />
+          <Pill dark style={{ height: 40 }}>
+            Sign in
+          </Pill>
+        </div>
+      </div>
+      <div style={{ position: "relative", textAlign: "center", paddingTop: 44 }}>
+        <div style={{ fontSize: 76, letterSpacing: -2.5, lineHeight: 1.1, ...rise(4) }}>
+          Pay per prompt. Not per month.
+        </div>
+        <div
+          style={{
+            fontSize: 76,
+            letterSpacing: -2.5,
+            lineHeight: 1.1,
+            backgroundImage: "linear-gradient(90deg,#000,#6b7280 60%,#9ca3af)",
+            WebkitBackgroundClip: "text",
+            color: "transparent",
+            ...rise(14),
+          }}
+        >
+          Refunded if it never arrives.
+        </div>
+        <div style={{ fontSize: 21, color: "#4b5563", marginTop: 22, ...rise(26) }}>
+          Sign in with your Cardano wallet, add test ADA on preprod, and buy yourself or let your
+          agent buy.
+        </div>
+        <div style={{ marginTop: 52, ...rise(36) }}>
+          <Pill
+            dark
+            style={{
+              height: 50,
+              padding: "0 30px",
+              fontSize: 18,
+              transform: `scale(${1 - press * 0.05})`,
+            }}
+          >
+            Open the shop
+          </Pill>
+        </div>
+        <div style={{ fontSize: 16, color: "#4b5563", marginTop: 18, ...rise(42) }}>
+          Made something good?{" "}
+          <span style={{ color: C.ink, textDecoration: "underline" }}>Sell your prompts</span>
+        </div>
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 34,
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+          padding: "0 60px",
+          ...rise(50),
+        }}
+      >
+        {logos.map((l) => (
+          <Img
+            key={l}
+            src={staticFile(l)}
+            style={{
+              height: 34,
+              filter: l === "token2049.png" ? "invert(1) grayscale(1)" : "grayscale(1)",
+              opacity: 0.8,
+            }}
+          />
+        ))}
+      </div>
+      <Cursor
+        f={f}
+        path={[
+          { f: 0, x: 1100, y: 640 },
+          { f: 60, x: 1000, y: 560 },
+          { f: 92, x: 724, y: 430 },
+          { f: 132, x: 724, y: 430 },
+        ]}
+        clicks={[LANDING_CLICK]}
+      />
+    </div>
+  );
+};

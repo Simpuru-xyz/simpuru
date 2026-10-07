@@ -14,7 +14,16 @@ import {
   staticFile,
   useCurrentFrame,
 } from "remotion";
-import { AgentsPage, APP_FLOW_FRAMES, AppFlow, AppWindow, APP_BEATS as B } from "./app";
+import {
+  AgentsPage,
+  APP_FLOW_FRAMES,
+  AppFlow,
+  AppWindow,
+  APP_BEATS as B,
+  LANDING_CLICK,
+  LANDING_FRAMES,
+  Landing,
+} from "./app";
 import { AGENT } from "./scenes";
 import { C, mono, sans, TX } from "./theme";
 import { Terminal, useIn } from "./ui";
@@ -927,10 +936,22 @@ const Outro = () => {
   );
 };
 
+// ── simpuru.xyz, into the shop ───────────────────────────────────────────────
+const Site = () => (
+  <AbsoluteFill style={{ background: BG, justifyContent: "center", alignItems: "center" }}>
+    <AppWindow width={1600} url="simpuru.xyz">
+      <Landing />
+    </AppWindow>
+    <Sfx name="tap" at={LANDING_CLICK} />
+    <Sfx name="swish" at={LANDING_FRAMES - 10} volume={0.5} />
+  </AbsoluteFill>
+);
+
 // ── The film ─────────────────────────────────────────────────────────────────
 const T = 8;
 const PARTS = [
   ["opening", Opening, OPEN_FRAMES],
+  ["site", Site, LANDING_FRAMES],
   ["web", Web, APP_FLOW_FRAMES],
   ["agents", Agents, AGENTS_FRAMES],
   ["proof", Proof, PROOF_FRAMES],
