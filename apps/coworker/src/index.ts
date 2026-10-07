@@ -171,6 +171,7 @@ async function advance(taskId: string, s: State) {
       network: "Preprod",
       agentIdentifier: MPS.agent,
       paymentSourceType: "Web3CardanoV2",
+      supportedPaymentSourceIndex: 0, // the agent's only (Dynamic-priced) Cardano source
       inputHash: sha256Hex(s.input),
       identifierFromPurchaser: s.nonce,
       RequestedFunds: [FEE],
