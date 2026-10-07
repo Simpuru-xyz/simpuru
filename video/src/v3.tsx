@@ -478,13 +478,13 @@ const AGENT_COPY: Copy[] = [
   },
   {
     at: 96,
-    to: 330,
+    to: 450,
     eyebrow: "08 Agents",
     title: "It shops on its own.",
-    body: "Search, buy, verify. It never pays twice.",
+    body: "Filters by reputation, checks the listing, buys with protection. Never pays twice.",
   },
 ];
-const AGENTS_FRAMES = 330;
+const AGENTS_FRAMES = 450;
 const Agents = () => (
   <>
     <Split copy={AGENT_COPY}>
@@ -518,7 +518,7 @@ const Agents = () => (
           <Terminal
             lines={AGENT}
             start={0}
-            cps={150}
+            cps={120}
             width={1200}
             height={640}
             title="claude · Simpuru MCP"
@@ -926,9 +926,17 @@ const Outro = () => {
       <div style={{ fontFamily: mono, fontSize: 30, marginTop: 20, opacity: c }}>
         app.simpuru.xyz
       </div>
-      <div style={{ display: "flex", gap: 46, alignItems: "center", marginTop: 26, opacity: c }}>
-        {["cardano.svg", "x402.svg", "masumi.webp", "blockfrost.svg"].map((f) => (
-          <Img key={f} src={staticFile(f)} style={{ height: 40, filter: "grayscale(1)" }} />
+      <div style={{ display: "flex", gap: 80, alignItems: "center", marginTop: 40, opacity: c }}>
+        {["x402.svg", "masumi.webp", "blockfrost.svg", "token2049.png", "cardano.svg"].map((f) => (
+          <Img
+            key={f}
+            src={staticFile(f)}
+            style={{
+              height: 44,
+              filter: f === "token2049.png" ? "invert(1) grayscale(1)" : "grayscale(1)",
+              opacity: 0.85,
+            }}
+          />
         ))}
       </div>
       <Sfx name="thud" at={0} volume={0.6} />
