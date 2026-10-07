@@ -45,16 +45,16 @@ export function TestnetBadge() {
         <div className="absolute right-0 z-40 mt-2 w-72 space-y-2 rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-700 shadow-xl">
           <p className="font-medium text-black">What&apos;s preprod?</p>
           <p>
-            A Cardano test network. tADA works like ADA but has no value, so you can buy, sell and
-            get refunds here without risking real money.
+            Cardano&apos;s test network. Test ADA (tADA) has no value, so you can buy, sell and get
+            refunds here without risking real money.
           </p>
           <a
             href={PREPROD_FAUCET}
             target="_blank"
             rel="noreferrer"
-            className="inline-block font-medium text-black underline underline-offset-4"
+            className="inline-flex rounded-full bg-black px-3.5 py-1.5 text-xs font-medium text-white hover:bg-gray-800"
           >
-            Get free test ADA from the faucet
+            Get test ADA
           </a>
         </div>
       )}
