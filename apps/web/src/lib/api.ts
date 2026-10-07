@@ -11,6 +11,7 @@ export const ENDPOINTS = {
   listing: (id: string) => `${API_BASE}/listings/${encodeURIComponent(id)}`,
   /** x402-paid content. Agents call this; the browser only shows it. */
   unlock: (id: string) => `${API_BASE}/listings/${encodeURIComponent(id)}/unlock`,
+  creator: (address: string) => `${API_BASE}/creators/${encodeURIComponent(address)}`,
 } as const;
 
 /** Non-OK response, so callers can branch on status (404 → not found). */
@@ -61,6 +62,25 @@ export const CATEGORIES = [
 export const fetchListings = () => getJson<ListingView[]>(ENDPOINTS.listings());
 export const fetchListing = (id: string) => getJson<ListingView>(ENDPOINTS.listing(id));
 
+/** A creator's public page (#77): what they sell, total sales, on-chain reputation. */
+export interface Creator {
+  address: string;
+  listings: ListingView[];
+  sales: number;
+  sellerReputation?: { score: number; basis: number };
+}
+
+export const fetchCreator = (address: string) => getJson<Creator>(ENDPOINTS.creator(address));
+
+/** What a creator receives for a sale, mirroring `creatorPayout` in apps/api seller.ts. */
+export function creatorPayout(priceLovelace: string, mode: DeliveryMode) {
+  const price = BigInt(priceLovelace);
+  if (mode === "instant") return price;
+  const tenth = price / BigInt(10);
+  const floor = BigInt(1_500_000);
+  return price - (tenth > floor ? tenth : floor);
+}
+
 /** `fetchListing`, but an unknown id (404) is `null` instead of an error. */
 export const fetchListingOrNull = (id: string) =>
   fetchListing(id).catch((e: unknown) => {
@@ -76,13 +96,21 @@ export interface NewListing {
   modes: DeliveryMode[];
   content: string;
   previewMedia?: string;
+  category?: string;
 }
 
-/** POST /listings. The API's own validation message is surfaced as the error. */
-export async function createListing(body: NewListing): Promise<ListingView> {
+/**
+ * POST /listings as the signed-in creator (spec #86, J5): the session's owner is the seller.
+ * Its own validation message is surfaced as the error; 401 means the session is gone.
+ */
+export async function createListing(body: NewListing, token: string): Promise<ListingView> {
   const res = await fetch(ENDPOINTS.listings(), {
     method: "POST",
-    headers: { "content-type": "application/json", Accept: "application/json" },
+    headers: {
+      "content-type": "application/json",
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(body),
   });
   const data = (await res.json().catch(() => ({}))) as ListingView & { error?: string };

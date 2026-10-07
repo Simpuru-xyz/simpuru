@@ -7,7 +7,17 @@ import { useState } from "react";
 import CopyButton from "@/components/CopyButton";
 import ListingPreview from "@/components/ListingPreview";
 import ModeBadge from "@/components/ModeBadge";
-import { adaToLovelace, createListing, RULES } from "@/lib/api";
+import { useSession } from "@/components/SessionProvider";
+import { SignedOut } from "@/lib/account";
+import {
+  ApiError,
+  adaToLovelace,
+  CATEGORIES,
+  createListing,
+  creatorPayout,
+  formatAda,
+  RULES,
+} from "@/lib/api";
 
 const field =
   "w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-black placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none";
@@ -21,22 +31,29 @@ function Label({ children, hint }: { children: React.ReactNode; hint?: string })
   );
 }
 
-const EMPTY = { title: "", description: "", content: "", priceAda: "", previewMedia: "" };
+const EMPTY = {
+  title: "",
+  description: "",
+  content: "",
+  priceAda: "",
+  previewMedia: "",
+  category: "",
+};
 
 /** Formats agreed on #46. */
 const PREVIEW_URL = /^https:\/\/\S+\.(mp4|webm|webp|gif)(\?\S*)?$/i;
 
 /**
- * Create a listing. The API hashes the content and returns the commitment;
- * we show that hash back so the seller sees exactly what buyers will check.
+ * Create a listing as the signed-in creator (the account is the seller, no address field). The
+ * API hashes the content and returns the commitment; we show that hash back so the seller sees
+ * exactly what buyers will check.
  */
 export default function CreateListingForm({
-  sellerAddress,
   onCreated,
 }: {
-  sellerAddress: string;
   onCreated: (listing: Listing) => void;
 }) {
+  const { session, guard } = useSession();
   const [form, setForm] = useState(EMPTY);
   const [modes, setModes] = useState<DeliveryMode[]>(["instant", "protected"]);
   const [busy, setBusy] = useState(false);
@@ -60,7 +77,7 @@ export default function CreateListingForm({
   const contentBytes = new TextEncoder().encode(form.content).length;
 
   const problem = (() => {
-    if (!RULES.address.test(sellerAddress)) return "Set a preprod seller address first.";
+    if (!session) return "Sign in first.";
     if (form.title && !form.title.trim()) return "Title: not only spaces.";
     if (form.description && !form.description.trim()) return "Description: not only spaces.";
     if (form.previewMedia && !PREVIEW_URL.test(form.previewMedia.trim()))
@@ -76,27 +93,45 @@ export default function CreateListingForm({
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (problem || !lovelace) {
+    if (problem || !lovelace || !session) {
       setError(problem || "Set a price.");
       return;
     }
-    setBusy(true);
     setError("");
+    setBusy(true);
     try {
-      const listing = await createListing({
-        title: form.title.trim(),
-        description: form.description.trim(),
-        priceLovelace: lovelace,
-        sellerAddress,
-        modes,
-        content: form.content,
-        ...(form.previewMedia.trim() ? { previewMedia: form.previewMedia.trim() } : {}),
+      const listing = await guard(async (token) => {
+        try {
+          return await createListing(
+            {
+              title: form.title.trim(),
+              description: form.description.trim(),
+              priceLovelace: lovelace,
+              sellerAddress: session.owner,
+              modes,
+              content: form.content,
+              ...(form.previewMedia.trim() ? { previewMedia: form.previewMedia.trim() } : {}),
+              ...(form.category ? { category: form.category } : {}),
+            },
+            token,
+          );
+        } catch (err) {
+          // The provider signs out on SignedOut; createListing reports a 401 as ApiError.
+          if (err instanceof ApiError && err.status === 401) throw new SignedOut(401, err.message);
+          throw err;
+        }
       });
       setCreated(listing);
       setForm(EMPTY);
       onCreated(listing);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Listing failed.");
+      setError(
+        err instanceof SignedOut
+          ? "Your session ended. Sign in again, then list."
+          : err instanceof Error
+            ? err.message
+            : "Listing failed.",
+      );
     } finally {
       setBusy(false);
     }
@@ -202,6 +237,22 @@ export default function CreateListingForm({
           />
         )}
 
+        <label className="block space-y-1.5">
+          <Label hint="shows in the catalogue filter">Category</Label>
+          <select
+            value={form.category}
+            onChange={(e) => set("category")(e.target.value)}
+            className={field}
+          >
+            <option value="">No category</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <fieldset className="space-y-2">
           <legend className="mb-1.5 text-sm font-medium text-black">Delivery modes</legend>
           <div className="flex flex-wrap gap-2">
@@ -228,7 +279,9 @@ export default function CreateListingForm({
             ))}
           </div>
           <span className="block text-xs text-gray-500">
-            Protected costs you about 1.35 tADA in escrow fees per sale, so it starts at 5 ADA.
+            Instant pays you the full price at once. Protected holds the payment in escrow until
+            delivery checks out, then pays you the price minus 10% or 1.5 ADA, whichever is more
+            (the escrow costs that to run), so it starts at 5 ADA.
           </span>
         </fieldset>
 
@@ -246,6 +299,15 @@ export default function CreateListingForm({
             placeholder={String(minAda)}
             className={field}
           />
+          {lovelace && !problem && (
+            <span className="block text-xs text-gray-500">
+              You receive{" "}
+              {modes
+                .map((m) => `${formatAda(creatorPayout(lovelace, m).toString())} ADA per ${m} sale`)
+                .join(", ")}
+              .
+            </span>
+          )}
         </label>
 
         {(error || problem) && (form.title || form.priceAda || error) && (
@@ -259,7 +321,7 @@ export default function CreateListingForm({
 
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || !session}
           className="inline-flex items-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none disabled:opacity-60"
         >
           {busy && <Loader2 aria-hidden className="h-4 w-4 animate-spin" />}
