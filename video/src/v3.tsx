@@ -6,8 +6,10 @@ import type { ReactNode } from "react";
 import {
   AbsoluteFill,
   Audio,
+  Easing,
   Img,
   interpolate,
+  OffthreadVideo,
   Sequence,
   staticFile,
   useCurrentFrame,
@@ -15,7 +17,7 @@ import {
 import { AgentsPage, APP_FLOW_FRAMES, AppFlow, AppWindow, APP_BEATS as B } from "./app";
 import { AGENT } from "./scenes";
 import { C, mono, sans, TX } from "./theme";
-import { Arrow, Node, Terminal, Tx, useIn } from "./ui";
+import { Terminal, useIn } from "./ui";
 
 export const FPS3 = 30;
 const BG = "#f4f4f5";
@@ -322,160 +324,363 @@ const Agents = () => (
   </>
 );
 
-// ── Proof on chain ───────────────────────────────────────────────────────────
-const Col = ({
-  title,
-  color,
+// ── Three outcomes, as purchase cards from the app ───────────────────────────
+type Step = { label: string; tx: string; tone?: "good" | "bad" | "warn" };
+const tone = (t?: Step["tone"]) =>
+  t === "good" ? C.green : t === "bad" ? C.red : t === "warn" ? C.amber : C.ink;
+
+const Outcome = ({
   at,
-  items,
+  title,
+  badge,
+  badgeTone,
+  thumb,
+  steps,
 }: {
-  title: string;
-  color: string;
   at: number;
-  items: [string, string, string?][];
+  title: string;
+  badge: string;
+  badgeTone: Step["tone"];
+  thumb?: string;
+  steps: Step[];
 }) => {
-  const p = useIn(at * 2);
+  const f = useCurrentFrame();
+  const p = interpolate(f, [at, at + 12], [0, 1], {
+    ...clamp,
+    easing: Easing.bezier(0.22, 1, 0.36, 1),
+  });
+  const done = interpolate(
+    f,
+    [at + 14 + steps.length * 14, at + 24 + steps.length * 14],
+    [0, 1],
+    clamp,
+  );
   return (
-    <div style={{ width: 540, display: "flex", flexDirection: "column", gap: 12 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          fontFamily: sans,
-          fontSize: 32,
-          fontWeight: 600,
-          color: "#fff",
-          opacity: p,
-          marginBottom: 6,
-        }}
-      >
-        <div style={{ width: 16, height: 16, borderRadius: 8, background: color }} />
-        {title}
+    <div
+      style={{
+        width: 500,
+        borderRadius: 24,
+        background: "#fff",
+        border: `1px solid ${C.line}`,
+        overflow: "hidden",
+        boxShadow: "0 30px 70px rgba(0,0,0,0.08)",
+        opacity: p,
+        transform: `translateY(${(1 - p) * 40}px)`,
+      }}
+    >
+      <div style={{ height: 150, background: C.soft, position: "relative", overflow: "hidden" }}>
+        {thumb ? (
+          thumb.endsWith(".mp4") ? (
+            <OffthreadVideo
+              src={staticFile(thumb)}
+              muted
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <Img
+              src={staticFile(thumb)}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          )
+        ) : (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: sans,
+              fontSize: 64,
+              fontWeight: 600,
+              color: tone(badgeTone),
+              background: `${tone(badgeTone)}14`,
+            }}
+          >
+            {badgeTone === "warn" ? "0 / 1" : "≠"}
+          </div>
+        )}
       </div>
-      {items.map(([l, h, c], i) => (
-        <Tx key={h} dark label={l} hash={h} color={c ?? "#8a8aa3"} delay={(at + 10 + i * 10) * 2} />
-      ))}
+      <div style={{ padding: "22px 26px 26px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ fontFamily: sans, fontSize: 28, fontWeight: 600 }}>{title}</div>
+          <div
+            style={{
+              padding: "6px 14px",
+              borderRadius: 999,
+              fontFamily: sans,
+              fontSize: 16,
+              fontWeight: 600,
+              color: "#fff",
+              background: tone(badgeTone),
+              opacity: done,
+              transform: `scale(${0.8 + 0.2 * done})`,
+            }}
+          >
+            {badge}
+          </div>
+        </div>
+        <div style={{ marginTop: 18 }}>
+          {steps.map((s, i) => {
+            const q = interpolate(f, [at + 14 + i * 14, at + 22 + i * 14], [0, 1], clamp);
+            return (
+              <div key={s.label} style={{ display: "flex", gap: 16, opacity: q }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <div
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: 7,
+                      background: tone(s.tone),
+                      marginTop: 6,
+                    }}
+                  />
+                  {i < steps.length - 1 ? (
+                    <div style={{ width: 2, height: 38, background: C.line }} />
+                  ) : null}
+                </div>
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontFamily: sans,
+                    fontSize: 20,
+                    paddingBottom: 14,
+                  }}
+                >
+                  <span style={{ fontWeight: 500 }}>{s.label}</span>
+                  <span style={{ fontFamily: mono, fontSize: 15, color: C.muted, marginTop: 3 }}>
+                    {s.tx ? `${s.tx.slice(0, 8)} ↗` : "deadline"}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };
-const PROOF_FRAMES = 270;
+
+const PROOF_FRAMES = 240;
 const Proof = () => {
-  const p = useIn(0);
+  const f = useCurrentFrame();
+  const h = interpolate(f, [0, 12], [0, 1], clamp);
   return (
     <AbsoluteFill
       style={{
-        background: C.night,
-        fontFamily: sans,
+        background: BG,
         justifyContent: "center",
         alignItems: "center",
         flexDirection: "column",
-        gap: 54,
+        gap: 50,
       }}
     >
-      <div style={{ opacity: p, textAlign: "center" }}>
-        <div style={{ fontFamily: mono, fontSize: 22, letterSpacing: 2, color: "#9b9bb0" }}>
-          CARDANO PREPROD
-        </div>
-        <div
-          style={{
-            fontSize: 72,
-            fontWeight: 600,
-            letterSpacing: -2.5,
-            color: "#fff",
-            marginTop: 12,
-          }}
-        >
-          Every path is a real transaction.
-        </div>
+      <div
+        style={{
+          fontFamily: sans,
+          fontSize: 64,
+          fontWeight: 600,
+          letterSpacing: -2,
+          opacity: h,
+          transform: `translateY(${(1 - h) * 16}px)`,
+        }}
+      >
+        Three outcomes. All on chain.
       </div>
-      <div style={{ display: "flex", gap: 36, alignItems: "flex-start" }}>
-        <Col
-          title="Delivered"
-          color={C.green}
+      <div style={{ display: "flex", gap: 34, alignItems: "flex-start" }}>
+        <Outcome
           at={10}
-          items={[
-            ["Locked", TX.oylaLock],
-            ["Result posted", TX.oylaResult],
-            ["Seller paid", TX.oylaWithdraw, C.green],
-            ["Creator paid", TX.creatorPaid, C.green],
+          title="OYLA"
+          badge="Seller paid"
+          badgeTone="good"
+          thumb="oyla.mp4"
+          steps={[
+            { label: "Locked", tx: TX.oylaLock },
+            { label: "Result posted", tx: TX.oylaResult },
+            { label: "Seller paid", tx: TX.oylaWithdraw, tone: "good" },
+            { label: "Creator paid", tx: TX.creatorPaid, tone: "good" },
           ]}
         />
-        <Col
-          title="Nothing arrived"
-          color={C.amber}
+        <Outcome
           at={40}
-          items={[
-            ["Locked", "003c3c7f3fb6109dfd6993e51bc15cf69c65f67e1841da8784be84cec61f074c"],
-            [
-              "Refunded",
-              "39e9af4ee93160e5813128330e6115a659f1e727bd2cc985aa44110be8b1e221",
-              C.green,
-            ],
+          title="Never delivered"
+          badge="Refunded"
+          badgeTone="warn"
+          steps={[
+            {
+              label: "Locked",
+              tx: "003c3c7f3fb6109dfd6993e51bc15cf69c65f67e1841da8784be84cec61f074c",
+            },
+            { label: "No result by the deadline", tx: "", tone: "warn" },
+            {
+              label: "Refunded",
+              tx: "39e9af4ee93160e5813128330e6115a659f1e727bd2cc985aa44110be8b1e221",
+              tone: "good",
+            },
           ]}
         />
-        <Col
+        <Outcome
+          at={70}
           title="Wrong file"
-          color={C.red}
-          at={60}
-          items={[
-            ["Locked", TX.wrongLock],
-            ["Wrong result", TX.wrongResult, C.red],
-            ["Dispute", TX.dispute, C.amber],
-            ["Arbiter refunds", TX.arbiterRefund, C.green],
+          badge="Buyer refunded"
+          badgeTone="bad"
+          steps={[
+            { label: "Locked", tx: TX.wrongLock },
+            { label: "Hash mismatch", tx: TX.wrongResult, tone: "bad" },
+            { label: "Disputed", tx: TX.dispute, tone: "warn" },
+            { label: "Arbiter refunds", tx: TX.arbiterRefund, tone: "good" },
           ]}
         />
       </div>
-      <Sfx name="thud" at={0} volume={0.7} />
-      {[20, 40, 60, 80, 100, 120, 140, 160, 180, 200].map((at) => (
-        <Sfx key={at} name="blip" at={at} volume={0.3} />
+      {[24, 38, 52, 66, 82, 98, 112, 126].map((at) => (
+        <Sfx key={at} name="blip" at={at} volume={0.25} />
       ))}
+      <Sfx name="chime" at={80} volume={0.4} />
+      <Sfx name="chime" at={96} volume={0.4} />
+      <Sfx name="chime" at={140} volume={0.4} />
     </AbsoluteFill>
   );
 };
 
-// ── Agent to agent (Masumi) ──────────────────────────────────────────────────
+// ── Agent to agent: a Task, hired and settled ────────────────────────────────
+const TASK_STATES: [number, string, string][] = [
+  [0, "Ready", C.muted],
+  [40, "Running", C.ink],
+  [80, "1 USDM in escrow", C.violet],
+  [150, "Completed", C.green],
+];
+const TaskCard = () => {
+  const f = useCurrentFrame();
+  const state = [...TASK_STATES].reverse().find(([at]) => f >= at) ?? TASK_STATES[0];
+  const reply = interpolate(f, [150, 164], [0, 1], clamp);
+  const pay = interpolate(f, [190, 204], [0, 1], clamp);
+  return (
+    <div style={{ width: 1000, fontFamily: sans }}>
+      <div
+        style={{
+          borderRadius: 24,
+          background: "#fff",
+          border: `1px solid ${C.line}`,
+          padding: "28px 32px",
+          boxShadow: "0 30px 70px rgba(0,0,0,0.08)",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ fontFamily: mono, fontSize: 16, color: C.muted }}>Sokosumi · Task</div>
+          <div
+            style={{
+              padding: "7px 16px",
+              borderRadius: 999,
+              fontSize: 17,
+              fontWeight: 600,
+              color: "#fff",
+              background: state[2],
+            }}
+          >
+            {state[1]}
+          </div>
+        </div>
+        <div style={{ fontSize: 32, fontWeight: 600, marginTop: 14, letterSpacing: -0.5 }}>
+          Landing page prompt for my ecommerce store
+        </div>
+        <div style={{ fontSize: 20, color: C.muted, marginTop: 8 }}>
+          Find one on Simpuru. Max 10 tADA. Buy it with protection.
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 20 }}>
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              background: C.ink,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Img
+              src={staticFile("logo.svg")}
+              style={{ width: 20, height: 20, filter: "invert(1)" }}
+            />
+          </div>
+          <div style={{ fontSize: 19, fontWeight: 600 }}>Simpuru Shopper</div>
+          <div style={{ fontSize: 17, color: C.muted }}>Coworker</div>
+        </div>
+      </div>
+      <div
+        style={{
+          marginTop: 18,
+          marginLeft: 60,
+          borderRadius: 22,
+          background: C.ink,
+          color: "#fff",
+          padding: "22px 26px",
+          opacity: reply,
+          transform: `translateY(${(1 - reply) * 20}px)`,
+        }}
+      >
+        <div style={{ fontSize: 20, fontWeight: 600 }}>
+          Bought "OYLA" on Simpuru, with buyer protection.
+        </div>
+        <div style={{ fontFamily: mono, fontSize: 16, color: "#c4b5fd", marginTop: 10 }}>
+          Build a luxury handcrafted jewelry landing page…
+        </div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          gap: 18,
+          marginTop: 18,
+          marginLeft: 60,
+          opacity: pay,
+          transform: `translateY(${(1 - pay) * 14}px)`,
+        }}
+      >
+        {[
+          ["1 USDM", "to the Shopper, for the job"],
+          ["3.5 tADA", "to the creator, for the prompt"],
+        ].map(([a, b]) => (
+          <div
+            key={a}
+            style={{
+              flex: 1,
+              borderRadius: 18,
+              background: "#fff",
+              border: `1px solid ${C.line}`,
+              padding: "16px 22px",
+            }}
+          >
+            <div style={{ fontSize: 30, fontWeight: 600 }}>{a}</div>
+            <div style={{ fontSize: 17, color: C.muted, marginTop: 2 }}>{b}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const COWORKER_COPY: Copy[] = [
   {
     at: 0,
-    to: 300,
+    to: 270,
     eyebrow: "09 Agent to agent",
     title: "Hired on Sokosumi.",
-    body: "Paid in USDM for the job. Buys on Simpuru in ADA. Both escrows settled.",
+    body: "Another agent hires ours in USDM. Ours buys on Simpuru, protected.",
   },
 ];
-const COWORKER_FRAMES = 300;
+const COWORKER_FRAMES = 270;
 const Coworker = () => (
-  <Split copy={COWORKER_COPY}>
-    <div
-      style={{ width: 1110, display: "flex", flexDirection: "column", gap: 40, fontFamily: sans }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <Node title="Sokosumi user" sub="writes a Task" delay={10} width={290} />
-        <Arrow delay={30} width={110} label="1 USDM" />
-        <Node
-          title="Simpuru Shopper"
-          sub="Masumi Coworker"
-          delay={44}
-          width={300}
-          accent={C.violet}
-        />
-        <Arrow delay={64} width={110} label="5 tADA" />
-        <Node title="Creator" sub="paid on delivery" delay={78} width={240} accent={C.green} />
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <Tx label="USDM locked" hash={TX.usdmLock} delay={110} color={C.violet} />
-        <Tx label="Bought, protected" hash={TX.oylaLock} delay={130} color={C.ink} />
-        <Tx label="Result posted" hash={TX.usdmResult} delay={150} color={C.violet} />
-        <Tx label="Creator paid" hash={TX.creatorPaid} delay={170} />
-        <Tx label="Fee collected" hash={TX.usdmPaid} delay={190} />
-      </div>
-    </div>
-    <Img
-      src={staticFile("masumi.webp")}
-      style={{ position: "absolute", right: 0, top: 120, height: 44 }}
-    />
-  </Split>
+  <>
+    <Split copy={COWORKER_COPY}>
+      <TaskCard />
+    </Split>
+    <Sfx name="tap" at={40} />
+    <Sfx name="chime" at={80} volume={0.4} />
+    <Sfx name="chime" at={150} />
+    <Sfx name="chime" at={190} volume={0.4} />
+  </>
 );
 
 // ── Outro ────────────────────────────────────────────────────────────────────
