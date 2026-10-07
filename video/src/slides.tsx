@@ -178,24 +178,151 @@ const Shot = ({ src, w, h }: { src: string; w: number; h?: number }) => (
     }}
   />
 );
+const Browser = ({
+  src,
+  w,
+  h,
+  url = "app.simpuru.xyz",
+  pos = "top",
+  style,
+}: {
+  src: string;
+  w: number;
+  h: number;
+  url?: string;
+  pos?: string;
+  style?: React.CSSProperties;
+}) => (
+  <div
+    style={{
+      width: w,
+      borderRadius: 16,
+      overflow: "hidden",
+      background: "#fff",
+      border: `1px solid ${LINE}`,
+      boxShadow: "0 40px 90px rgba(0,0,0,0.16)",
+      ...style,
+    }}
+  >
+    <div
+      style={{
+        height: 40,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "0 16px",
+        borderBottom: `1px solid ${LINE}`,
+        background: "#fafafa",
+      }}
+    >
+      {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
+        <span key={c} style={{ width: 12, height: 12, borderRadius: 6, background: c }} />
+      ))}
+      <span
+        style={{
+          marginLeft: 14,
+          fontSize: 15,
+          color: GREY,
+          background: "#f0f0f0",
+          borderRadius: 8,
+          padding: "4px 14px",
+        }}
+      >
+        {url}
+      </span>
+    </div>
+    <Img
+      src={staticFile(src)}
+      style={{
+        width: "100%",
+        height: h,
+        objectFit: "cover",
+        objectPosition: pos,
+        display: "block",
+      }}
+    />
+  </div>
+);
 const _short = (h: string) => `${h.slice(0, 10)}…${h.slice(-6)}`;
+
+const TxStrip = ({
+  title,
+  items,
+  top,
+}: {
+  title: string;
+  items: [string, string, string, string][];
+  top: number;
+}) => (
+  <div style={{ position: "absolute", left: 110, right: 110, top }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+      <Eyebrow>{title}</Eyebrow>
+      <div style={{ flex: 1, height: 1, background: LINE }} />
+    </div>
+    <div style={{ display: "flex", gap: 22, marginTop: 22 }}>
+      {items.map(([label, hash, color, note]) => (
+        <Panel key={hash} style={{ flex: 1, padding: "24px 28px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              fontSize: 25,
+              fontWeight: 600,
+            }}
+          >
+            <span style={{ width: 14, height: 14, borderRadius: 7, background: color }} />
+            {label}
+          </div>
+          <div style={{ fontFamily: mono, fontSize: 21, marginTop: 14 }}>
+            {hash.slice(0, 16)}…{hash.slice(-8)}
+          </div>
+          <div style={{ fontSize: 18, color: GREY, marginTop: 8 }}>{note}</div>
+        </Panel>
+      ))}
+    </div>
+  </div>
+);
 
 const Cover = () => (
   <Page n={1}>
-    <Block top={340}>
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <Img src={staticFile("logo.svg")} style={{ width: 44, height: 44 }} />
-        <span style={{ fontSize: 30, fontWeight: 600 }}>Simpuru</span>
-      </div>
-      <H size={104}>
-        Pay per prompt. Not per month.
-        <br />
-        <Grey>Refunded if it never arrives.</Grey>
-      </H>
-      <div style={{ fontSize: 22, color: GREY, marginTop: 28 }}>
-        A design prompt shop for people and AI agents, on Cardano
+    <Block top={250}>
+      <div style={{ width: 820 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <Img src={staticFile("logo.svg")} style={{ width: 44, height: 44 }} />
+          <span style={{ fontSize: 30, fontWeight: 600 }}>Simpuru</span>
+        </div>
+        <H size={92}>
+          Pay per prompt.
+          <br />
+          Not per month.
+          <br />
+          <Grey>Refunded if it never arrives.</Grey>
+        </H>
+        <div style={{ fontSize: 24, color: GREY, marginTop: 30, lineHeight: 1.45 }}>
+          A design prompt shop for people and their agents. Paid with x402, protected by escrow on
+          Cardano. Live on preprod.
+        </div>
+        <div style={{ display: "flex", gap: 40, alignItems: "center", marginTop: 52 }}>
+          <Img src={staticFile("x402.svg")} style={{ height: 40 }} />
+          <Img src={staticFile("cardano.svg")} style={{ height: 36 }} />
+          <Img src={staticFile("masumi.webp")} style={{ height: 30 }} />
+        </div>
       </div>
     </Block>
+    <Browser
+      src="app-catalogue.png"
+      w={980}
+      h={500}
+      style={{ position: "absolute", left: 1010, top: 190 }}
+    />
+    <Browser
+      src="deck/app-purchase-timeline-c.png"
+      w={420}
+      h={420}
+      url="app.simpuru.xyz/purchases"
+      style={{ position: "absolute", left: 930, top: 520 }}
+    />
   </Page>
 );
 
@@ -207,114 +334,119 @@ const Demo = () => (
 
 const Problem = () => (
   <Page n={3}>
-    <Block top={300}>
+    <Block top={170}>
       <Eyebrow>The problem</Eyebrow>
-      <H size={84}>
+      <H size={76}>
         Great UI design is expensive.{" "}
         <Grey>Prompts make it cheap, then libraries sell them by the month.</Grey>
       </H>
-      <H size={84}>
+      <H size={76}>
         Agents can pay now. <Grey>Nobody protects them after they do.</Grey>
       </H>
     </Block>
+    <div
+      style={{
+        position: "absolute",
+        left: 110,
+        right: 110,
+        top: 640,
+        display: "flex",
+        gap: 26,
+      }}
+    >
+      <Panel style={{ flex: 1.45, padding: "34px 40px", display: "flex", gap: 30 }}>
+        <div style={{ width: 6, borderRadius: 3, background: INK, flexShrink: 0 }} />
+        <div>
+          <div style={{ fontSize: 36, fontWeight: 600, letterSpacing: -0.8 }}>
+            x402 ends at the lock.
+          </div>
+          <div style={{ fontSize: 26, lineHeight: 1.45, marginTop: 14, color: "#444" }}>
+            The money sits in escrow, not with the seller. "Releasing them runs the ordinary Masumi
+            V2 lifecycle, which this scheme neither drives nor constrains."
+          </div>
+          <div
+            style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 20, color: GREY }}
+          >
+            <Img src={staticFile("x402.svg")} style={{ height: 24 }} />
+            <span style={{ fontSize: 19 }}>x402 Cardano spec, exact scheme</span>
+          </div>
+        </div>
+      </Panel>
+      <Panel
+        style={{
+          flex: 1,
+          padding: "34px 40px",
+          background: "#141416",
+          color: "#fff",
+          border: "none",
+        }}
+      >
+        <div style={{ fontSize: 19, color: GREY, letterSpacing: 2, textTransform: "uppercase" }}>
+          After the lock, someone has to
+        </div>
+        {["notice nothing arrived", "notice the wrong file", "act before the deadlines"].map(
+          (t) => (
+            <div key={t} style={{ fontSize: 30, fontWeight: 600, marginTop: 16 }}>
+              <span style={{ color: AMBER }}>●</span> {t}
+            </div>
+          ),
+        )}
+      </Panel>
+    </div>
   </Page>
 );
 
+const UserCard = ({
+  shot,
+  pos,
+  url,
+  title,
+  body,
+}: {
+  shot: string;
+  pos: string;
+  url: string;
+  title: string;
+  body: string;
+}) => (
+  <div style={{ flex: 1 }}>
+    <Browser src={shot} w={540} h={330} url={url} pos={pos} />
+    <div style={{ marginTop: 30, fontSize: 40, fontWeight: 600, letterSpacing: -1 }}>{title}</div>
+    <div style={{ fontSize: 22, color: GREY, marginTop: 10, lineHeight: 1.45 }}>{body}</div>
+  </div>
+);
 const Users = () => (
   <Page n={4}>
-    <Block top={150}>
+    <Block top={130}>
       <Eyebrow>Who it's for</Eyebrow>
-      <H>Three people, one shop.</H>
+      <H>
+        Three people, one shop. <Grey>All live on app.simpuru.xyz.</Grey>
+      </H>
     </Block>
     <div
-      style={{ position: "absolute", left: 110, right: 110, top: 400, display: "flex", gap: 26 }}
+      style={{ position: "absolute", left: 110, right: 110, top: 360, display: "flex", gap: 40 }}
     >
-      <Panel style={{ flex: 1, padding: 40 }}>
-        <div
-          style={{
-            height: 170,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            gap: 14,
-          }}
-        >
-          <div
-            style={{
-              height: 58,
-              borderRadius: 14,
-              border: `1px solid ${LINE}`,
-              display: "flex",
-              alignItems: "center",
-              padding: "0 18px",
-              gap: 14,
-              fontSize: 22,
-            }}
-          >
-            <span
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 8,
-                background: "linear-gradient(135deg,#f472b6,#fb923c)",
-              }}
-            />
-            Eternl <span style={{ marginLeft: "auto", fontSize: 16, color: GREY }}>preprod</span>
-          </div>
-          <div
-            style={{
-              height: 58,
-              borderRadius: 14,
-              background: INK,
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 22,
-              fontWeight: 600,
-            }}
-          >
-            Sign in · one signature
-          </div>
-        </div>
-        <div style={{ marginTop: 34, fontSize: 40, fontWeight: 600, letterSpacing: -1 }}>
-          Builders and founders
-        </div>
-        <div style={{ fontSize: 22, color: GREY, marginTop: 12, lineHeight: 1.45 }}>
-          Sign in with a wallet and buy the one prompt you need. No plan, no card.
-        </div>
-      </Panel>
-      <Panel style={{ flex: 1, padding: 40 }}>
-        <div style={{ display: "flex", gap: 46, alignItems: "center", height: 170 }}>
-          <Logo src="logos/claude.svg" h={96} />
-          <Logo src="logos/cursor.svg" h={96} />
-          <Logo src="logos/mcp.svg" h={96} />
-        </div>
-        <div style={{ marginTop: 34, fontSize: 40, fontWeight: 600, letterSpacing: -1 }}>
-          AI agents
-        </div>
-        <div style={{ fontSize: 22, color: GREY, marginTop: 12, lineHeight: 1.45 }}>
-          Claude Code, Cursor or any MCP client shops for its owner, inside a budget.
-        </div>
-      </Panel>
-      <Panel style={{ flex: 1, padding: 40 }}>
-        <div style={{ display: "flex", gap: 14, height: 170 }}>
-          <Img
-            src={staticFile("deck/oyla-still.png")}
-            style={{ flex: 1, height: 170, objectFit: "cover", borderRadius: 14 }}
-          />
-          <Img
-            src={staticFile("hero3d.webp")}
-            style={{ flex: 1, height: 170, objectFit: "cover", borderRadius: 14 }}
-          />
-        </div>
-        <div style={{ marginTop: 34, fontSize: 40, fontWeight: 600, letterSpacing: -1 }}>
-          Prompt creators
-        </div>
-        <div style={{ fontSize: 22, color: GREY, marginTop: 12, lineHeight: 1.45 }}>
-          Sell each prompt on its own, get paid in ADA, and earn a reputation that sells.
-        </div>
-      </Panel>
+      <UserCard
+        shot="app-sign-in-modal.png"
+        pos="50% 32%"
+        url="app.simpuru.xyz"
+        title="Builders and founders"
+        body="Sign in with a Cardano wallet and buy the one prompt you need. No plan, no card."
+      />
+      <UserCard
+        shot="deck/app-agents-signed-in-c.png"
+        pos="top"
+        url="app.simpuru.xyz/agents"
+        title="Agents"
+        body="Claude Code, Cursor or any MCP client shops for its owner, inside a budget."
+      />
+      <UserCard
+        shot="app-sell-signed-in.png"
+        pos="40% 0%"
+        url="app.simpuru.xyz/sell"
+        title="Prompt creators"
+        body="Sell each prompt on its own, get paid in ADA, and earn a reputation that sells."
+      />
     </div>
   </Page>
 );
@@ -338,7 +470,7 @@ const Solution = () => (
         position: "absolute",
         left: 110,
         right: 110,
-        top: 420,
+        top: 300,
         display: "flex",
         alignItems: "center",
         gap: 20,
@@ -398,6 +530,30 @@ const Solution = () => (
         </Chip>
       </div>
     </div>
+    <TxStrip
+      top={760}
+      title="Each outcome, already on Cardano preprod"
+      items={[
+        [
+          "Seller paid",
+          "61eb7ffd37c64c79b68950bde150f31ad761c5f900278ec87ff0e33422e714e9",
+          GREEN,
+          "honest delivery, seller withdraws",
+        ],
+        [
+          "Never arrived",
+          "66879ef7bd7845105e4a0f6706c09abe3c6a362cb1e19f07a784dd834650353b",
+          AMBER,
+          "the watcher refunds the buyer",
+        ],
+        [
+          "Wrong file",
+          "c966f98cb4162f2a1b63c14d0d69b94d674e4d18277b2b5836c9a563c65d33d5",
+          RED,
+          "the arbiter pays the buyer back",
+        ],
+      ]}
+    />
   </Page>
 );
 
@@ -462,6 +618,30 @@ const X402 = () => (
       <div style={{ color: "#86efac", marginTop: 14 }}>← 200 OK · the prompt</div>
       <div style={{ color: "#a1a1aa" }}>{"   "}PAYMENT-RESPONSE: tx 3219a522…502b2b</div>
     </div>
+    <TxStrip
+      top={760}
+      title="Real x402 payments on Cardano preprod"
+      items={[
+        [
+          "Instant",
+          "49659f72decf393d04dcb4ad9d3f18f489656b9dce0a078143275dd4448ec89b",
+          GREEN,
+          "pay to content in 17 to 31 s",
+        ],
+        [
+          "Protected",
+          "50a6adc66d0451fc2ca1709b9bd518a862108d2dc5b2532098085ab2dc9a29fd",
+          INK,
+          "escrow lock, content in 30 to 50 s",
+        ],
+        [
+          "From an agent",
+          "37edbd55bc8ba8f19ba540e34cb2645c945873f39a3d4bcdb7a7e3ec2abfc565",
+          "#6d5dfc",
+          "bought over MCP, inside a budget",
+        ],
+      ]}
+    />
   </Page>
 );
 
@@ -646,7 +826,15 @@ const Compare = () => {
                 style={{
                   width: 300,
                   fontWeight: c === "Simpuru" ? 700 : 400,
-                  color: c === "Simpuru" ? INK : GREY,
+                  color: c === "Simpuru" ? "#fff" : GREY,
+                  ...(c === "Simpuru"
+                    ? {
+                        background: INK,
+                        margin: "-16px 0",
+                        padding: "16px 24px",
+                        borderRadius: "14px 14px 0 0",
+                      }
+                    : {}),
                 }}
               >
                 {c}
@@ -664,10 +852,29 @@ const Compare = () => {
               }}
             >
               <span style={{ width: 470, fontWeight: 600 }}>{r[0]}</span>
-              <span style={{ width: 300, color: GREY }}>{r[1]}</span>
-              <span style={{ width: 300, color: GREY }}>{r[2]}</span>
-              <span style={{ width: 300, color: GREY }}>{r[3]}</span>
-              <span style={{ width: 300, fontWeight: 600 }}>{r[4]}</span>
+              {[r[1], r[2], r[3]].map((v, j) => (
+                <span
+                  key={cols[j]}
+                  style={{
+                    width: 300,
+                    color: v.startsWith("No") || v === "None" ? "#b0b0b0" : GREY,
+                  }}
+                >
+                  {v}
+                </span>
+              ))}
+              <span
+                style={{
+                  width: 300,
+                  fontWeight: 600,
+                  background: INK,
+                  color: "#fff",
+                  margin: "-18px 0",
+                  padding: "18px 24px",
+                }}
+              >
+                <span style={{ color: "#4ade80" }}>✓</span> {r[4]}
+              </span>
             </div>
           ))}
         </div>
@@ -1045,14 +1252,49 @@ const ModelGtm = () => (
   </Page>
 );
 
+const TEAM: [string, string, string][] = [
+  ["Ghoza", "ghozzza", "Escrow deployment, arbiter, buyer agent and watcher"],
+  ["Kiel", "yeheskieltame", "API, x402 paywall, MCP server, Sokosumi coworker"],
+  ["Wisnu", "AdityaWisnuu", "Web app: accounts, shop, purchases, selling"],
+  ["Axel", "Lexirieru", "Landing page and brand"],
+];
 const Finale = () => (
   <Page dark>
-    <Block top={150}>
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <Img src={staticFile("logo.svg")} style={{ width: 40, height: 40, filter: "invert(1)" }} />
-        <span style={{ fontSize: 28, fontWeight: 600 }}>Simpuru</span>
+    <Block top={110}>
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+        <div>
+          <Eyebrow>Team</Eyebrow>
+          <H size={64}>Four builders, 36 hours, live on preprod.</H>
+        </div>
       </div>
-      <H size={120}>simpuru.xyz</H>
+      <div style={{ display: "flex", gap: 24, marginTop: 50 }}>
+        {TEAM.map(([name, gh, role]) => (
+          <div
+            key={gh}
+            style={{
+              flex: 1,
+              background: "#1d1d20",
+              border: "1px solid #2c2c30",
+              borderRadius: 20,
+              padding: 30,
+            }}
+          >
+            <Img
+              src={staticFile(`deck/team/${gh}.png`)}
+              style={{ width: 112, height: 112, borderRadius: 56, objectFit: "cover" }}
+            />
+            <div style={{ fontSize: 36, fontWeight: 600, marginTop: 22, letterSpacing: -0.8 }}>
+              {name}
+            </div>
+            <div style={{ fontFamily: mono, fontSize: 18, color: "#9a9aa3", marginTop: 6 }}>
+              github.com/{gh}
+            </div>
+            <div style={{ fontSize: 20, color: "#c9c9cf", marginTop: 16, lineHeight: 1.4 }}>
+              {role}
+            </div>
+          </div>
+        ))}
+      </div>
       <div style={{ display: "flex", gap: 22, marginTop: 56 }}>
         {[
           [
@@ -1063,16 +1305,23 @@ const Finale = () => (
           ["Later", "Protection as a service for any x402 seller."],
         ].map(([k, v]) => (
           <div key={k} style={{ flex: 1, borderTop: "2px solid #333", paddingTop: 18 }}>
-            <div style={{ fontSize: 30, fontWeight: 600 }}>{k}</div>
+            <div style={{ fontSize: 28, fontWeight: 600 }}>{k}</div>
             <div style={{ fontSize: 20, color: GREY, marginTop: 8, lineHeight: 1.4 }}>{v}</div>
           </div>
         ))}
       </div>
-      <div style={{ display: "flex", gap: 70, marginTop: 70 }}>
+      <div style={{ display: "flex", gap: 70, marginTop: 48, alignItems: "baseline" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Img
+            src={staticFile("logo.svg")}
+            style={{ width: 34, height: 34, filter: "invert(1)" }}
+          />
+          <span style={{ fontSize: 34, fontWeight: 600 }}>simpuru.xyz</span>
+        </div>
         {[
           ["Try it", "app.simpuru.xyz"],
           ["Docs", "docs.simpuru.xyz"],
-          ["Team", "Ghoza · Kiel · Wisnu · Axel"],
+          ["Code", "github.com/Simpuru-xyz/simpuru"],
         ].map(([k, v]) => (
           <div key={k}>
             <div
@@ -1080,7 +1329,7 @@ const Finale = () => (
             >
               {k}
             </div>
-            <div style={{ fontSize: 24, marginTop: 8 }}>{v}</div>
+            <div style={{ fontSize: 22, marginTop: 6 }}>{v}</div>
           </div>
         ))}
       </div>
