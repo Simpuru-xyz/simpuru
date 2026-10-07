@@ -29,6 +29,12 @@ const TX_WINDOW_MS = 5 * 60_000;
  * are fine: they go back in the collateral return and the change.
  */
 const ROOMY_LOVELACE = 10_000_000n;
+
+/**
+ * Collateral for escrow txs. The SDK's default is a fixed 5 ADA, so a wallet of ~5 ADA UTxOs can't
+ * cover it plus a min-UTxO return. The ledger needs 150% of the fee (escrow fees are 0.4-0.7 tADA).
+ */
+export const ESCROW_COLLATERAL = 2_500_000n;
 export async function roomyUtxos(wallet: ReturnType<typeof walletClient>) {
   const utxos = await wallet.getWalletUtxos();
   return pickRoomy(utxos);
@@ -125,7 +131,11 @@ async function continueEscrow(c: Continuation): Promise<string> {
         assets: utxo.assets,
         datum: inlineDatum(nextDatum),
       })
-      .build({ changeAddress: await wallet.address(), availableUtxos: await roomyUtxos(wallet) });
+      .build({
+        changeAddress: await wallet.address(),
+        availableUtxos: await roomyUtxos(wallet),
+        setCollateral: ESCROW_COLLATERAL,
+      });
     const hash = await (await tx.sign()).submit();
     return Buffer.from(hash.hash).toString("hex");
   });
@@ -330,6 +340,7 @@ export async function withdrawDisputed(
     const tx = await builder.build({
       changeAddress: await wallet.address(),
       availableUtxos: await roomyUtxos(wallet),
+      setCollateral: ESCROW_COLLATERAL,
     });
     const hash = await (await tx.sign()).submit();
     return Buffer.from(hash.hash).toString("hex");
@@ -393,6 +404,7 @@ async function closeEscrow(t: Terminal): Promise<string> {
     const tx = await builder.build({
       changeAddress: await wallet.address(),
       availableUtxos: await roomyUtxos(wallet),
+      setCollateral: ESCROW_COLLATERAL,
     });
     const hash = await (await tx.sign()).submit();
     return Buffer.from(hash.hash).toString("hex");
