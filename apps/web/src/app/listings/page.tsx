@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import ListingCard from "@/components/ListingCard";
 import ListingPreview from "@/components/ListingPreview";
-import Nav from "@/components/Nav";
 import Skeleton, { SkeletonRegion } from "@/components/Skeleton";
 import { CATEGORIES, fetchListings, type ListingView } from "@/lib/api";
 
@@ -58,8 +57,6 @@ export default function CataloguePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Nav />
-
       <main className="px-4 pb-24 sm:px-6 lg:px-10">
         <section className="relative mt-4 overflow-hidden rounded-2xl bg-black text-white">
           <ListingPreview

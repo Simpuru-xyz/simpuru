@@ -5,7 +5,6 @@ import { use, useEffect, useState } from "react";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import CopyButton from "@/components/CopyButton";
 import ListingCard from "@/components/ListingCard";
-import Nav from "@/components/Nav";
 import Skeleton, { SkeletonRegion } from "@/components/Skeleton";
 import { ApiError, type Creator, fetchCreator, shorten } from "@/lib/api";
 import { compact } from "@/lib/format";
@@ -44,8 +43,6 @@ export default function CreatorPage({ params }: PageProps<"/creators/[address]">
 
   return (
     <div className="min-h-screen bg-white">
-      <Nav />
-
       <main className="px-4 pt-6 pb-24 sm:px-6 lg:px-10 lg:pt-8">
         <Breadcrumbs items={[{ label: "Catalogue", href: "/listings" }, { label: "Creator" }]} />
 

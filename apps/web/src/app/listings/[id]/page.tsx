@@ -9,7 +9,6 @@ import BuyPanel from "@/components/BuyPanel";
 import CopyButton from "@/components/CopyButton";
 import ListingPreview from "@/components/ListingPreview";
 import ModeBadge from "@/components/ModeBadge";
-import Nav from "@/components/Nav";
 import Skeleton, { SkeletonRegion } from "@/components/Skeleton";
 import { ENDPOINTS, fetchListingOrNull, formatAda, type ListingView } from "@/lib/api";
 import { compact } from "@/lib/format";
@@ -100,8 +99,6 @@ export default function ListingPage({ params }: PageProps<"/listings/[id]">) {
 
   return (
     <div className="min-h-screen bg-white">
-      <Nav />
-
       <main className="px-4 pt-6 pb-24 sm:px-6 lg:px-10 lg:pt-8">
         {load.phase === "pending" && (
           <SkeletonRegion

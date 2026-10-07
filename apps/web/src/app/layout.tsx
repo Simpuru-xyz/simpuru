@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
+import Nav from "@/components/Nav";
 import SessionProvider from "@/components/SessionProvider";
 import "./globals.css";
 
@@ -23,7 +24,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          {/* One nav for every page, so it survives navigation and its highlight can glide. */}
+          <Nav />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );

@@ -3,7 +3,6 @@
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import CopyButton from "@/components/CopyButton";
-import Nav from "@/components/Nav";
 import { useSession } from "@/components/SessionProvider";
 import { setAgentLimits } from "@/lib/account";
 import { formatAda } from "@/lib/api";
@@ -194,7 +193,6 @@ export default function AgentsPage() {
   const c = CLIENTS[client];
   return (
     <div className="min-h-screen bg-white">
-      <Nav />
       <main className="mx-auto max-w-3xl space-y-8 px-4 pb-24 sm:px-6">
         <header className="pt-8">
           <h1 className="mb-3 text-3xl font-normal tracking-tight sm:text-4xl">Connect an agent</h1>
