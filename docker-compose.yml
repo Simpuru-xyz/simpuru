@@ -32,7 +32,8 @@ services:
     restart: unless-stopped
   # Dispute arbiter (apps/arbiter). Opt in: `docker compose --profile arbiter up -d`.
   # arbiter.env holds ARBITER_MNEMONIC (the key behind arbiter.keyHash), ARBITER_TOKEN and
-  # BLOCKFROST_PROJECT_ID; never commit it. The API reaches it at ARBITER_URL=http://127.0.0.1:4023.
+  # BLOCKFROST_PROJECT_ID; never commit it. Not published on the host: the API reaches it on the
+  # compose network at ARBITER_URL=http://arbiter:4023.
   arbiter:
     build: .
     profiles: [arbiter]
@@ -43,5 +44,4 @@ services:
       ARBITER_STORE: /data/arbiter.json
     volumes:
       - ./data:/data
-    network_mode: host
     restart: unless-stopped
