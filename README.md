@@ -2,23 +2,28 @@
 
 Buyer protection for AI agents paying with x402 on Cardano.
 
-An agent buys digital goods over MCP, pays into an on-chain escrow, checks what was delivered,
+People and agents buy digital goods (design prompts) with a Cardano wallet, pay into an on-chain escrow, checks what was delivered,
 and gets its money back automatically when delivery fails.
 
 Built for the TOKEN2049 Origins Hackathon, Cardano track (Agentic Commerce). Runs on Cardano preprod;
 every claim below links a preprod transaction.
 
-## Try it
+## Try it (Cardano preprod, test ADA only)
+
+1. **Sign in** at [app.simpuru.xyz](https://app.simpuru.xyz) with a Cardano wallet (Eternl, Lace, ...) set
+   to preprod. Your account is your wallet; Simpuru gives it a **Simpuru wallet** to spend from.
+2. **Fund** the Simpuru wallet with test ADA from the faucet (the Account page shows the address and QR).
+3. **Buy** a prompt: *instant* (paid to the creator at once) or *with protection* (held in escrow, refunded
+   automatically if the prompt doesn't arrive or doesn't match).
+4. **Sell**: anyone signed in can list a prompt; protected sales pay the creator once the escrow releases.
+5. **Connect an agent** from the app's Agents page. Your agent spends from the same Simpuru wallet, inside
+   the limits you set:
 
 ```bash
 claude mcp add --transport http simpuru https://api.simpuru.xyz/mcp
 ```
 
-Your MCP client opens a Simpuru sign-in: connect your Cardano wallet (preprod), set limits, and Simpuru
-gives your agent its own wallet to spend from (or pick the shared demo wallet). Then ask Claude:
-*"Find a prompt on Simpuru and buy it with buyer protection."*
-
-**Sell:** anyone can list a prompt, signed with their wallet ([`POST /listings`](https://api.simpuru.xyz/docs)).
+Also on Sokosumi: **Simpuru Shopper**, a Masumi Coworker that buys on Simpuru for you (see below).
 
 **Site:** [simpuru.xyz](https://simpuru.xyz) · **App:** [app.simpuru.xyz](https://app.simpuru.xyz) · **API docs (Swagger):** [api.simpuru.xyz/docs](https://api.simpuru.xyz/docs) · OpenAPI 3.1: [`/openapi.json`](https://api.simpuru.xyz/openapi.json)
 
@@ -62,6 +67,15 @@ standard"* and lists what is in scope. Each line, and where Simpuru answers it:
 | their unique innovation | **buyer protection**: automatic refund and dispute, and an arbiter that decides from on-chain evidence | auto-refund [`66879ef7…`](https://preprod.cardanoscan.io/transaction/66879ef7bd7845105e4a0f6706c09abe3c6a362cb1e19f07a784dd834650353b), auto-dispute [`41f584f8…`](https://preprod.cardanoscan.io/transaction/41f584f8d5ab8feee0b5c460ca4ad0eb5236dc45d92d72912e0824e280f2cb4b) → arbiter pays the buyer [`c966f98c…`](https://preprod.cardanoscan.io/transaction/c966f98cb4162f2a1b63c14d0d69b94d674e4d18277b2b5836c9a563c65d33d5) |
 | anything that advances agentic commerce on Cardano | makes the step after an x402 escrow lock automatic and safe for an agent that never has a human watching | arbiter pays the **seller** when the delivery was right [`763b27fe…`](https://preprod.cardanoscan.io/transaction/763b27fee81803c91507747be3dce4ae4796181ea42bcc6a93f9b498b639aa15) |
 
+### Masumi: Simpuru Shopper on Sokosumi
+
+A Sokosumi user writes a Task (*"find me a SaaS hero prompt, max 10 tADA"*). The Shopper finds the listing,
+quotes 1 test USDM through **our own Masumi Payment Service** (Masumi escrow), and once the funds are locked
+buys the prompt on Simpuru with buyer protection (ADA, our escrow) from its own Simpuru account. Two escrows,
+two agents: USDM for the agent's work, ADA for the goods. Agent registered on preprod:
+[`902ab355…`](https://preprod.cardanoscan.io/transaction/902ab3552607bfdcef414ad48bd0674a1ad48a6c8e0425b8eeed35dbb779e976)
+([`apps/coworker`](apps/coworker/CLAUDE.md)).
+
 All four paths (instant; honest seller paid; no delivery → refund; wrong file → dispute → arbiter)
 with every transaction and its timing: [`docs/demo.md`](docs/demo.md).
 
@@ -84,6 +98,7 @@ with every transaction and its timing: [`docs/demo.md`](docs/demo.md).
 | `apps/mcp` | MCP server with paid tools | @yeheskieltame |
 | `apps/agent` | Buyer agent and protection watcher | @ghozzza |
 | `apps/arbiter` | Dispute arbiter service | @ghozzza |
+| `apps/coworker` | Simpuru Shopper, a Sokosumi (Masumi) Coworker | @yeheskieltame |
 | `packages/escrow` | Escrow codecs and transaction builders | @ghozzza |
 | `packages/core` | Shared types and helpers | @yeheskieltame |
 | `contracts` | Escrow deployment (validator, parameters, addresses) | @ghozzza |

@@ -44,6 +44,19 @@ buy again (`alreadyPaid`, 0 tADA) → `my_purchases`.
 | VPS seller agent posts the result (automatic, ~1 min) | [`acf5a3cd…`](https://preprod.cardanoscan.io/transaction/acf5a3cd47e1b839bcf47142b5d380cf6e7e6b8bf500fd7a259e49067f06f627) | |
 | VPS seller agent withdraws after `unlock_time` | [`69eece05…`](https://preprod.cardanoscan.io/transaction/69eece05747a816208c7e735f55a553ec254d49ae74c928121e612ada9cb53a3) | seller reputation now 100/100 over 4 closed escrows |
 
+### 6. A person on the website: account, Simpuru wallet, creator paid (production)
+Sign in with Cardano → fund the Simpuru wallet (15 tADA) → buy protected on the web (`POST /me/buy`) →
+content → buy again (free, already owned) → seller agent collects → the platform pays the creator →
+owner withdraws the Simpuru wallet.
+
+| Step | Tx | Notes |
+|---|---|---|
+| Protected buy from the Simpuru wallet | [`0159485b…`](https://preprod.cardanoscan.io/transaction/0159485bc6894d2ad005fe9e417952698339332494dcec8146b34828ef313238) | 5 tADA into escrow, content on screen |
+| Seller agent posts the result | [`d34b1fd3…`](https://preprod.cardanoscan.io/transaction/d34b1fd3c8b8908c3feb0f3b28e3f7dfff8aa9af40f68e603c9ec69b512b2cde) | |
+| Seller agent withdraws after `unlock_time` | [`f3f1d508…`](https://preprod.cardanoscan.io/transaction/f3f1d5088aea13fe14024283d6dc7ed8a490415ea0163eb749c99c56cd82ef5c) | |
+| Platform pays the creator (`creator_paid`) | [`93775c58…`](https://preprod.cardanoscan.io/transaction/93775c583eec1acf49308c2141c9b6ec2cb04238e508d37b81246403b40eb180) | 5 − max(1.5, 10%) = 3.5 tADA |
+| Owner withdraws the Simpuru wallet | [`293721b3…`](https://preprod.cardanoscan.io/transaction/293721b3610618309b1ca96cce42d0c5345d220debc4275c550ae883ec0ea679) | 7.8 tADA back to the signed-in wallet |
+
 ## Time and cost (measured)
 | Path | Time | Buyer fee | Seller / arbiter fees |
 |---|---|---|---|
@@ -68,12 +81,14 @@ the catalogue, cardanoscan open. Record in one take where possible; cut between 
 | Time | On screen | Said |
 |---|---|---|
 | 0:00 | Landing | (voice-over) "An AI agent can pay on Cardano with x402. But once it has paid, nobody makes sure it gets what it paid for. x402 ends at the lock." |
-| 0:20 | Claude Code: *"Find a hero section prompt on Simpuru and buy it with buyer protection."* | "It searches, picks a prompt, and pays into escrow. No card, no account." |
+| 0:15 | app.simpuru.xyz: Sign in with the wallet → Account: Simpuru wallet balance → a listing → **Buy with protection** | "Your account is your Cardano wallet. You pay from your Simpuru wallet; the money waits in escrow until the prompt checks out." |
+| 0:35 | Agents page: limits → Claude Code: *"Find a hero section prompt on Simpuru and buy it with buyer protection."* | "Your agent shops from the same wallet, inside the limits you set." |
 | 0:50 | MCP result: content + `contentMatchesListing: true` + refund deadlines; purchase timeline in the app | "The seller committed to the hash of this prompt before it was paid. The agent just checked it." |
 | 1:20 | Staged escrow 1 timeline: `ResultSubmitted` → `withdrawn` (gate opens on stage) | "Honest seller: the seller agent collects on its own once the window closes." |
 | 1:45 | Staged escrow 2: seller never delivered → watcher refunds, tx on cardanoscan | "No delivery: the agent gets its money back. Nobody had to notice." |
 | 2:15 | Staged escrow 3: wrong file → dispute → arbiter pays the buyer | "Wrong file: the arbiter checks three hashes the seller can't change and pays the buyer back." |
-| 2:45 | README track table | "Buyer protection for x402 agents on Cardano, running on preprod today. That's Simpuru." |
+| 2:35 | Sokosumi: a Task to **Simpuru Shopper** → USDM locked → result with the prompt and the Simpuru receipt | "Agent to agent: on Sokosumi our Shopper is hired in USDM, and buys on Simpuru with buyer protection." |
+| 2:50 | README track table | "Buyer protection for x402 agents on Cardano, running on preprod today. That's Simpuru." |
 
 **Fallbacks:** if a staged gate is late, cut to the same path from the receipts above (every row is a real tx).
 If the buy takes longer than 60 s on camera, cut the wait: the settlement finishes in the background
