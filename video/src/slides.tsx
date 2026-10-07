@@ -1,6 +1,6 @@
 // The pitch deck. Plain on purpose: short claims, real screenshots, real explorer pages, a table of
 // transactions, and what isn't trustless yet. The film plays on slide 2. deck/build.py makes the .pptx.
-import type { ReactNode } from "react";
+import { createContext, type ReactNode, useContext } from "react";
 import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
 import { mono, sans } from "./theme";
 
@@ -8,7 +8,7 @@ const BG = "#f2f2f2";
 const INK = "#111111";
 const GREY = "#8a8a8a";
 const LINE = "#e4e4e4";
-const N = 16;
+const SlideNo = createContext(1);
 
 const Logo = ({ src, h = 56 }: { src: string; h?: number }) => (
   <Img src={staticFile(src)} style={{ height: h }} />
@@ -69,35 +69,38 @@ const GREEN = "#1f9d55";
 const RED = "#d64545";
 const AMBER = "#d98b1a";
 
-const Page = ({ n, dark, children }: { n: number; dark?: boolean; children: ReactNode }) => (
-  <AbsoluteFill
-    style={{
-      background: dark ? "#141416" : BG,
-      color: dark ? "#fff" : INK,
-      fontFamily: sans,
-      padding: "0 110px",
-    }}
-  >
-    {children}
-    <div
+const Page = ({ dark, children }: { n?: number; dark?: boolean; children: ReactNode }) => {
+  const n = useContext(SlideNo);
+  return (
+    <AbsoluteFill
       style={{
-        position: "absolute",
-        left: 110,
-        right: 110,
-        bottom: 46,
-        display: "flex",
-        justifyContent: "space-between",
-        fontSize: 16,
-        color: GREY,
+        background: dark ? "#141416" : BG,
+        color: dark ? "#fff" : INK,
+        fontFamily: sans,
+        padding: "0 110px",
       }}
     >
-      <span>Simpuru</span>
-      <span>
-        {n} / {N}
-      </span>
-    </div>
-  </AbsoluteFill>
-);
+      {children}
+      <div
+        style={{
+          position: "absolute",
+          left: 110,
+          right: 110,
+          bottom: 46,
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: 16,
+          color: GREY,
+        }}
+      >
+        <span>Simpuru</span>
+        <span>
+          {n} / {SLIDE_TOTAL}
+        </span>
+      </div>
+    </AbsoluteFill>
+  );
+};
 const Eyebrow = ({ children }: { children: string }) => (
   <div
     style={{
@@ -398,7 +401,7 @@ const Solution = () => (
   </Page>
 );
 
-const Product = () => (
+const _Product = () => (
   <Page n={6}>
     <Block top={110}>
       <div style={{ textAlign: "center" }}>
@@ -556,7 +559,7 @@ const Lane = ({ label, hash, ok }: { label: string; hash: string; ok?: boolean }
     )}
   </div>
 );
-const Protection = () => (
+const _Protection = () => (
   <Page n={9}>
     <Block top={150}>
       <Eyebrow>Key technology · buyer protection</Eyebrow>
@@ -673,7 +676,7 @@ const Compare = () => {
   );
 };
 
-const WhyUs = () => (
+const _WhyUs = () => (
   <Page n={11}>
     <Block top={290}>
       <Eyebrow>Why people choose it</Eyebrow>
@@ -716,7 +719,7 @@ const Bar = ({ parts, label }: { parts: [number, string, string, string][]; labe
     </div>
   </div>
 );
-const Model = () => (
+const _Model = () => (
   <Page n={12}>
     <Block top={200}>
       <Eyebrow>Business model</Eyebrow>
@@ -740,7 +743,7 @@ const Model = () => (
   </Page>
 );
 
-const Gtm = () => {
+const _Gtm = () => {
   const R = 300;
   const cx = 1420;
   const cy = 600;
@@ -813,7 +816,7 @@ const Gtm = () => {
   );
 };
 
-const Roadmap = () => (
+const _Roadmap = () => (
   <Page n={14}>
     <Block top={290}>
       <Eyebrow>Roadmap</Eyebrow>
@@ -839,7 +842,7 @@ const Roadmap = () => (
   </Page>
 );
 
-const Traction = () => (
+const _Traction = () => (
   <Page n={15}>
     <Block top={130}>
       <Eyebrow>Proven on Cardano preprod</Eyebrow>
@@ -908,7 +911,7 @@ const Traction = () => (
   </Page>
 );
 
-const Close = () => (
+const _Close = () => (
   <Page n={16} dark>
     <Block top={300}>
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -950,26 +953,150 @@ const Close = () => (
   </Page>
 );
 
-const SLIDES = [
-  Cover,
-  Demo,
-  Problem,
-  Users,
-  Solution,
-  Product,
-  X402,
-  Reputation,
-  Protection,
-  Compare,
-  WhyUs,
-  Model,
-  Gtm,
-  Roadmap,
-  Traction,
-  Close,
-];
+const ModelGtm = () => (
+  <Page>
+    <Block top={140}>
+      <Eyebrow>Business model · go to market</Eyebrow>
+      <H>
+        We earn when protection works. <Grey>Creators bring supply, agents bring demand.</Grey>
+      </H>
+    </Block>
+    <div style={{ position: "absolute", left: 110, top: 470, width: 800 }}>
+      <Bar
+        label="Protected sale, 5 tADA"
+        parts={[
+          [70, GREEN, "#fff", "3.5 to the creator"],
+          [30, INK, "#fff", "1.5 us"],
+        ]}
+      />
+      <Bar
+        label="Instant sale, 5 tADA"
+        parts={[[100, "#dfe9e3", INK, "5 tADA to the creator, no fee"]]}
+      />
+      <div style={{ fontSize: 20, color: GREY, marginTop: 22 }}>
+        Larger of 10% or 1.5 tADA, only when the escrow releases.
+      </div>
+    </div>
+    <div
+      style={{
+        position: "absolute",
+        left: 1000,
+        top: 450,
+        width: 810,
+        display: "flex",
+        flexDirection: "column",
+        gap: 18,
+      }}
+    >
+      {[
+        [
+          "1",
+          "Creators first",
+          <span key="a" style={{ fontSize: 19, color: GREY }}>
+            invite prompt designers, no fee on instant
+          </span>,
+        ],
+        [
+          "2",
+          "Where agents run",
+          <div key="b" style={{ display: "flex", gap: 18, alignItems: "center" }}>
+            <Logo src="logos/claude.svg" h={30} />
+            <Logo src="logos/cursor.svg" h={30} />
+            <Logo src="logos/mcp.svg" h={30} />
+            <Img src={staticFile("masumi.webp")} style={{ height: 22 }} />
+          </div>,
+        ],
+        [
+          "3",
+          "Any x402 seller",
+          <span key="c" style={{ fontSize: 19, color: GREY }}>
+            open escrow and reputation to APIs, data, files
+          </span>,
+        ],
+      ].map(([n, t, extra]) => (
+        <Panel
+          key={n as string}
+          style={{ padding: "22px 26px", display: "flex", alignItems: "center", gap: 22 }}
+        >
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              background: INK,
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 20,
+              fontWeight: 600,
+              flexShrink: 0,
+            }}
+          >
+            {n}
+          </div>
+          <div>
+            <div style={{ fontSize: 26, fontWeight: 600 }}>{t}</div>
+            <div style={{ marginTop: 6 }}>{extra}</div>
+          </div>
+        </Panel>
+      ))}
+    </div>
+  </Page>
+);
+
+const Finale = () => (
+  <Page dark>
+    <Block top={150}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <Img src={staticFile("logo.svg")} style={{ width: 40, height: 40, filter: "invert(1)" }} />
+        <span style={{ fontSize: 28, fontWeight: 600 }}>Simpuru</span>
+      </div>
+      <H size={120}>simpuru.xyz</H>
+      <div style={{ display: "flex", gap: 22, marginTop: 56 }}>
+        {[
+          [
+            "Now",
+            "Live on preprod: web shop, agent checkout, refunds, arbiter, Sokosumi coworker.",
+          ],
+          ["Next", "Audit, multi-key arbiter, USDM prices, mainnet."],
+          ["Later", "Protection as a service for any x402 seller."],
+        ].map(([k, v]) => (
+          <div key={k} style={{ flex: 1, borderTop: "2px solid #333", paddingTop: 18 }}>
+            <div style={{ fontSize: 30, fontWeight: 600 }}>{k}</div>
+            <div style={{ fontSize: 20, color: GREY, marginTop: 8, lineHeight: 1.4 }}>{v}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 70, marginTop: 70 }}>
+        {[
+          ["Try it", "app.simpuru.xyz"],
+          ["Docs", "docs.simpuru.xyz"],
+          ["Team", "Ghoza · Kiel · Wisnu · Axel"],
+        ].map(([k, v]) => (
+          <div key={k}>
+            <div
+              style={{ fontSize: 15, letterSpacing: 2, textTransform: "uppercase", color: GREY }}
+            >
+              {k}
+            </div>
+            <div style={{ fontSize: 24, marginTop: 8 }}>{v}</div>
+          </div>
+        ))}
+      </div>
+    </Block>
+  </Page>
+);
+
+const SLIDES = [Cover, Demo, Problem, Users, Solution, X402, Reputation, Compare, ModelGtm, Finale];
 export const SLIDE_COUNT = SLIDES.length;
+const SLIDE_TOTAL = 10;
 export const Slides = () => {
-  const S = SLIDES[useCurrentFrame()];
-  return S ? <S /> : null;
+  const i = useCurrentFrame();
+  const S = SLIDES[i];
+  return S ? (
+    <SlideNo.Provider value={i + 1}>
+      <S />
+    </SlideNo.Provider>
+  ) : null;
 };
