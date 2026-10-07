@@ -2,14 +2,13 @@
 // transactions, and what isn't trustless yet. The film plays on slide 2. deck/build.py makes the .pptx.
 import type { ReactNode } from "react";
 import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
-import { mono, sans, TX } from "./theme";
-import TXS from "./txs.json";
+import { mono, sans } from "./theme";
 
 const BG = "#f2f2f2";
 const INK = "#111111";
 const GREY = "#8a8a8a";
 const LINE = "#e4e4e4";
-const N = 15;
+const N = 16;
 
 const Page = ({ n, dark, children }: { n: number; dark?: boolean; children: ReactNode }) => (
   <AbsoluteFill
@@ -117,7 +116,7 @@ const Shot = ({ src, w, h }: { src: string; w: number; h?: number }) => (
     }}
   />
 );
-const short = (h: string) => `${h.slice(0, 10)}…${h.slice(-6)}`;
+const _short = (h: string) => `${h.slice(0, 10)}…${h.slice(-6)}`;
 
 const Cover = () => (
   <Page n={1}>
@@ -127,12 +126,12 @@ const Cover = () => (
         <span style={{ fontSize: 30, fontWeight: 600 }}>Simpuru</span>
       </div>
       <H size={104}>
-        Buyer protection for agents
+        Pay per prompt. Not per month.
         <br />
-        that pay over x402.
+        <Grey>Refunded if it never arrives.</Grey>
       </H>
       <div style={{ fontSize: 22, color: GREY, marginTop: 28 }}>
-        Built on Cardano preprod with Masumi escrow
+        A design prompt shop for people and AI agents, on Cardano
       </div>
     </Block>
   </Page>
@@ -146,41 +145,82 @@ const Demo = () => (
 
 const Problem = () => (
   <Page n={3}>
-    <Block top={330}>
+    <Block top={300}>
       <Eyebrow>The problem</Eyebrow>
-      <H>An x402 escrow payment stops at the lock.</H>
-      <H size={86}>
-        Nobody checks the delivery. <Grey>The deadline passes either way.</Grey>
+      <H size={84}>
+        Great UI design is expensive.{" "}
+        <Grey>Prompts make it cheap, then libraries sell them by the month.</Grey>
+      </H>
+      <H size={84}>
+        Agents can pay now. <Grey>Nobody protects them after they do.</Grey>
       </H>
     </Block>
   </Page>
 );
 
-const Solution = () => (
+const Users = () => (
   <Page n={4}>
+    <Block top={300}>
+      <Eyebrow>Who it's for</Eyebrow>
+      <H>Three people, one shop.</H>
+      <div style={{ display: "flex", gap: 22, marginTop: 60 }}>
+        <Card
+          k="BUYERS"
+          title="Builders and founders"
+          body="Need one great landing page, not a yearly plan. Pay for the prompt they use."
+        />
+        <Card
+          k="AGENTS"
+          title="Claude, Cursor, any MCP agent"
+          body="Shop on their owner's behalf, inside a budget, without a card or an account."
+        />
+        <Card
+          k="CREATORS"
+          title="Prompt designers"
+          body="Sell each prompt on its own, get paid in ADA, and build a reputation buyers can trust."
+        />
+      </div>
+    </Block>
+  </Page>
+);
+
+const Solution = () => (
+  <Page n={5}>
     <Block top={300}>
       <Eyebrow>The solution</Eyebrow>
       <H>
-        The seller commits first.
+        Buy one prompt at a time.
         <br />
-        The chain settles the rest.
+        <Grey>Protection comes with every purchase.</Grey>
       </H>
-      <div style={{ display: "flex", gap: 22, marginTop: 64 }}>
-        <Card k="01" title="Commit" body="Every listing carries the SHA-256 of what it sells." />
-        <Card k="02" title="Pay" body="One x402 payment, instant or into escrow." />
-        <Card k="03" title="Check" body="A watcher compares the delivery with the commitment." />
-        <Card k="04" title="Settle" body="Paid, refunded, or decided by the arbiter." />
+      <div style={{ display: "flex", gap: 22, marginTop: 60 }}>
+        <Card
+          k="01"
+          title="Pay per item"
+          body="One x402 payment in ADA, from a person or an agent."
+        />
+        <Card k="02" title="Held in escrow" body="The money waits until the delivery checks out." />
+        <Card
+          k="03"
+          title="Refunded on its own"
+          body="Nothing arrives, or the wrong file does: the buyer gets it back."
+        />
+        <Card
+          k="04"
+          title="Earned reputation"
+          body="Every seller's score comes from how their escrows ended."
+        />
       </div>
     </Block>
   </Page>
 );
 
 const Product = () => (
-  <Page n={5}>
+  <Page n={6}>
     <Block top={110}>
       <div style={{ textAlign: "center" }}>
-        <Eyebrow>app.simpuru.xyz</Eyebrow>
-        <H>Every figure read live off the chain.</H>
+        <Eyebrow>Live on Cardano preprod</Eyebrow>
+        <H>Sign in with a wallet. Buy. Track every step.</H>
       </div>
       <div style={{ display: "flex", gap: 26, justifyContent: "center", marginTop: 50 }}>
         <Shot src="app-purchase-timeline-c.png" w={640} />
@@ -190,74 +230,83 @@ const Product = () => (
   </Page>
 );
 
-const SignIn = () => (
-  <Page n={6}>
-    <Block top={290}>
-      <div style={{ width: 640 }}>
-        <Eyebrow>One account, on preprod, today</Eyebrow>
-        <H>Your wallet is the account.</H>
-        <div style={{ fontSize: 24, color: GREY, marginTop: 22, lineHeight: 1.45 }}>
-          One signature, no email, no password. Simpuru gives the account a wallet that you and your
-          agents spend from, inside your limits.
-        </div>
-      </div>
-    </Block>
-    <div style={{ position: "absolute", right: 110, top: 200 }}>
-      <Shot src="app-sign-in-modal.png" w={1000} h={562} />
-    </div>
-  </Page>
-);
-
-const Money = () => (
+const X402 = () => (
   <Page n={7}>
-    <Block top={330}>
-      <Eyebrow>One protected sale, on preprod</Eyebrow>
-      <H>Locked in our escrow. Paid to the creator.</H>
-      <div style={{ display: "flex", gap: 22, marginTop: 60 }}>
-        <Stat v="5 tADA" label="locked in escrow until the delivery checks out" />
-        <Stat v="3.5 tADA" label="paid to the creator when the escrow released" />
-        <Stat v="0.40 tADA" label="per escrow transaction, with a reference script" />
+    <Block top={260}>
+      <Eyebrow>Key technology · x402</Eyebrow>
+      <H>
+        Payment is part of the request.
+        <br />
+        <Grey>That's what lets an agent buy.</Grey>
+      </H>
+      <div style={{ display: "flex", gap: 22, marginTop: 56 }}>
+        <Card
+          k="WHAT"
+          title="HTTP 402, answered"
+          body="The shop replies 402 with a price. The agent signs a Cardano payment and asks again. Content comes back."
+        />
+        <Card
+          k="WHY"
+          title="No account, no API key"
+          body="An agent can't fill a sign-up form or hold a card. It can sign a transaction."
+        />
+        <Card
+          k="HOW WE USE IT"
+          title="Two paths"
+          body="Instant pays the creator directly. Protected (masumi) locks the payment in escrow."
+        />
       </div>
     </Block>
   </Page>
 );
 
-const Explorer = ({
-  n,
-  eyebrow,
-  title,
-  src,
-  caption,
-}: {
-  n: number;
-  eyebrow: string;
-  title: string;
-  src: string;
-  caption: string;
-}) => (
-  <Page n={n}>
-    <Block top={100}>
-      <Eyebrow>{eyebrow}</Eyebrow>
-      <H>{title}</H>
-      <div style={{ marginTop: 34 }}>
-        <Shot src={src} w={1180} />
+const Reputation = () => (
+  <Page n={8}>
+    <Block top={260}>
+      <Eyebrow>Key technology · reputation</Eyebrow>
+      <H>
+        A score that costs money to fake.
+        <br />
+        <Grey>Agents can't read reviews. They can read refunds.</Grey>
+      </H>
+      <div style={{ display: "flex", gap: 22, marginTop: 56 }}>
+        <Card
+          k="WHERE IT COMES FROM"
+          title="Closed escrows"
+          body="Seller score = paid out ÷ (paid out + refunded), from on-chain outcomes."
+        />
+        <Card
+          k="WHERE IT SHOWS"
+          title="Catalogue and MCP"
+          body="On every listing, and as a filter agents use: find prompts from sellers above 80."
+        />
+        <Card
+          k="WHY IT MATTERS"
+          title="Stars are cheap"
+          body="A fake review is free. A refund means the seller lost the sale. The score can't be bought."
+        />
       </div>
-      <div style={{ fontFamily: mono, fontSize: 17, color: GREY, marginTop: 18 }}>{caption}</div>
     </Block>
   </Page>
 );
 
-const Arbiter = () => (
+const Protection = () => (
   <Page n={9}>
-    <Block top={300}>
-      <Eyebrow>Simpuru arbiter</Eyebrow>
-      <H>How a wrong file becomes a refund.</H>
-      <div style={{ display: "flex", gap: 22, marginTop: 60 }}>
+    <Block top={260}>
+      <Eyebrow>Key technology · buyer protection</Eyebrow>
+      <H>
+        The seller commits first. <Grey>The chain settles.</Grey>
+      </H>
+      <div style={{ display: "flex", gap: 22, marginTop: 56 }}>
         {[
-          ["input_hash", "Locked", "Bound to the listing and its content hash at payment."],
-          ["result_hash", "Posted", "The seller posts what it delivered, on chain."],
-          ["sha256", "Compared", "Delivery against the listing. They don't match."],
-          ["refund()", "Settled", "The arbiter pays the buyer back after the window."],
+          [
+            "sha256",
+            "Commit",
+            "Each listing carries the hash of its content, fixed before anyone pays.",
+          ],
+          ["escrow", "Lock", "Masumi vested_pay, our own deployment, holds the payment."],
+          ["watcher", "Check", "Compares the delivery with the hash and acts before the deadline."],
+          ["arbiter", "Decide", "Pays the seller if it matches, the buyer if it doesn't."],
         ].map(([code, t, b]) => (
           <div
             key={code}
@@ -281,24 +330,20 @@ const Arbiter = () => (
   </Page>
 );
 
-const Cycle = () => {
-  const rows: [string, string][] = [
-    ["Protected buy, 5 tADA locked", TX.oylaLock],
-    ["Seller agent posts the result", TX.oylaResult],
-    ["Seller agent withdraws", TX.oylaWithdraw],
-    ["Creator paid 3.5 tADA", TX.creatorPaid],
-    [
-      "Never delivered: refunded",
-      "39e9af4ee93160e5813128330e6115a659f1e727bd2cc985aa44110be8b1e221",
-    ],
-    ["Wrong file: disputed", TX.dispute],
-    ["Wrong file: arbiter refunds the buyer", TX.arbiterRefund],
+const Compare = () => {
+  const cols = ["Prompt libraries", "Marketplaces", "Plain x402", "Simpuru"];
+  const rows: [string, string, string, string, string][] = [
+    ["Pay for one prompt", "No, monthly", "Yes", "Yes", "Yes"],
+    ["Agents can buy", "No", "No", "Yes", "Yes"],
+    ["Money back if nothing arrives", "Ask support", "Ask support", "No", "Automatic"],
+    ["Wrong file", "Ask support", "Dispute by email", "No", "Arbiter, from hashes"],
+    ["Seller trust signal", "Brand", "Star ratings", "None", "Refund-based score"],
   ];
   return (
-    <Page n={11}>
-      <Block top={190}>
-        <Eyebrow>Verified end to end</Eyebrow>
-        <H>Every outcome, a transaction.</H>
+    <Page n={10}>
+      <Block top={170}>
+        <Eyebrow>Our advantage</Eyebrow>
+        <H>Others take the payment. We stand behind it.</H>
         <div
           style={{
             marginTop: 44,
@@ -307,70 +352,150 @@ const Cycle = () => {
             border: `1px solid ${LINE}`,
           }}
         >
-          {rows.map(([label, h], i) => (
+          <div style={{ display: "flex", padding: "16px 28px", fontSize: 17, color: GREY }}>
+            <span style={{ width: 470 }} />
+            {cols.map((c) => (
+              <span
+                key={c}
+                style={{
+                  width: 300,
+                  fontWeight: c === "Simpuru" ? 700 : 400,
+                  color: c === "Simpuru" ? INK : GREY,
+                }}
+              >
+                {c}
+              </span>
+            ))}
+          </div>
+          {rows.map((r) => (
             <div
-              key={h}
+              key={r[0]}
               style={{
                 display: "flex",
-                justifyContent: "space-between",
                 padding: "18px 28px",
-                borderTop: i ? `1px solid ${LINE}` : "none",
+                borderTop: `1px solid ${LINE}`,
                 fontSize: 22,
               }}
             >
-              <span>{label}</span>
-              <span style={{ fontFamily: mono, color: GREY }}>{short(h)}</span>
+              <span style={{ width: 470, fontWeight: 600 }}>{r[0]}</span>
+              <span style={{ width: 300, color: GREY }}>{r[1]}</span>
+              <span style={{ width: 300, color: GREY }}>{r[2]}</span>
+              <span style={{ width: 300, color: GREY }}>{r[3]}</span>
+              <span style={{ width: 300, fontWeight: 600 }}>{r[4]}</span>
             </div>
           ))}
-        </div>
-        <div style={{ fontSize: 17, color: GREY, marginTop: 16 }}>
-          All on preprod.cardanoscan.io and preprod.cexplorer.io
         </div>
       </Block>
     </Page>
   );
 };
 
-const Honest = () => (
-  <Page n={13}>
+const WhyUs = () => (
+  <Page n={11}>
     <Block top={290}>
-      <Eyebrow>What is not trustless</Eyebrow>
-      <H>Three places. We say them first.</H>
-      <div style={{ marginTop: 50, display: "flex", flexDirection: "column", gap: 20 }}>
+      <Eyebrow>Why people choose it</Eyebrow>
+      <div style={{ display: "flex", flexDirection: "column", gap: 22, marginTop: 10 }}>
         <H size={60}>
-          The arbiter <Grey>is one key, ours, for now.</Grey>
+          Buyers <Grey>pay for what they use and never chase a refund.</Grey>
         </H>
         <H size={60}>
-          Creator sales <Grey>settle through our seller wallet.</Grey>
+          Agents <Grey>connect with one command and spend inside a budget.</Grey>
         </H>
         <H size={60}>
-          Preprod only. <Grey>No audit yet.</Grey>
+          Creators <Grey>sell each prompt and earn a reputation that pays.</Grey>
         </H>
       </div>
     </Block>
   </Page>
 );
 
-const Live = () => (
-  <Page n={14}>
-    <Block top={340}>
-      <Eyebrow>Live on preprod</Eyebrow>
-      <div style={{ display: "flex", gap: 22, marginTop: 30 }}>
-        <Stat v={String(TXS.length)} label="transactions in our receipts" />
-        <Stat v="4" label="services on our VPS: API, arbiter, coworker, payment node" />
-        <Stat v="2" label="front ends on Vercel" />
-        <Stat v="7" label="MCP tools for agents" />
+const Model = () => (
+  <Page n={12}>
+    <Block top={320}>
+      <Eyebrow>Business model</Eyebrow>
+      <H>We earn when protection does its job.</H>
+      <div style={{ display: "flex", gap: 22, marginTop: 60 }}>
+        <Stat
+          v="10%"
+          label="of a protected sale, at least 1.5 tADA, taken when the escrow releases"
+        />
+        <Stat v="0%" label="on instant sales, paid straight to the creator" />
+        <Stat v="3.5 tADA" label="to the creator on a 5 tADA protected sale, automatically" />
       </div>
-      <div style={{ fontSize: 20, color: GREY, marginTop: 30 }}>
-        Every endpoint documented in Swagger at api.simpuru.xyz/docs
+    </Block>
+  </Page>
+);
+
+const Gtm = () => (
+  <Page n={13}>
+    <Block top={260}>
+      <Eyebrow>Go to market</Eyebrow>
+      <H>Supply from creators. Demand from agents.</H>
+      <div style={{ display: "flex", gap: 22, marginTop: 56 }}>
+        <Card
+          k="1 · SUPPLY"
+          title="Creators first"
+          body="Invite prompt designers from design and AI communities. No fee on instant sales while the catalogue grows."
+        />
+        <Card
+          k="2 · DEMAND"
+          title="Where agents live"
+          body="One MCP command in Claude Code and Cursor, plus our coworker on Sokosumi, Masumi's agent marketplace."
+        />
+        <Card
+          k="3 · EXPAND"
+          title="Protection for any seller"
+          body="Open the escrow and reputation layer to other x402 sellers: APIs, datasets, files."
+        />
+      </div>
+    </Block>
+  </Page>
+);
+
+const Roadmap = () => (
+  <Page n={14}>
+    <Block top={290}>
+      <Eyebrow>Roadmap</Eyebrow>
+      <H>From prompts to anything an agent buys.</H>
+      <div style={{ display: "flex", gap: 22, marginTop: 60 }}>
+        <Card
+          k="NOW"
+          title="Live on preprod"
+          body="Web shop, agent checkout over MCP, refunds, arbiter, Sokosumi coworker, all proven on chain."
+        />
+        <Card
+          k="NEXT"
+          title="Mainnet"
+          body="Independent audit, a multi-key arbiter, prices in USDM next to ADA."
+        />
+        <Card
+          k="LATER"
+          title="Protection as a service"
+          body="Any x402 seller lists with a commitment and inherits refunds and reputation."
+        />
+      </div>
+    </Block>
+  </Page>
+);
+
+const Traction = () => (
+  <Page n={15}>
+    <Block top={300}>
+      <Eyebrow>Proven on Cardano preprod</Eyebrow>
+      <H>Every outcome already happened on chain.</H>
+      <div style={{ display: "flex", gap: 22, marginTop: 60 }}>
+        <Stat v="Paid" label="honest seller paid, creator paid 3.5 tADA automatically" />
+        <Stat v="Refunded" label="nothing delivered, buyer refunded with no human involved" />
+        <Stat v="Arbitrated" label="wrong file, our arbiter refunded the buyer from the hashes" />
+        <Stat v="1 USDM" label="earned by our coworker, hired by another agent on Sokosumi" />
       </div>
     </Block>
   </Page>
 );
 
 const Close = () => (
-  <Page n={15} dark>
-    <Block top={330}>
+  <Page n={16} dark>
+    <Block top={300}>
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <Img src={staticFile("logo.svg")} style={{ width: 44, height: 44, filter: "invert(1)" }} />
         <span style={{ fontSize: 30, fontWeight: 600 }}>Simpuru</span>
@@ -378,18 +503,14 @@ const Close = () => (
       <H size={140}>simpuru.xyz</H>
       <div style={{ display: "flex", gap: 80, marginTop: 70 }}>
         {[
-          ["Try it", "app.simpuru.xyz"],
-          ["Docs", "api.simpuru.xyz/docs"],
-          ["Code", "github.com/Simpuru-xyz/simpuru"],
-          ["Agents", "claude mcp add … /mcp"],
+          ["Ghoza", "Contracts, escrow, arbiter"],
+          ["Kiel", "API, MCP, coworker"],
+          ["Wisnu", "Web app"],
+          ["Axel", "Landing page"],
         ].map(([k, v]) => (
           <div key={k}>
-            <div
-              style={{ fontSize: 15, letterSpacing: 2, textTransform: "uppercase", color: GREY }}
-            >
-              {k}
-            </div>
-            <div style={{ fontSize: 22, marginTop: 8 }}>{v}</div>
+            <div style={{ fontSize: 24, fontWeight: 600 }}>{k}</div>
+            <div style={{ fontSize: 18, color: GREY, marginTop: 6 }}>{v}</div>
           </div>
         ))}
       </div>
@@ -401,41 +522,18 @@ const SLIDES = [
   Cover,
   Demo,
   Problem,
+  Users,
   Solution,
   Product,
-  SignIn,
-  Money,
-  () => (
-    <Explorer
-      n={8}
-      eyebrow="On Cardano's explorer"
-      title="The escrow, verified."
-      src="scan-lock-c.png"
-      caption={`${short(TX.oylaLock)} · 5.00 ₳ to addr_test1w…rk9ksc7d963, our vested_pay deployment`}
-    />
-  ),
-  Arbiter,
-  () => (
-    <Explorer
-      n={10}
-      eyebrow="On Cardano's explorer"
-      title="The refund, verified."
-      src="scan-refund-c.png"
-      caption={`${short(TX.arbiterRefund)} · 5.00 ₳ out of escrow, back to the buyer`}
-    />
-  ),
-  Cycle,
-  () => (
-    <Explorer
-      n={12}
-      eyebrow="Agent to agent · Masumi"
-      title="Hired on Sokosumi. Paid in USDM."
-      src="scan-usdm-c.png"
-      caption={`${short(TX.usdmPaid)} · 1 tUSDM released from Masumi escrow to our coworker's seller wallet`}
-    />
-  ),
-  Honest,
-  Live,
+  X402,
+  Reputation,
+  Protection,
+  Compare,
+  WhyUs,
+  Model,
+  Gtm,
+  Roadmap,
+  Traction,
   Close,
 ];
 export const SLIDE_COUNT = SLIDES.length;
