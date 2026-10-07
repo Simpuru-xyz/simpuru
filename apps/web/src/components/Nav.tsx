@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AccountMenu, TestnetBadge } from "@/components/AccountMenu";
+import Logo from "@/components/Logo";
 import NavLinks, { isActive, NAV_LINKS } from "@/components/NavLinks";
 
 /** True once the page has scrolled past `offset` px. */
@@ -36,7 +37,11 @@ export default function Nav() {
       }`}
     >
       <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-10">
-        <Link href="/listings" className="text-lg font-semibold tracking-tight text-black">
+        <Link
+          href="/listings"
+          className="flex items-center gap-2 text-lg font-semibold tracking-tight text-black"
+        >
+          <Logo className="h-6 w-6" />
           Simpuru
         </Link>
         <NavLinks />

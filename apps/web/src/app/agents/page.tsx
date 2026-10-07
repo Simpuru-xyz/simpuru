@@ -40,7 +40,7 @@ type Client = keyof typeof CLIENTS;
 const EXAMPLES = [
   "Find a hero section prompt on Simpuru under 8 tADA and buy it with protection.",
   "Search Simpuru for a pricing section prompt and show me its preview before buying.",
-  "Buy the Aurora SaaS hero prompt on Simpuru, then build it in this repo.",
+  "Buy the best-rated landing page prompt on Simpuru, then build it in this repo.",
   "What have I bought on Simpuru, and is any protected purchase still waiting on the seller?",
 ];
 

@@ -20,7 +20,16 @@ export default function OpengraphImage() {
         fontFamily: "sans-serif",
       }}
     >
-      <div style={{ display: "flex", fontSize: 36, fontWeight: 700 }}>Simpuru</div>
+      <div
+        style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 36, fontWeight: 700 }}
+      >
+        {/* The Simpuru mark, inline: satori renders plain SVG. */}
+        <svg width="48" height="48" viewBox="0 0 512 512" fill="white" aria-hidden>
+          <path d="M190 56h166a24 24 0 0 1 24 24v160H190a92 92 0 0 1 0-184z" />
+          <path d="M132 272h190a92 92 0 0 1 0 184H156a24 24 0 0 1-24-24z" />
+        </svg>
+        Simpuru
+      </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         <div style={{ display: "flex", fontSize: 76, fontWeight: 700, lineHeight: 1.05 }}>
           Design prompts with buyer protection.
