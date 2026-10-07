@@ -431,24 +431,35 @@ export const Terminal = ({
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  let budget = Math.max(0, ((frame - start) / fps) * cps);
-  const shown: { line: Line; text: string }[] = [];
-  for (const line of lines) {
-    // Tool output appears at once, like a real terminal; prompts and replies type out.
-    const cost =
-      line.kind === "out" || line.kind === "tool"
-        ? Math.min(line.text.length, 30)
-        : line.text.length;
-    if (budget <= 0) break;
-    if (budget >= cost) shown.push({ line, text: line.text });
-    else
-      shown.push({
-        line,
-        text:
-          line.kind === "out" || line.kind === "tool" ? "" : line.text.slice(0, Math.floor(budget)),
-      });
-    budget -= cost + 10;
-  }
+  const shownAt = (f: number) => {
+    let budget = Math.max(0, ((f - start) / fps) * cps);
+    const out: { line: Line; text: string }[] = [];
+    for (const line of lines) {
+      // Tool output appears at once, like a real terminal; prompts and replies type out.
+      const instant = line.kind === "out" || line.kind === "tool";
+      const cost = instant ? Math.min(line.text.length, 30) : line.text.length;
+      if (budget <= 0) break;
+      if (budget >= cost) out.push({ line, text: line.text });
+      else out.push({ line, text: instant ? "" : line.text.slice(0, Math.floor(budget)) });
+      budget -= cost + 10;
+    }
+    return out;
+  };
+  const shown = shownAt(frame);
+  // Keep the newest line in view: scroll by how far the text runs past the window, eased over a
+  // few frames. Mono at 25px is ~15px a character, 38.75px a row.
+  const perRow = Math.floor((width - 68) / 15);
+  const overflow = (f: number) => {
+    const h = shownAt(f).reduce(
+      (n, { line, text }, i) =>
+        n +
+        Math.max(1, Math.ceil((text.length + (line.kind === "prompt" ? 2 : 0)) / perRow)) * 38.75 +
+        (line.kind === "prompt" && i > 0 ? 18 : 0),
+      0,
+    );
+    return Math.max(0, h - (height - 48 - 52) + 24);
+  };
+  const scroll = [0, 1, 2, 3, 4, 5, 6, 7].reduce((n, d) => n + overflow(frame - d), 0) / 8;
   const color = (k?: Line["kind"]) =>
     k === "prompt"
       ? "#fff"
@@ -489,24 +500,30 @@ export const Terminal = ({
         ))}
         <span style={{ marginLeft: 14 }}>{title}</span>
       </div>
-      <div
-        style={{
-          padding: "26px 34px",
-          fontFamily: mono,
-          fontSize: 25,
-          lineHeight: 1.55,
-          whiteSpace: "pre-wrap",
-        }}
-      >
-        {shown.map(({ line, text }, i) => (
-          <div
-            key={line.text}
-            style={{ color: color(line.kind), marginTop: line.kind === "prompt" && i > 0 ? 18 : 0 }}
-          >
-            {line.kind === "prompt" ? <span style={{ color: "#a78bfa" }}>{"> "}</span> : null}
-            {text}
-          </div>
-        ))}
+      <div style={{ height: height - 48, overflow: "hidden" }}>
+        <div
+          style={{
+            padding: "26px 34px",
+            fontFamily: mono,
+            fontSize: 25,
+            lineHeight: 1.55,
+            whiteSpace: "pre-wrap",
+            transform: `translateY(${-scroll}px)`,
+          }}
+        >
+          {shown.map(({ line, text }, i) => (
+            <div
+              key={line.text}
+              style={{
+                color: color(line.kind),
+                marginTop: line.kind === "prompt" && i > 0 ? 18 : 0,
+              }}
+            >
+              {line.kind === "prompt" ? <span style={{ color: "#a78bfa" }}>{"> "}</span> : null}
+              {text}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
