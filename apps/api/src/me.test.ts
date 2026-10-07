@@ -102,6 +102,11 @@ describe("sign in with Cardano", () => {
       400,
     );
     expect((await post(app, "/auth/challenge", { address: "nope" })).status).toBe(400);
+    expect((await post(app, "/auth/challenge", { address: "addr_test1qqqt0pru38" })).status).toBe(
+      400,
+    );
+    const typo = `${alice.sellerAddress.slice(0, -1)}${alice.sellerAddress.endsWith("q") ? "p" : "q"}`;
+    expect((await post(app, "/auth/challenge", { address: typo })).status).toBe(400);
   });
 
   test("/me needs a session, and logout ends it", async () => {

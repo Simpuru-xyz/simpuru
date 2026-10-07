@@ -39,6 +39,8 @@ export interface PurchaseRecord {
     inputCommitment: unknown;
     deadlines: EscrowDeadlines;
   };
+  /** Bought by the account owner on the website: agent limits don't apply or count. */
+  byOwner?: true;
 }
 
 export type BuyResult =
@@ -93,7 +95,7 @@ export function createBuyer(cfg: BuyerConfig) {
   const spentToday = () => {
     const today = new Date().toISOString().slice(0, 10);
     return purchases()
-      .filter((p) => p.at.startsWith(today))
+      .filter((p) => p.at.startsWith(today) && !p.byOwner)
       .reduce((sum, p) => sum + BigInt(p.priceLovelace), 0n);
   };
 
@@ -102,7 +104,7 @@ export function createBuyer(cfg: BuyerConfig) {
     return res.ok ? ((await res.json()) as Listing) : null;
   };
 
-  async function attempt(listing: Listing, mode: DeliveryMode) {
+  async function attempt(listing: Listing, mode: DeliveryMode, cap: bigint) {
     let selected: PaymentRequirements | undefined;
     const client = x402Client
       .fromConfig({
@@ -125,7 +127,7 @@ export function createBuyer(cfg: BuyerConfig) {
             {
               network: X402_NETWORK,
               asset: "lovelace",
-              maxAmountPerPayment: cfg.maxPerPaymentLovelace.toString(),
+              maxAmountPerPayment: cap.toString(),
             },
           ],
         },
@@ -162,7 +164,12 @@ export function createBuyer(cfg: BuyerConfig) {
     getListing,
     redeliver,
 
-    async buy(listingId: string, mode: DeliveryMode): Promise<BuyResult> {
+    /** `byOwner`: the owner clicked Buy themselves, so the agent limits are skipped. */
+    async buy(
+      listingId: string,
+      mode: DeliveryMode,
+      opts: { byOwner?: boolean } = {},
+    ): Promise<BuyResult> {
       const listing = await getListing(listingId);
       if (!listing) return { ok: false, paid: false, error: `listing ${listingId} not found` };
       // Already paid (maybe the connection dropped last time)? Then never pay twice.
@@ -174,26 +181,27 @@ export function createBuyer(cfg: BuyerConfig) {
       if (!listing.modes.includes(mode))
         return { ok: false, paid: false, error: `listing does not offer ${mode}` };
       const price = BigInt(listing.priceLovelace);
-      if (price > cfg.maxPerPaymentLovelace)
+      if (!opts.byOwner && price > cfg.maxPerPaymentLovelace)
         return {
           ok: false,
           paid: false,
           error: `price ${price} is above the per-payment cap ${cfg.maxPerPaymentLovelace}`,
         };
       const spent = spentToday();
-      if (spent + price > cfg.dailyBudgetLovelace)
+      if (!opts.byOwner && spent + price > cfg.dailyBudgetLovelace)
         return {
           ok: false,
           paid: false,
           error: `daily budget: ${spent} spent of ${cfg.dailyBudgetLovelace}`,
         };
 
-      let r = await attempt(listing, mode);
+      const cap = opts.byOwner ? price : cfg.maxPerPaymentLovelace;
+      let r = await attempt(listing, mode, cap);
       // A 402 means nothing was broadcast. The usual cause right after another buy is a
       // wallet UTxO the provider has not indexed yet, so wait one block and try once more.
       if (!r.ok && r.status === 402) {
         await Bun.sleep(20_000);
-        r = await attempt(listing, mode);
+        r = await attempt(listing, mode, cap);
       }
       if (!r.ok) return { ok: false, paid: false, error: r.error };
 
@@ -206,6 +214,7 @@ export function createBuyer(cfg: BuyerConfig) {
         txHash: r.txHash,
         receivedContentHash: contentHash(r.body),
         listingContentHash: listing.contentHash,
+        ...(opts.byOwner ? { byOwner: true as const } : {}),
         ...(mode === "protected" && terms
           ? {
               escrow: {
