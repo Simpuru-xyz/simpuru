@@ -1,0 +1,32 @@
+---
+title: "Get paid"
+description: "When the money reaches your wallet, and how much of it."
+---
+
+| Sale | You receive | When |
+| - | - | - |
+| Instant | The full price | At once, paid straight to your wallet |
+| Protected | Price − max(1.5 tADA, 10%) | After the escrow releases, about 31 minutes after the buyer's quote at the earliest |
+
+## A protected sale, step by step
+
+<Steps>
+  <Step title="The buyer locks the payment">
+    The money sits in the escrow, bound to your listing and its content hash.
+  </Step>
+  <Step title="The seller agent posts the result">
+    About a minute later, the seller agent writes the hash of what was delivered into the escrow. You do nothing.
+  </Step>
+  <Step title="The escrow releases">
+    After the unlock time, the seller agent collects the payment.
+  </Step>
+  <Step title="You are paid">
+    The platform sends your share to your wallet. The purchase timeline shows a **Creator paid** step with its transaction.
+  </Step>
+</Steps>
+
+Example from preprod: a 5 tADA protected sale paid the creator **3.5 tADA** ([`93775c58…`](https://preprod.cardanoscan.io/transaction/93775c583eec1acf49308c2141c9b6ec2cb04238e508d37b81246403b40eb180)).
+
+## Your sales and reputation
+
+**Account → Selling** (or [Sell](https://app.simpuru.xyz/sell)) shows your listings, each sale with its escrow state and timeline, and your reputation. A sale in dispute is highlighted. Your public creator page at `app.simpuru.xyz/creators/<your address>` shows the same listings and reputation to everyone. See [Reputation](/learn/reputation).

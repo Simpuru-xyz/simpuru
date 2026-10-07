@@ -1,0 +1,65 @@
+---
+title: "Introduction"
+description: "Buyer protection for people and agents paying with x402 on Cardano."
+---
+
+<Info>
+  Simpuru runs on **Cardano preprod**, the test network. Everything is paid in test ADA (tADA), which has no value. Built for the TOKEN2049 Origins Hackathon, Cardano track (agentic commerce).
+</Info>
+
+<Frame caption="app.simpuru.xyz">
+  <img src="/images/screens/app-sell-signed-in.png" alt="The Simpuru app: anyone can sell a design prompt" />
+</Frame>
+
+## The short version
+
+An agent can pay for things on Cardano with **x402**: it asks for a resource, gets a price, pays, and gets the resource. With the escrow payment method, the money is locked on chain instead of going straight to the seller.
+
+But x402 stops at the lock. Once the money is in escrow, nothing makes sure the buyer gets what it paid for. If the seller never delivers, or delivers the wrong thing, someone has to notice and act before the deadlines pass. An agent has no human watching.
+
+**Simpuru is that someone.** It is a shop for design prompts where every purchase can be protected: the seller commits to exactly what they sell before they are paid, the delivery is checked against that commitment, and the buyer gets the money back automatically when it does not match.
+
+<CardGroup cols={2}>
+  <Card title="Sellers commit first" icon="fingerprint">
+    Every listing carries the SHA-256 hash of what it sells. The escrow is bound to that hash before anyone pays.
+  </Card>
+  <Card title="Pay into escrow" icon="lock">
+    A protected purchase locks the payment on chain. The seller only gets it after the delivery checks out.
+  </Card>
+  <Card title="Refunds happen on their own" icon="rotate-left">
+    No delivery by the deadline means a refund. A delivery that does not match means a dispute. No human has to notice.
+  </Card>
+  <Card title="Disputes are settled by evidence" icon="scale-balanced">
+    An arbiter pays the seller only if the delivered content is provably the one listed. Otherwise the buyer is paid back.
+  </Card>
+</CardGroup>
+
+## Who these docs are for
+
+<CardGroup cols={3}>
+  <Card title="People" icon="user" href="/guides/sign-in">
+    Sign in with a Cardano wallet, buy and sell design prompts, and see every step on chain.
+  </Card>
+  <Card title="Agents and their owners" icon="robot" href="/guides/connect-an-agent">
+    Plug Claude or Cursor into Simpuru and let it buy within limits you set.
+  </Card>
+  <Card title="Developers" icon="code" href="/developers/quickstart">
+    The API, x402 payments, the escrow and how to run it all locally.
+  </Card>
+</CardGroup>
+
+## At a glance
+
+| | |
+| - | - |
+| Network | Cardano preprod (test ADA only) |
+| Payments | x402 v2: `default` (instant) and `masumi` (escrow) |
+| Escrow | Masumi `vested_pay` V2 validator, unchanged, deployed with Simpuru's own arbiter key |
+| What is sold | Design prompts: paste one into a coding agent and it builds a page |
+| Who can sell | Anyone signed in with a Cardano wallet |
+| Who can buy | People on [app.simpuru.xyz](https://app.simpuru.xyz), and agents over MCP |
+| Status | Live on preprod. Every claim in these docs links a preprod transaction |
+
+<Card title="Start with how it works" icon="arrow-right" href="/overview/how-it-works" horizontal>
+  Five steps, from a listing to a paid seller or a refunded buyer.
+</Card>

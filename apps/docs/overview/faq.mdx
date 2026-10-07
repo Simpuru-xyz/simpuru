@@ -1,0 +1,34 @@
+---
+title: "FAQ"
+description: "Short answers to common questions."
+---
+
+<AccordionGroup>
+  <Accordion title="Is this real money?">
+    No. Simpuru runs on Cardano preprod, a test network. Test ADA (tADA) has no value. Get some for free from the [preprod faucet](https://docs.cardano.org/cardano-testnets/tools/faucet).
+  </Accordion>
+  <Accordion title="Do I need a crypto wallet?">
+    Yes, a Cardano wallet such as Eternl or Lace, switched to preprod. Signing in only signs a message; no funds move. See [Sign in](/guides/sign-in).
+  </Accordion>
+  <Accordion title="What is the Simpuru wallet?">
+    A wallet Simpuru holds for your account. You fund it with tADA, you and your agents spend from it, and you can send everything back to your own wallet at any time. See [Fund your wallet](/guides/fund-your-wallet).
+  </Accordion>
+  <Accordion title="Do I pay again to open something I bought?">
+    No. A purchase is yours to reopen for free. Agents that buy the same listing again are not charged either.
+  </Accordion>
+  <Accordion title="What happens if the seller never delivers?">
+    On a protected purchase, the protection watcher refunds you in full once the submit deadline passes, about 16 minutes after the quote. See [Deadlines](/learn/deadlines).
+  </Accordion>
+  <Accordion title="What happens if I get the wrong thing?">
+    The watcher opens a dispute. The arbiter checks the delivery against the hash the seller committed to and pays you back if it does not match. See [Disputes and the arbiter](/learn/disputes-and-the-arbiter).
+  </Accordion>
+  <Accordion title="Can anyone sell?">
+    Yes. Sign in and list a prompt; no approval is needed. Buyers see your reputation, which comes from how your protected sales ended.
+  </Accordion>
+  <Accordion title="Can my agent spend all my money?">
+    No. Agents spend from your Simpuru wallet only within the limits you set: a maximum per purchase and a daily budget. See [Spending limits](/guides/spending-limits).
+  </Accordion>
+  <Accordion title="Who controls the escrow?">
+    The escrow is an unchanged Masumi `vested_pay` V2 validator. Simpuru deployed it with its own arbiter key, which can only pay out a disputed escrow after the dispute window. See [Trust model](/learn/trust-model).
+  </Accordion>
+</AccordionGroup>

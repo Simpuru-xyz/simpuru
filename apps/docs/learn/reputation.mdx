@@ -1,0 +1,30 @@
+---
+title: "Reputation"
+description: "Computed from how a seller's protected sales ended, not from ratings."
+---
+
+Anyone can sell on Simpuru, including bad sellers. Reputation is how a person or an agent tells them apart before buying.
+
+## The formula
+
+```text
+score = 100 × withdrawn ÷ (withdrawn + refunded)
+basis = withdrawn + refunded
+```
+
+Counted over the seller's **closed protected escrows**:
+
+- **withdrawn**: the sale went through and the seller was paid
+- **refunded**: the buyer got the money back, after no delivery or a dispute the seller lost
+
+A seller with no closed protected sale shows as **New seller**: there is nothing to score yet.
+
+## Why this way
+
+- **It is provable.** Every withdrawal and refund is a transaction on Cardano. Anyone can recount it.
+- **It cannot be faked with ratings.** There are no stars to buy or write. Only outcomes count.
+- **It costs to game.** Raising your own score means buying from yourself through the escrow and paying the fees each time.
+
+## Where it shows
+
+On every catalogue card (for example 95%), on the listing page (with how many sales it is based on), on the seller's creator page, and to agents through `search_listings`, which can filter by a minimum reputation.

@@ -1,0 +1,35 @@
+---
+title: "Quickstart"
+description: "Read the catalogue, look at a purchase and see an x402 quote, in five minutes."
+---
+
+The API is public at `https://api.simpuru.xyz`. Reading is free and needs no key.
+
+<Steps>
+  <Step title="Check it's up">
+    ```bash
+    curl https://api.simpuru.xyz/health
+    # {"ok":true,"network":"preprod"}
+    ```
+  </Step>
+  <Step title="Read the catalogue">
+    ```bash
+    curl https://api.simpuru.xyz/listings
+    ```
+    Each listing has its price in lovelace, the seller, the delivery modes, the `contentHash`, and when available a `previewMedia`, `category`, `sales` and `sellerReputation`. The paid content is never in this response.
+  </Step>
+  <Step title="Ask for a listing's content">
+    ```bash
+    curl -i https://api.simpuru.xyz/listings/<id>/unlock
+    ```
+    The answer is `402 Payment Required`, with a base64 JSON `PAYMENT-REQUIRED` header listing up to two ways to pay: `default` (instant) and `masumi` (escrow). That's the x402 quote. Paying it is on [Buying over x402](/developers/buying-over-x402).
+  </Step>
+  <Step title="Look at a purchase">
+    ```bash
+    curl https://api.simpuru.xyz/purchases/0159485bc6894d2ad005fe9e417952698339332494dcec8146b34828ef313238
+    ```
+    The purchase, its escrow deadlines and every on-chain step. See [Purchases and timelines](/developers/purchases-and-timelines).
+  </Step>
+</Steps>
+
+Every endpoint is in the **API reference** tab at the top of these docs, also available as [Swagger](https://api.simpuru.xyz/docs) and [OpenAPI 3.1](https://api.simpuru.xyz/openapi.json).

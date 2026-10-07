@@ -1,0 +1,8 @@
+{
+  "name": "@simpuru/docs",
+  "private": true,
+  "scripts": {
+    "preview": "npx -y mint@4 dev --port 3333",
+    "check": "npx -y mint@4 broken-links"
+  }
+}

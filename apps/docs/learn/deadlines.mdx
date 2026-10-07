@@ -1,0 +1,21 @@
+---
+title: "Deadlines"
+description: "Every protected quote fixes when each step can happen."
+---
+
+A protected quote carries four times. The x402 issuer requires the submit deadline to be at least 15 minutes after the quote, so these are the earliest it allows.
+
+| Deadline | After the quote | What it means |
+| - | - | - |
+| Pay by | 5 min | The quote expires if not paid by then |
+| Submit result | ~16 min | The seller must post its result before this. After it, with no result, the buyer can be refunded |
+| Unlock | ~31 min | From now the seller can collect. Until now the buyer can dispute a posted result |
+| Dispute unlock | ~46 min | From now the arbiter can pay out a disputed escrow |
+
+## What it looks like
+
+- **Honest seller:** result posted about a minute after payment, seller collects at ~31 min.
+- **No delivery:** nothing posted, the watcher refunds the buyer at ~16 min.
+- **Wrong file:** result posted, the watcher disputes before ~31 min, the arbiter pays out at ~46 min.
+
+The purchase page counts down to whichever deadline matters next.

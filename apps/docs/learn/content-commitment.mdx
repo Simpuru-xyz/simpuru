@@ -1,0 +1,32 @@
+---
+title: "Content commitment"
+description: "Before anyone pays, the seller commits to exactly what they sell."
+---
+
+Protection only works if the buyer can prove, after paying, what it was promised. Simpuru fixes that promise in three hashes, each written down before the seller can change anything.
+
+## The three hashes
+
+| Hash | Where it lives | What it is | Fixed when |
+| - | - | - | - |
+| `contentHash` | The listing | `sha256(prompt)`: the SHA-256 of the exact bytes the buyer receives | The seller lists |
+| `input_hash` | The escrow datum | A digest of `{ listingId, contentHash }` (JSON, canonicalized) | The buyer locks the payment |
+| `result_hash` | The escrow datum | `sha256(lockTxHash + ";" + delivered)` | The seller posts its result |
+
+- `contentHash` is public on every listing. Anyone can recompute it from the prompt.
+- `input_hash` binds the escrow to **this listing and this content**. The seller signs the quote that carries it, so it cannot be swapped for another listing later.
+- `result_hash` is the seller putting its name, on chain, to what it delivered. The lock transaction hash stands in as the purchase identifier, so one result cannot be reused for another purchase.
+
+## Checking a delivery
+
+After a protected purchase, the buyer's side recomputes the hashes from what it received and compares them with the listing and the escrow:
+
+| Verdict | Meaning |
+| - | - |
+| `ok` | The delivery matches the listing and the seller's on-chain result |
+| `mismatch` | Something does not match; the [protection watcher](/learn/protection-watcher) opens a dispute |
+| `no_result_yet` | The seller has not posted a result; the watcher waits for the deadline |
+
+<Note>
+  A hash proves **which bytes** were delivered, not how good they are. It catches non-delivery and swapped or altered content. It does not judge taste. That is what the preview recording and the seller's [reputation](/learn/reputation) are for.
+</Note>

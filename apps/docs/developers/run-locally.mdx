@@ -1,0 +1,58 @@
+---
+title: "Run locally"
+description: "The API, the web app and the services on your machine, against Cardano preprod."
+---
+
+## You need
+
+- [Bun](https://bun.sh) 1.4 or newer
+- A [Blockfrost](https://blockfrost.io) project ID for **preprod**
+- Fresh preprod test wallets (24-word mnemonics) funded from the [faucet](https://docs.cardano.org/cardano-testnets/tools/faucet). Never use a wallet that holds real funds.
+
+## Steps
+
+<Steps>
+  <Step title="Install">
+    ```bash
+    git clone https://github.com/Simpuru-xyz/simpuru.git
+    cd simpuru
+    bun install
+    ```
+  </Step>
+  <Step title="Configure">
+    ```bash
+    cp .env.example .env
+    ```
+    | Variable | What for |
+    | - | - |
+    | `BLOCKFROST_PROJECT_ID` | Reading and submitting on preprod |
+    | `SELLER_MNEMONIC` | The platform seller wallet (signs quotes, posts results, withdraws, pays creators) |
+    | `BUYER_MNEMONIC` | The buyer agent's wallet |
+    | `ARBITER_MNEMONIC`, `ARBITER_TOKEN` | The arbiter's key and the token for its HTTP API |
+    | `AGENT_WALLET_KEY`, `PUBLIC_URL` | Accounts, Simpuru wallets and the hosted MCP sign-in |
+    | `NEXT_PUBLIC_API_URL` | Where the web app finds the API (`http://localhost:4021`) |
+  </Step>
+  <Step title="Run">
+    ```bash
+    bun run dev
+    ```
+    | App | URL |
+    | - | - |
+    | API | http://localhost:4021 (Swagger at `/docs`) |
+    | Web app | http://localhost:3000 |
+    | Landing | http://localhost:3001 |
+  </Step>
+  <Step title="Check">
+    ```bash
+    bun run lint && bun run typecheck && bun run test
+    ```
+  </Step>
+</Steps>
+
+## Buy from the command line
+
+```bash
+bun run --cwd apps/agent buy <listingId> protected
+```
+
+It pays over x402 from `BUYER_MNEMONIC`, checks the spend limits before signing and saves the purchase. Set `SIMPURU_API_URL` to choose which API it buys from.

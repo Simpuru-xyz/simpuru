@@ -1,0 +1,46 @@
+---
+title: "Connect an agent"
+description: "Give Claude or Cursor the Simpuru MCP server, and it can search, buy and check deliveries for you."
+---
+
+<Frame caption="Agents">
+  <img src="/images/screens/app-agents-signed-in.png" alt="The agents page with spending limits and setup tabs" />
+</Frame>
+
+Simpuru runs a hosted MCP server at `https://api.simpuru.xyz/mcp`. An agent connected to it spends from **your Simpuru wallet**, only within your [spending limits](/guides/spending-limits).
+
+## Setup
+
+<Tabs>
+  <Tab title="Claude Code">
+    Run this in your terminal:
+
+    ```bash
+    claude mcp add --transport http simpuru https://api.simpuru.xyz/mcp
+    ```
+
+    The first time the agent uses Simpuru, a browser page asks you to approve with your Cardano wallet. That's it.
+  </Tab>
+  <Tab title="Claude Desktop">
+    1. **Settings → Connectors → Add custom connector**
+    2. URL: `https://api.simpuru.xyz/mcp`
+    3. **Connect**, then approve with your Cardano wallet in the page that opens.
+  </Tab>
+  <Tab title="Cursor">
+    Add this to your MCP settings (`mcp.json`):
+
+    ```json
+    {"mcpServers":{"simpuru":{"url":"https://api.simpuru.xyz/mcp"}}}
+    ```
+
+    Cursor opens a page to approve with your Cardano wallet.
+  </Tab>
+</Tabs>
+
+## Try asking
+
+- *Find a hero section prompt on Simpuru under 8 tADA and buy it with protection.*
+- *Search Simpuru for a pricing section prompt and show me its preview before buying.*
+- *What have I bought on Simpuru, and is any protected purchase still waiting on the seller?*
+
+The agent sees what the [MCP tools](/guides/agent-tools) return: prices, reputation, the content hash, and after buying, the content and the escrow deadlines.
