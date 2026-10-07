@@ -3,9 +3,21 @@ title: "Connect an agent"
 description: "Give Claude or Cursor the Simpuru MCP server, and it can search, buy and check deliveries for you."
 ---
 
-<Frame caption="Agents">
-  <img src="/images/screens/app-agents-signed-in.png" alt="The agents page with spending limits and setup tabs" />
+<Frame caption="simpuru.xyz">
+  <img src="/images/landing/for-agents.jpg" alt="Connect your agent: one command, then your agent can buy prompts on its own" />
 </Frame>
+
+<CardGroup cols={3}>
+  <Card title="Claude Code" icon="/images/icons/claude.svg">
+    A terminal command and a wallet approval.
+  </Card>
+  <Card title="Claude Desktop" icon="/images/icons/claude.svg">
+    A custom connector with the server URL.
+  </Card>
+  <Card title="Cursor" icon="/images/icons/cursor.svg">
+    One entry in `mcp.json`.
+  </Card>
+</CardGroup>
 
 Simpuru runs a hosted MCP server at `https://api.simpuru.xyz/mcp`. An agent connected to it spends from **your Simpuru wallet**, only within your [spending limits](/guides/spending-limits).
 
@@ -42,5 +54,9 @@ Simpuru runs a hosted MCP server at `https://api.simpuru.xyz/mcp`. An agent conn
 - *Find a hero section prompt on Simpuru under 8 tADA and buy it with protection.*
 - *Search Simpuru for a pricing section prompt and show me its preview before buying.*
 - *What have I bought on Simpuru, and is any protected purchase still waiting on the seller?*
+
+<Frame caption="app.simpuru.xyz/agents">
+  <img src="/images/screens/app-agents-signed-in.jpg" alt="The agents page with spending limits and setup tabs" />
+</Frame>
 
 The agent sees what the [MCP tools](/guides/agent-tools) return: prices, reputation, the content hash, and after buying, the content and the escrow deadlines.

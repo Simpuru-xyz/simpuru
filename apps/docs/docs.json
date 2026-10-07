@@ -3,20 +3,40 @@
   "theme": "mint",
   "name": "Simpuru",
   "description": "Buyer protection for people and agents paying with x402 on Cardano. Live on preprod.",
-  "colors": { "primary": "#6E5BD8", "light": "#B9A7F0", "dark": "#5A48C4" },
-  "logo": { "light": "/logo/light.svg", "dark": "/logo/dark.svg", "href": "https://simpuru.xyz" },
+  "colors": {
+    "primary": "#6E5BD8",
+    "light": "#B9A7F0",
+    "dark": "#5A48C4"
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://simpuru.xyz"
+  },
   "favicon": "/favicon.svg",
-  "appearance": { "default": "system" },
+  "appearance": {
+    "default": "system"
+  },
   "banner": {
     "content": "Simpuru runs on **Cardano preprod**. Test ADA (tADA) has no value; no real money moves.",
     "dismissible": true
   },
   "navbar": {
     "links": [
-      { "label": "API status", "href": "https://api.simpuru.xyz/health" },
-      { "label": "Swagger", "href": "https://api.simpuru.xyz/docs" }
+      {
+        "label": "API status",
+        "href": "https://api.simpuru.xyz/health"
+      },
+      {
+        "label": "Swagger",
+        "href": "https://api.simpuru.xyz/docs"
+      }
     ],
-    "primary": { "type": "button", "label": "Open the app", "href": "https://app.simpuru.xyz" }
+    "primary": {
+      "type": "button",
+      "label": "Open the app",
+      "href": "https://simpuru.xyz"
+    }
   },
   "navigation": {
     "tabs": [
@@ -85,7 +105,10 @@
           }
         ]
       },
-      { "tab": "API reference", "openapi": "https://api.simpuru.xyz/openapi.json" }
+      {
+        "tab": "API reference",
+        "openapi": "https://api.simpuru.xyz/openapi.json"
+      }
     ]
   },
   "footer": {
