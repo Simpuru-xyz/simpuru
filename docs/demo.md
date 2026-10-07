@@ -78,9 +78,11 @@ on Simpuru with buyer protection, and both escrows settle.
 |---|---|---|---|
 | Instant | 17–31 s to content | ~0.17 tADA | 0 |
 | Protected lock + content | 30–50 s | ~0.19 tADA | 0 |
-| Seller paid (result + withdraw) | ≥ ~31 min after the quote | 0 | ~0.64 tADA per escrow tx |
-| Refund, no delivery | ≥ ~16 min after the quote | ~0.64 tADA | 0 |
-| Dispute → arbiter | ≥ ~46 min after the quote | ~0.64 tADA | arbiter ~0.67 tADA |
+| Seller paid (result + withdraw) | ≥ ~31 min after the quote | 0 | ~0.41 + ~0.36 tADA ([`ae0d6ecc…`](https://preprod.cardanoscan.io/transaction/ae0d6ecc363d6c3f8e38a370abc0321c2db55c8c2365b7cabf062b1bed357038), [`5d2b1d91…`](https://preprod.cardanoscan.io/transaction/5d2b1d91e3bfd98540020618175c10744aa98cb33ae1e5a743f1652421798c13)) |
+| Refund, no delivery | ≥ ~16 min after the quote | ~0.35 tADA ([`03705831…`](https://preprod.cardanoscan.io/transaction/037058316de32739a3821e2cbb5a1cae7db575a44de2eb9afabe9f1bcdc9bc34)) | 0 |
+| Dispute → arbiter | ≥ ~46 min after the quote | ~0.40 tADA ([`236160f6…`](https://preprod.cardanoscan.io/transaction/236160f667faae70d5c3788d3caeb0b528e80de4f0388c01be42b4cae56327cd)) | arbiter ~0.39 tADA ([`7267d42f…`](https://preprod.cardanoscan.io/transaction/7267d42f984ac11e1f97843c303c5aaf2f374cd1ff774a6163c5bfee7d426c96)) |
+
+Escrow fees above are with the validator read from the reference script (#45); before it, each escrow tx cost ~0.64–0.69 tADA.
 
 ## Demo video script (3 min)
 
