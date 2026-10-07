@@ -7,7 +7,7 @@ description: "What you have to trust, and what is enforced on chain instead."
 
 These hold no matter what Simpuru does:
 
-- A protected payment can only leave the escrow along the validator's rules: to the seller after the unlock time, to the buyer after the submit deadline without a result, or by an arbiter-signed payout after the dispute window.
+- A protected payment can only leave the escrow along the validator's rules: to the seller after the unlock time, to the buyer after the submit deadline without a result, by an arbiter-signed payout after the dispute window, to the buyer at once when the seller concedes, or to the seller at once when the buyer drops its dispute.
 - The listing's content hash and the escrow's input and result hashes cannot be changed after they are written.
 - An arbiter payout before the dispute unlock time is rejected by the validator.
 

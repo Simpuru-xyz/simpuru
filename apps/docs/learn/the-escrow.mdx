@@ -17,7 +17,7 @@ Every lock carries the buyer and seller, the amount, the `input_hash` and later 
 | `ResultSubmitted` | The seller posted a result hash |
 | `RefundRequested` | The buyer asked for a refund before any result |
 | `Disputed` | The buyer disputed a posted result |
-| `WithdrawAuthorized` | The buyer let the seller collect early |
+| `WithdrawAuthorized` | The buyer dropped its dispute; the seller can collect at once |
 | `RefundAuthorized` | The seller conceded; the buyer can take the refund now |
 
 When the lock is spent, the purchase ends as **withdrawn** (seller paid) or **refunded** (buyer paid back).
@@ -27,12 +27,18 @@ When the lock is spent, the purchase ends as **withdrawn** (seller paid) or **re
 | Action | Who | When |
 | - | - | - |
 | Post a result | Seller | Before the submit deadline |
-| Collect (withdraw) | Seller | After the unlock time, if a result is posted and not disputed |
+| Collect (withdraw) | Seller | After the unlock time, if a result is posted and not disputed, or at once after the buyer drops its dispute |
 | Refund | Buyer | After the submit deadline if there is no result, or at once if the seller conceded |
 | Dispute | Buyer | After a result, before the unlock time |
 | Pay out a dispute | Arbiter | After the dispute window closes |
+| Concede (`AuthorizeRefund`) | Seller | Any time while the escrow is open; the buyer can then take the refund at once |
+| Drop a dispute (`AuthorizeWithdrawal`) | Buyer | Only while `Disputed`; the seller can then collect at once |
 
 The exact times are on [Deadlines](/learn/deadlines).
+
+## Cooldown
+
+After either side acts, that same side has to wait the deployment's **cooldown** before its next action. On Simpuru's deployment the cooldown is 60 seconds (`cooldownPeriod: 60000` on [Deployment](/resources/deployment)). It stops one side from chaining actions in the same moment, before the other can react.
 
 ## Who is the seller in the escrow
 
