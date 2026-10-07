@@ -40,12 +40,6 @@ export const ONBOARDING_TARGETS: OnboardingTarget[] = [
     command: `{"mcpServers":{"simpuru":{"url":"https://api.simpuru.xyz/mcp"}}}`,
     hint: "Add it to your MCP config.",
   },
-  {
-    id: "cli",
-    label: "Terminal",
-    command: "bun run buy <listingId> protected",
-    hint: "The buyer CLI, paying from your own wallet.",
-  },
 ];
 
 export default function AgentOnboarding() {
