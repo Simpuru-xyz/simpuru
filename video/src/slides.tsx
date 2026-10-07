@@ -1,257 +1,505 @@
-// The pitch deck, one frame per slide, in the film's look. deck/build.py turns the frames into a
-// .pptx and embeds the film on slide 2.
+// The pitch deck: the argument and the numbers, not a replay of the film (the film plays on slide 2).
+// Editorial look: serif headlines on ink, one accent. deck/build.py assembles the .pptx.
+import { loadFont as loadSerif } from "@remotion/google-fonts/InstrumentSerif";
+import type { CSSProperties, ReactNode } from "react";
 import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
-import { C, mono, sans } from "./theme";
+import { mono, sans } from "./theme";
 
-const BG = "#f4f4f5";
-const Eyebrow = ({ children, dark }: { children: string; dark?: boolean }) => (
+const serif = loadSerif("normal", { weights: ["400"], subsets: ["latin"] }).fontFamily;
+const INK = "#101014";
+const PAPER = "#f6f4ef";
+const ACCENT = "#c8f169";
+const DIM = "#8d8d98";
+const RULE = "#2a2a31";
+
+const Frame = ({
+  n,
+  dark = true,
+  children,
+}: {
+  n: number;
+  dark?: boolean;
+  children: ReactNode;
+}) => (
+  <AbsoluteFill
+    style={{
+      background: dark ? INK : PAPER,
+      color: dark ? "#f2f2f4" : INK,
+      fontFamily: sans,
+      padding: "110px 130px",
+    }}
+  >
+    {children}
+    <div
+      style={{
+        position: "absolute",
+        left: 130,
+        right: 130,
+        bottom: 56,
+        display: "flex",
+        justifyContent: "space-between",
+        fontFamily: mono,
+        fontSize: 18,
+        color: DIM,
+      }}
+    >
+      <span>Simpuru</span>
+      <span>{String(n).padStart(2, "0")}</span>
+    </div>
+  </AbsoluteFill>
+);
+const Kicker = ({ children, light }: { children: string; light?: boolean }) => (
   <div
     style={{
       fontFamily: mono,
-      fontSize: 22,
-      letterSpacing: 2,
+      fontSize: 20,
+      letterSpacing: 3,
       textTransform: "uppercase",
-      color: dark ? "#9b9bb0" : C.muted,
+      color: light ? "#4d6b00" : ACCENT,
     }}
   >
     {children}
   </div>
 );
-const Title = ({
+const Head = ({
   children,
-  dark,
-  size = 84,
+  size = 104,
+  style,
 }: {
-  children: string;
-  dark?: boolean;
+  children: ReactNode;
   size?: number;
+  style?: CSSProperties;
 }) => (
   <div
     style={{
-      fontFamily: sans,
+      fontFamily: serif,
       fontSize: size,
-      fontWeight: 600,
-      letterSpacing: -2.5,
-      lineHeight: 1.05,
-      color: dark ? "#fff" : C.ink,
-      marginTop: 14,
+      lineHeight: 1.02,
+      letterSpacing: -1.5,
+      marginTop: 22,
+      ...style,
     }}
   >
     {children}
   </div>
 );
-const Card = ({ children, w, dark }: { children: React.ReactNode; w: number; dark?: boolean }) => (
-  <div
-    style={{
-      width: w,
-      padding: "32px 34px",
-      borderRadius: 24,
-      background: dark ? "#16161f" : "#fff",
-      border: `1px solid ${dark ? "#2a2a35" : C.line}`,
-      fontFamily: sans,
-    }}
-  >
-    {children}
+const Col = ({
+  title,
+  body,
+  w = 500,
+  dark = true,
+}: {
+  title: string;
+  body: string;
+  w?: number;
+  dark?: boolean;
+}) => (
+  <div style={{ width: w, borderTop: `2px solid ${dark ? RULE : "#d9d6cd"}`, paddingTop: 24 }}>
+    <div style={{ fontSize: 34, fontWeight: 600, letterSpacing: -0.5 }}>{title}</div>
+    <div style={{ fontSize: 25, color: DIM, marginTop: 12, lineHeight: 1.45 }}>{body}</div>
   </div>
-);
-const Still = ({ src }: { src: string }) => (
-  <Img src={staticFile(`deck/${src}`)} style={{ width: 1920, height: 1080 }} />
 );
 
 const Cover = () => (
-  <AbsoluteFill
-    style={{
-      background: BG,
-      justifyContent: "center",
-      alignItems: "center",
-      flexDirection: "column",
-      gap: 26,
-      fontFamily: sans,
-    }}
-  >
-    <div style={{ display: "flex", alignItems: "center", gap: 26 }}>
-      <Img src={staticFile("logo.svg")} style={{ width: 110, height: 110 }} />
-      <div style={{ fontSize: 150, fontWeight: 600, letterSpacing: -5 }}>Simpuru</div>
+  <Frame n={1}>
+    <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+      <Img src={staticFile("logo.svg")} style={{ width: 54, height: 54, filter: "invert(1)" }} />
+      <span style={{ fontSize: 30, fontWeight: 600 }}>Simpuru</span>
     </div>
-    <div style={{ fontSize: 44, color: C.muted }}>
-      Pay per prompt. Not per month. Refunded if it never arrives.
-    </div>
-    <div style={{ fontFamily: mono, fontSize: 28, marginTop: 18 }}>
-      app.simpuru.xyz · live on Cardano preprod
+    <Head size={150} style={{ marginTop: 150 }}>
+      Buyer protection
+      <br />
+      for <span style={{ color: ACCENT }}>agents</span> that pay.
+    </Head>
+    <div style={{ fontSize: 32, color: DIM, marginTop: 40 }}>
+      x402 on Cardano · Masumi escrow · live on preprod
     </div>
     <div
-      style={{ position: "absolute", bottom: 70, display: "flex", gap: 60, alignItems: "center" }}
+      style={{
+        position: "absolute",
+        right: 130,
+        top: 120,
+        fontFamily: mono,
+        fontSize: 20,
+        color: DIM,
+        textAlign: "right",
+        lineHeight: 1.7,
+      }}
     >
-      {["cardano.svg", "x402.svg", "masumi.webp", "blockfrost.svg"].map((f) => (
-        <Img
-          key={f}
-          src={staticFile(f)}
-          style={{ height: 40, filter: "grayscale(1)", opacity: 0.8 }}
-        />
-      ))}
+      TOKEN2049 Origins
+      <br />
+      Cardano · Agentic Commerce
     </div>
-  </AbsoluteFill>
+  </Frame>
 );
 
-const DemoSlide = () => (
-  <AbsoluteFill
+const Demo = () => (
+  <Frame n={2}>
+    <Kicker>Demo</Kicker>
+  </Frame>
+);
+
+const Problem = () => (
+  <Frame n={3}>
+    <Kicker>Problem</Kicker>
+    <Head>Agents can pay now. They can't get their money back.</Head>
+    <div style={{ display: "flex", gap: 60, marginTop: 90 }}>
+      <Col
+        title="Priced for people"
+        body="Design prompts sit behind monthly subscriptions. An agent needs one prompt, once."
+      />
+      <Col
+        title="Nothing after the lock"
+        body="x402 locks the payment in escrow. Releasing or refunding it is left to someone watching."
+      />
+      <Col
+        title="No signal to trust"
+        body="An agent can't read reviews. Stars are cheap; a refund record isn't."
+      />
+    </div>
+  </Frame>
+);
+
+const Insight = () => (
+  <Frame n={4} dark={false}>
+    <Kicker light>Insight</Kicker>
+    <Head size={120} style={{ maxWidth: 1600 }}>
+      If the seller commits to the file before payment, a machine can judge the delivery.
+    </Head>
+    <div
+      style={{ fontSize: 32, color: "#6b6b6b", marginTop: 50, maxWidth: 1400, lineHeight: 1.45 }}
+    >
+      The SHA-256 goes into the listing and the escrow terms. Delivered bytes either match or they
+      don't. No opinion, no support ticket.
+    </div>
+  </Frame>
+);
+
+const Solution = () => (
+  <Frame n={5}>
+    <Kicker>Solution</Kicker>
+    <Head>A shop where every purchase is protected by default.</Head>
+    <div style={{ display: "flex", gap: 60, marginTop: 90 }}>
+      <Col
+        title="Pay per prompt"
+        body="One x402 payment in ADA per item, straight to the creator. Instant, or into escrow."
+      />
+      <Col
+        title="Refunds on their own"
+        body="A watcher refunds when nothing arrives and disputes when the wrong thing does."
+      />
+      <Col
+        title="Reputation that's earned"
+        body="Each seller's score is withdrawn over refunded escrows. Visible to people and agents."
+      />
+    </div>
+  </Frame>
+);
+
+const Box = ({
+  x,
+  y,
+  w,
+  title,
+  sub,
+  accent,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  title: string;
+  sub: string;
+  accent?: boolean;
+}) => (
+  <div
     style={{
-      background: C.night,
-      justifyContent: "flex-end",
-      alignItems: "center",
-      paddingBottom: 30,
+      position: "absolute",
+      left: x,
+      top: y,
+      width: w,
+      padding: "20px 24px",
+      borderRadius: 16,
+      border: `2px solid ${accent ? ACCENT : RULE}`,
+      background: "#16161c",
     }}
   >
-    <div style={{ fontFamily: mono, fontSize: 20, color: "#6b6b80" }}>
-      Demo · 1:12 · plays in the deck
+    <div style={{ fontSize: 26, fontWeight: 600 }}>{title}</div>
+    <div style={{ fontSize: 19, color: DIM, marginTop: 6, lineHeight: 1.35 }}>{sub}</div>
+  </div>
+);
+const Wire = ({
+  x1,
+  y1,
+  x2,
+  y2,
+  label,
+}: {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  label?: string;
+}) => (
+  <>
+    <svg
+      style={{ position: "absolute", left: 0, top: 0, overflow: "visible" }}
+      width={1}
+      height={1}
+      aria-hidden="true"
+    >
+      <line
+        x1={x1}
+        y1={y1}
+        x2={x2}
+        y2={y2}
+        stroke="#4a4a55"
+        strokeWidth={3}
+        strokeDasharray="8 8"
+      />
+    </svg>
+    {label ? (
+      <div
+        style={{
+          position: "absolute",
+          left: (x1 + x2) / 2 - 90,
+          top: (y1 + y2) / 2 - 34,
+          width: 180,
+          textAlign: "center",
+          fontFamily: mono,
+          fontSize: 16,
+          color: ACCENT,
+        }}
+      >
+        {label}
+      </div>
+    ) : null}
+  </>
+);
+const Architecture = () => (
+  <Frame n={6}>
+    <Kicker>Architecture</Kicker>
+    <Head size={84}>How the pieces settle on Cardano.</Head>
+    <div style={{ position: "relative", marginTop: 50, height: 560 }}>
+      <Wire x1={330} y1={110} x2={560} y2={110} label="x402" />
+      <Wire x1={330} y1={300} x2={560} y2={160} />
+      <Wire x1={330} y1={470} x2={560} y2={190} />
+      <Wire x1={900} y1={130} x2={1130} y2={130} label="lock" />
+      <Wire x1={1300} y1={210} x2={1300} y2={330} />
+      <Wire x1={730} y1={230} x2={730} y2={360} />
+      <Wire x1={900} y1={420} x2={1130} y2={420} label="evidence" />
+      <Box x={0} y={60} w={330} title="People" sub="web app, Cardano wallet sign-in" />
+      <Box x={0} y={240} w={330} title="Agents" sub="hosted MCP, owner-set limits" />
+      <Box x={0} y={420} w={330} title="Other agents" sub="Sokosumi Task, paid in USDM" />
+      <Box
+        x={560}
+        y={60}
+        w={340}
+        title="Simpuru API"
+        sub="x402 paywall, facilitator, accounts"
+        accent
+      />
+      <Box
+        x={1130}
+        y={60}
+        w={340}
+        title="Escrow"
+        sub="Masumi vested_pay V2, our deployment"
+        accent
+      />
+      <Box
+        x={560}
+        y={360}
+        w={340}
+        title="Watchers"
+        sub="seller agent posts and collects; buyer side refunds or disputes"
+      />
+      <Box x={1130} y={330} w={340} title="Arbiter" sub="decides from three hashes, pays out" />
     </div>
-  </AbsoluteFill>
+  </Frame>
 );
 
-const Lock = () => (
-  <AbsoluteFill style={{ background: C.night, padding: "150px 150px", fontFamily: sans }}>
-    <Eyebrow dark>The trust problem</Eyebrow>
-    <Title dark size={120}>
-      x402 ends at the lock.
-    </Title>
-    <div style={{ fontSize: 32, color: "#b9b9c9", marginTop: 34, maxWidth: 1500, lineHeight: 1.4 }}>
-      "A settled masumi payment means the funds are locked in the escrow, not delivered to the
-      seller." x402 Cardano spec
+const WhyCardano = () => (
+  <Frame n={7} dark={false}>
+    <Kicker light>Why Cardano</Kicker>
+    <Head>The escrow is the product, so the chain matters.</Head>
+    <div style={{ display: "flex", gap: 60, marginTop: 90 }}>
+      <Col
+        dark={false}
+        title="Deterministic escrow"
+        body="eUTxO outcomes are known before submission. A refund either builds or it doesn't."
+      />
+      <Col
+        dark={false}
+        title="Cheap enough per item"
+        body="0.40 tADA per escrow step with a reference script. Small prompts stay worth protecting."
+      />
+      <Col
+        dark={false}
+        title="x402 has a masumi path"
+        body="Escrowed x402 payments and the Masumi agent economy already speak Cardano."
+      />
     </div>
-    <div style={{ display: "flex", gap: 30, marginTop: 70 }}>
-      {[
-        ["Nothing arrives", C.red],
-        ["The wrong file arrives", C.red],
-        ["The deadline passes at 3 a.m.", C.amber],
-      ].map(([t, c]) => (
-        <Card key={t} w={520} dark>
-          <div style={{ width: 52, height: 6, borderRadius: 3, background: c }} />
-          <div style={{ fontSize: 36, fontWeight: 600, color: "#fff", marginTop: 20 }}>{t}</div>
-        </Card>
-      ))}
-    </div>
-    <div style={{ fontSize: 30, color: "#9b9bb0", marginTop: 50 }}>
-      Once an agent has paid, nobody checks the delivery for it.
-    </div>
-  </AbsoluteFill>
+  </Frame>
 );
 
-const How = () => (
-  <AbsoluteFill style={{ background: BG, padding: "140px 140px", fontFamily: sans }}>
-    <Eyebrow>How it works</Eyebrow>
-    <Title>Protection is built in.</Title>
-    <div style={{ display: "flex", gap: 26, marginTop: 70 }}>
+const Model = () => (
+  <Frame n={8}>
+    <Kicker>Business model</Kicker>
+    <Head>We earn when protection does its job.</Head>
+    <div style={{ display: "flex", gap: 40, marginTop: 80, alignItems: "flex-end" }}>
       {[
-        ["1", "Seller commits", "Every listing carries the SHA-256 of its content."],
-        ["2", "Pay over x402", "Instantly, or into Masumi vested_pay escrow."],
-        ["3", "Watcher checks", "The delivery against the commitment, on its own."],
-        ["4", "Arbiter decides", "From on-chain evidence, not opinion."],
-      ].map(([n, t, b]) => (
-        <Card key={n} w={390}>
-          <div style={{ fontSize: 40, fontWeight: 700, color: C.violet }}>{n}</div>
-          <div style={{ fontSize: 36, fontWeight: 600, marginTop: 14 }}>{t}</div>
-          <div style={{ fontSize: 25, color: C.muted, marginTop: 12, lineHeight: 1.4 }}>{b}</div>
-        </Card>
-      ))}
-    </div>
-    <div style={{ display: "flex", gap: 50, marginTop: 60, fontSize: 30, fontWeight: 600 }}>
-      <span style={{ color: C.green }}>Right delivery: seller paid</span>
-      <span style={{ color: C.amber }}>Nothing in time: refund</span>
-      <span style={{ color: C.red }}>Wrong file: buyer refunded</span>
-    </div>
-  </AbsoluteFill>
-);
-
-const Numbers = () => (
-  <AbsoluteFill style={{ background: BG, padding: "120px 140px", fontFamily: sans }}>
-    <Eyebrow>Measured on preprod · Cardano Agentic Commerce</Eyebrow>
-    <Title size={76}>Built for the track. Proven on chain.</Title>
-    <div style={{ display: "flex", gap: 24, marginTop: 50 }}>
-      {[
-        ["17–31 s", "instant, pay to content"],
-        ["30–50 s", "protected, pay to content"],
-        ["0.40 tADA", "per escrow transaction"],
-        ["3 / 3", "outcomes settled on chain"],
+        [
+          "10%",
+          "of a protected sale, at least 1.5 tADA, taken when the escrow releases to the creator",
+        ],
+        ["0%", "on instant sales: paid straight to the creator"],
+        ["3.5 tADA", "to the creator on a 5 tADA protected sale, paid automatically on release"],
       ].map(([a, b]) => (
-        <Card key={a} w={392}>
-          <div style={{ fontSize: 58, fontWeight: 600, letterSpacing: -1.5 }}>{a}</div>
-          <div style={{ fontSize: 24, color: C.muted, marginTop: 6 }}>{b}</div>
-        </Card>
-      ))}
-    </div>
-    <div style={{ marginTop: 44, display: "flex", flexDirection: "column", gap: 12 }}>
-      {[
-        ["x402 open standard", "Instant and escrow paths, in-process facilitator"],
-        ["Agents pay on their own", "Hosted MCP, owner-set limits, never pays twice"],
-        ["Monetize content per request", "Anyone lists; each purchase is one x402 payment"],
-        ["Agent to agent", "Seller agent settles; Sokosumi Coworker hired in USDM"],
-        ["Unique innovation", "Automatic refund, dispute, evidence-based arbiter"],
-      ].map(([a, b]) => (
-        <div
-          key={a}
-          style={{
-            display: "flex",
-            padding: "20px 30px",
-            borderRadius: 18,
-            background: "#fff",
-            border: `1px solid ${C.line}`,
-            fontSize: 27,
-          }}
-        >
-          <span style={{ width: 520, fontWeight: 600 }}>{a}</span>
-          <span style={{ color: C.muted }}>{b}</span>
+        <div key={a} style={{ width: 520, borderTop: `2px solid ${RULE}`, paddingTop: 24 }}>
+          <div
+            style={{
+              fontFamily: serif,
+              fontSize: a.length > 4 ? 110 : 150,
+              lineHeight: 1,
+              color: a === "3.5 tADA" ? ACCENT : "#f2f2f4",
+            }}
+          >
+            {a}
+          </div>
+          <div style={{ fontSize: 25, color: DIM, marginTop: 16, lineHeight: 1.45 }}>{b}</div>
         </div>
       ))}
     </div>
-  </AbsoluteFill>
+  </Frame>
+);
+
+const Traction = () => (
+  <Frame n={9}>
+    <Kicker>Traction · Cardano preprod</Kicker>
+    <Head>Every claim is a transaction.</Head>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 30, marginTop: 80 }}>
+      {[
+        ["42", "preprod transactions linked in our receipts"],
+        ["3 / 3", "outcomes settled: paid, refunded, arbitrated"],
+        ["1 USDM", "earned by our Sokosumi coworker, settled"],
+        ["17–31 s", "from payment to content, instant path"],
+      ].map(([a, b]) => (
+        <div key={a} style={{ borderTop: `2px solid ${RULE}`, paddingTop: 22 }}>
+          <div style={{ fontFamily: serif, fontSize: 96, lineHeight: 1 }}>{a}</div>
+          <div style={{ fontSize: 23, color: DIM, marginTop: 14, lineHeight: 1.4 }}>{b}</div>
+        </div>
+      ))}
+    </div>
+    <div style={{ fontSize: 24, color: DIM, marginTop: 60 }}>
+      Real creator listings sold and paid out. Receipts: github.com/Simpuru-xyz/simpuru,
+      docs/demo.md
+    </div>
+  </Frame>
+);
+
+const Compare = () => {
+  const rows: [string, string, string, string][] = [
+    ["", "Prompt libraries", "Plain x402", "Simpuru"],
+    ["Pay for one item", "No, monthly", "Yes", "Yes"],
+    ["Agents can buy", "No", "Yes", "Yes"],
+    ["Money back if it never arrives", "Support ticket", "No", "Automatic"],
+    ["Wrong file", "Support ticket", "No", "Arbiter, from hashes"],
+    ["Seller reputation", "Reviews", "None", "From settled escrows"],
+  ];
+  return (
+    <Frame n={10} dark={false}>
+      <Kicker light>Why not the alternatives</Kicker>
+      <Head size={84}>Others take the payment. We stand behind it.</Head>
+      <div style={{ marginTop: 60 }}>
+        {rows.map((r, i) => (
+          <div
+            key={r[0] || "head"}
+            style={{
+              display: "flex",
+              padding: "18px 0",
+              borderBottom: "1px solid #d9d6cd",
+              fontSize: i === 0 ? 22 : 27,
+              fontFamily: i === 0 ? mono : sans,
+              color: i === 0 ? "#6b6b6b" : INK,
+            }}
+          >
+            <span style={{ width: 600, fontWeight: i === 0 ? 400 : 600 }}>{r[0]}</span>
+            <span style={{ width: 360 }}>{r[1]}</span>
+            <span style={{ width: 360 }}>{r[2]}</span>
+            <span
+              style={{
+                fontWeight: 600,
+                background: i === 0 ? "transparent" : ACCENT,
+                padding: i === 0 ? 0 : "2px 12px",
+                borderRadius: 8,
+              }}
+            >
+              {r[3]}
+            </span>
+          </div>
+        ))}
+      </div>
+    </Frame>
+  );
+};
+
+const Roadmap = () => (
+  <Frame n={11}>
+    <Kicker>Roadmap</Kicker>
+    <Head>From prompts to any good an agent buys.</Head>
+    <div style={{ display: "flex", gap: 60, marginTop: 90 }}>
+      <Col
+        title="Now"
+        body="Live on preprod: web, MCP, coworker, refunds and the arbiter, all proven on chain."
+      />
+      <Col
+        title="Next"
+        body="Independent audit, multi-key arbiter, USDM prices next to ADA, mainnet."
+      />
+      <Col
+        title="Later"
+        body="Any x402 seller lists with a commitment: APIs, datasets, files, agent work."
+      />
+    </div>
+  </Frame>
 );
 
 const Team = () => (
-  <AbsoluteFill
-    style={{ background: C.night, padding: "130px 140px", fontFamily: sans, color: "#fff" }}
-  >
-    <Title dark size={100}>
-      This is Simpuru.
-    </Title>
-    <div style={{ display: "flex", gap: 24, marginTop: 64 }}>
+  <Frame n={12}>
+    <Kicker>Team</Kicker>
+    <Head>Four builders. Everything on chain.</Head>
+    <div style={{ display: "flex", gap: 40, marginTop: 90 }}>
       {[
         ["Ghoza", "Contracts, escrow, arbiter"],
         ["Kiel", "API, MCP, coworker"],
         ["Wisnu", "Web app"],
-        ["Axel", "Landing"],
+        ["Axel", "Landing page"],
       ].map(([n, r]) => (
-        <Card key={n} w={392} dark>
-          <div style={{ fontSize: 38, fontWeight: 600 }}>{n}</div>
-          <div style={{ fontSize: 24, color: "#9b9bb0", marginTop: 6 }}>{r}</div>
-        </Card>
+        <Col key={n} w={380} title={n} body={r} />
       ))}
     </div>
-    <div style={{ fontSize: 28, color: "#b9b9c9", marginTop: 56, lineHeight: 1.5 }}>
-      Stack: x402 on Cardano · Masumi vested_pay with our own arbiter · Evolution SDK · Blockfrost ·
-      MCP · Masumi Payment Service
-      <br />
-      Next: an audit before mainnet, a multi-key arbiter, USDM prices, goods beyond prompts.
+    <div style={{ fontFamily: mono, fontSize: 28, color: ACCENT, marginTop: 110 }}>
+      app.simpuru.xyz · api.simpuru.xyz/docs
     </div>
-    <div style={{ fontFamily: mono, fontSize: 30, color: "#c4b5fd", marginTop: 56 }}>
-      simpuru.xyz · app.simpuru.xyz · api.simpuru.xyz/docs
-    </div>
-  </AbsoluteFill>
+  </Frame>
 );
 
 const SLIDES = [
-  <Cover key="cover" />,
-  <DemoSlide key="demo" />,
-  <Still key="cost" src="f200.png" />,
-  <Lock key="lock" />,
-  <How key="how" />,
-  <Still key="why" src="f375.png" />,
-  <Still key="landing" src="f528.png" />,
-  <Still key="buy" src="f800.png" />,
-  <Still key="agents" src="f1440.png" />,
-  <Still key="outcomes" src="f1650.png" />,
-  <Still key="coworker" src="f1940.png" />,
-  <Numbers key="numbers" />,
-  <Team key="team" />,
+  Cover,
+  Demo,
+  Problem,
+  Insight,
+  Solution,
+  Architecture,
+  WhyCardano,
+  Model,
+  Traction,
+  Compare,
+  Roadmap,
+  Team,
 ];
 export const SLIDE_COUNT = SLIDES.length;
-export const Slides = () => SLIDES[useCurrentFrame()] ?? null;
+export const Slides = () => {
+  const S = SLIDES[useCurrentFrame()];
+  return S ? <S /> : null;
+};
