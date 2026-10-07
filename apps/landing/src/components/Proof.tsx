@@ -6,14 +6,14 @@ import { explorerTx } from "@/lib/links";
  * The hashes and timings come from docs/demo.md and the README; change them together.
  *
  * Layout after the MotionSites "Bento Grid Stats" section (a six-column bento with one large
- * figure per card), in the landing's light palette. The tall card plays the clip from the
- * MotionSites "Halo Use Case" section, kept in public/media.
+ * figure per card). Card headings follow the MotionSites "Axle Journey" stat cards: a two-line
+ * title, then a row of status dots, one per step (filled = it happened on chain, ring = nothing
+ * was posted). One accent for every card; the dots carry the difference. The tall card plays the
+ * clip from the MotionSites "Halo Use Case" section, kept in public/media.
  */
-type Tone = "lilac" | "green" | "amber" | "rose";
 type Step = { label: string; tx?: string };
 type Path = {
-  name: string;
-  tone: Tone;
+  title: [string, string];
   stat: string;
   statNote: string;
   line: string;
@@ -22,8 +22,7 @@ type Path = {
 
 const PATHS: Path[] = [
   {
-    name: "Instant",
-    tone: "lilac",
+    title: ["Instant", "purchase"],
     stat: "30.5 s",
     statNote: "pay to content",
     line: "The agent pays the seller and gets the prompt.",
@@ -39,8 +38,7 @@ const PATHS: Path[] = [
     ],
   },
   {
-    name: "Delivered",
-    tone: "green",
+    title: ["Delivered", "seller paid"],
     stat: "~31 min",
     statNote: "to the seller's payout",
     line: "The delivery matched its hash. The seller agent collected on its own.",
@@ -60,8 +58,7 @@ const PATHS: Path[] = [
     ],
   },
   {
-    name: "Never arrived",
-    tone: "amber",
+    title: ["Never", "arrived"],
     stat: "~16 min",
     statNote: "to the refund",
     line: "Nothing came by the deadline. The watcher refunded the buyer on its own.",
@@ -78,8 +75,7 @@ const PATHS: Path[] = [
     ],
   },
   {
-    name: "Wrong file",
-    tone: "rose",
+    title: ["Wrong", "file"],
     stat: "~46 min",
     statNote: "to the arbiter's payout",
     line: "The file didn't match the listing. The arbiter paid the buyer back.",
@@ -104,25 +100,30 @@ const PATHS: Path[] = [
   },
 ];
 
-const TONES: Record<Tone, { pill: string; dot: string; rail: string }> = {
-  lilac: { pill: "bg-[#ece8fb] text-[#5b4bc4]", dot: "bg-[#7b68d4]", rail: "bg-[#7b68d4]/25" },
-  green: { pill: "bg-[#e6f6ec] text-[#167a40]", dot: "bg-[#1f8a55]", rail: "bg-[#1f8a55]/25" },
-  amber: { pill: "bg-[#fdf3dd] text-[#8a5a12]", dot: "bg-[#c88a1e]", rail: "bg-[#c88a1e]/25" },
-  rose: { pill: "bg-[#fbe7ee] text-[#a8325b]", dot: "bg-[#d0457a]", rail: "bg-[#d0457a]/25" },
-};
-
 const short = (h: string) => `${h.slice(0, 8)}…${h.slice(-6)}`;
 
 function PathCard({ p }: { p: Path }) {
-  const t = TONES[p.tone];
   return (
     <div className="flex h-full flex-col rounded-3xl border border-black/[0.07] bg-white p-7 shadow-[0_1px_2px_rgba(20,20,20,0.04)]">
       <div className="flex items-start justify-between gap-4">
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase ${t.pill}`}
-        >
-          {p.name}
-        </span>
+        <div>
+          <h3 className="origin-left scale-x-[1.06] text-lg leading-[1.15] font-medium text-[#141414]">
+            {p.title[0]}
+            <br />
+            <span className="text-black/45">{p.title[1]}</span>
+          </h3>
+          {/* One dot per step: filled when it happened on chain, a ring when nothing was posted. */}
+          <div className="mt-4 flex gap-1" aria-hidden>
+            {p.steps.map((s) => (
+              <span
+                key={s.label}
+                className={`grid h-5 w-5 place-items-center rounded-full ${s.tx ? "bg-[#7b68d4]" : "border border-black/25"}`}
+              >
+                <span className={`h-1 w-1 rounded-full ${s.tx ? "bg-white" : "bg-black/30"}`} />
+              </span>
+            ))}
+          </div>
+        </div>
         <span className="text-right">
           <span className="block text-3xl leading-none font-light tracking-tight text-[#141414] sm:text-4xl">
             {p.stat}
@@ -138,11 +139,11 @@ function PathCard({ p }: { p: Path }) {
           return (
             <li key={s.label} className="relative flex gap-3 pb-4 last:pb-0">
               {!last && (
-                <span aria-hidden className={`absolute top-3 left-[5px] h-full w-0.5 ${t.rail}`} />
+                <span aria-hidden className="absolute top-3 left-[5px] h-full w-px bg-black/12" />
               )}
               <span
                 aria-hidden
-                className={`relative mt-1.5 h-3 w-3 shrink-0 rounded-full ${s.tx ? t.dot : "border-2 border-black/20 bg-white"}`}
+                className={`relative mt-1.5 h-3 w-3 shrink-0 rounded-full ${s.tx ? "bg-[#141414]" : "border border-black/30 bg-white"}`}
               />
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="text-sm text-[#141414]">{s.label}</span>
@@ -203,7 +204,7 @@ export default function Proof() {
           </video>
           {/* Text sits at the top, on the sky; the temple stays visible at the bottom. */}
           <div className="relative z-10 p-7">
-            <span className="block w-fit rounded-full bg-white/80 px-3 py-1 text-xs font-semibold tracking-wide text-[#2b2644] uppercase">
+            <span className="block text-sm tracking-[0.15em] text-[#2b2644]/70 uppercase">
               Settled on chain
             </span>
             <span className="mt-6 block text-6xl leading-none font-light tracking-tight text-[#2b2644]">
