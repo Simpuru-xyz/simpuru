@@ -75,11 +75,11 @@ export default function Home() {
           </p>
 
           <Link
-            href={`${APP_URL}/listings`}
+            href={APP_URL}
             className="animate-fade-in-up inline-block rounded-full bg-black px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800 sm:px-8 sm:text-base"
             style={{ animationDelay: "0.5s", opacity: 0 }}
           >
-            Open the shop
+            Launch app
           </Link>
         </main>
 
