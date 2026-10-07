@@ -21,13 +21,15 @@ import {
   APP_SLOW,
   AppFlow,
   AppWindow,
+  CONSENT_FRAMES,
+  Consent,
   LANDING_CLICK,
   LANDING_FRAMES,
   Landing,
   APP_BEATS as RAW_B,
 } from "./app";
 import { C, mono, sans, TX } from "./theme";
-import { Terminal, useIn } from "./ui";
+import { Terminal, type Line as TermLine, useIn } from "./ui";
 import VO from "./vo.json";
 
 export const FPS3 = 30;
@@ -505,69 +507,116 @@ const Web = () => (
   </>
 );
 
+/** Before the first prompt: add the server, sign in in the browser, come back. */
+const OAUTH: TermLine[] = [
+  { text: "$ claude mcp add --transport http simpuru https://api.simpuru.xyz/mcp", kind: "dim" },
+  { text: "Added HTTP MCP server simpuru", kind: "out" },
+  { text: "$ claude", kind: "dim" },
+  { text: "/mcp", kind: "prompt" },
+  { text: "  simpuru · needs authentication  ❯ Authenticate", kind: "tool" },
+  { text: "  Opening your browser to sign in…", kind: "out" },
+];
+const SIGNED_IN: TermLine = {
+  text: "✓ Authentication successful. Connected to simpuru.",
+  kind: "ok",
+};
+
+const T_OAUTH = 96; // terminal: add + authenticate
+const T_BROWSER = 176; // sign-in page
+const T_SHOP = T_BROWSER + CONSENT_FRAMES; // back in the terminal
+const AGENTS_FRAMES = T_SHOP + 354;
+
 const AGENT_COPY: Copy[] = [
   {
     at: 0,
-    to: 96,
+    to: T_OAUTH,
     eyebrow: "08 Agents",
     title: "One command.",
-    body: "Your agent gets your Simpuru wallet and your limits.",
+    body: "Add Simpuru to Claude Code, Cursor or any MCP client.",
   },
   {
-    at: 96,
-    to: 450,
+    at: T_OAUTH,
+    to: T_SHOP,
+    eyebrow: "08 Agents",
+    title: "Sign in once.",
+    body: "Your wallet approves the agent and sets its budget. No API key.",
+  },
+  {
+    at: T_SHOP,
+    to: AGENTS_FRAMES,
     eyebrow: "08 Agents",
     title: "It shops on its own.",
     body: "Filters by reputation, checks the listing, buys with protection. Never pays twice.",
   },
 ];
-const AGENTS_FRAMES = 450;
+const Right = ({ children }: { children: ReactNode }) => (
+  <div
+    style={{
+      position: "absolute",
+      right: 0,
+      top: 0,
+      bottom: 0,
+      display: "flex",
+      alignItems: "center",
+    }}
+  >
+    {children}
+  </div>
+);
 const Agents = () => (
   <>
     <Split copy={AGENT_COPY}>
-      <Sequence durationInFrames={96}>
-        <div
-          style={{
-            position: "absolute",
-            right: 0,
-            top: 0,
-            bottom: 0,
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
+      <Sequence durationInFrames={T_OAUTH}>
+        <Right>
           <AppWindow width={1200} url="app.simpuru.xyz/agents">
             <AgentsPage />
           </AppWindow>
-        </div>
+        </Right>
       </Sequence>
-      <Sequence from={96}>
-        <div
-          style={{
-            position: "absolute",
-            right: 0,
-            top: 0,
-            bottom: 0,
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
+      <Sequence from={T_OAUTH} durationInFrames={T_BROWSER - T_OAUTH}>
+        <Right>
           <Terminal
-            lines={AGENT}
+            lines={OAUTH}
+            start={0}
+            cps={140}
+            width={1200}
+            height={640}
+            title="claude · terminal"
+          />
+        </Right>
+      </Sequence>
+      <Sequence from={T_BROWSER} durationInFrames={CONSENT_FRAMES}>
+        <Right>
+          <AppWindow width={1200} url="api.simpuru.xyz/oauth/authorize">
+            <Consent />
+          </AppWindow>
+        </Right>
+      </Sequence>
+      <Sequence from={T_SHOP}>
+        <Right>
+          <Terminal
+            lines={[SIGNED_IN, ...AGENT]}
             start={0}
             cps={120}
             width={1200}
             height={640}
             title="claude · Simpuru MCP"
           />
-        </div>
+        </Right>
       </Sequence>
       <div style={{ width: 1200 }} />
     </Split>
     <Sfx name="tap" at={48} />
-    <Sfx name="swish" at={94} volume={0.4} />
+    <Sfx name="swish" at={T_OAUTH - 2} volume={0.4} />
+    <Sfx name="swish" at={T_BROWSER - 2} volume={0.4} />
+    {[44, 80, 140].map((d) => (
+      <Sfx key={d} name="tap" at={T_BROWSER + d} />
+    ))}
+    <Sfx name="chime" at={T_BROWSER + 92} volume={0.4} />
+    <Sfx name="swish" at={T_SHOP - 2} volume={0.4} />
     <Vo id="a1" at={4} />
-    <Vo id="a2" at={100} />
+    <Vo id="a1b" at={T_OAUTH + 6} />
+    <Vo id="a2" at={T_SHOP + 4} />
   </>
 );
 
