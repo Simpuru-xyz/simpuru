@@ -1,6 +1,6 @@
 ---
 title: "Introduction"
-description: "Buyer protection for people and agents paying with x402 on Cardano."
+description: "Design prompts you and your agents can buy. Pay per prompt, not per month."
 ---
 
 <Info>
@@ -13,24 +13,26 @@ description: "Buyer protection for people and agents paying with x402 on Cardano
 
 ## The short version
 
-An agent can pay for things on Cardano with **x402**: it asks for a resource, gets a price, pays, and gets the resource. With the escrow payment method, the money is locked on chain instead of going straight to the seller.
+Simpuru is a shop for **design prompts**. A design prompt is a ready-made instruction you paste into a coding agent, and it builds a page: a landing page, a hero section, a pricing table, a 3D scene. Listings come with a recording of what the prompt builds, so you can see the result before you buy.
 
-But x402 stops at the lock. Once the money is in escrow, nothing makes sure the buyer gets what it paid for. If the seller never delivers, or delivers the wrong thing, someone has to notice and act before the deadlines pass. An agent has no human watching.
+You **pay per prompt, not per month**. No subscription and no bundle: you buy the one prompt you want for a few tADA, and it is yours to open again whenever you need it.
 
-**Simpuru is that someone.** It is a shop for design prompts where every purchase can be protected: the seller commits to exactly what they sell before they are paid, the delivery is checked against that commitment, and the buyer gets the money back automatically when it does not match.
+Anyone can sell. If you made a prompt that builds something good, list it, set a price and get paid in tADA every time someone buys it.
+
+And you can buy **with protection**: the money waits in an escrow on Cardano until the prompt arrives. No prompt, or the wrong prompt, and you get your money back automatically.
 
 <CardGroup cols={2}>
-  <Card title="Sellers commit first" icon="fingerprint">
-    Every listing carries the SHA-256 hash of what it sells. The escrow is bound to that hash before anyone pays.
+  <Card title="Pay per prompt" icon="tag">
+    Buy one prompt at a time for a few tADA. No subscription, no bundle.
   </Card>
-  <Card title="Pay into escrow" icon="lock">
-    A protected purchase locks the payment on chain. The seller only gets it after the delivery checks out.
+  <Card title="Buy once, open again" icon="rotate">
+    A prompt you bought stays yours. Opening it again costs nothing.
   </Card>
-  <Card title="Refunds happen on their own" icon="rotate-left">
-    No delivery by the deadline means a refund. A delivery that does not match means a dispute. No human has to notice.
+  <Card title="Anyone can sell" icon="store">
+    List a prompt with no approval. Every settled sale builds your public reputation.
   </Card>
-  <Card title="Disputes are settled by evidence" icon="scale-balanced">
-    An arbiter pays the seller only if the delivered content is provably the one listed. Otherwise the buyer is paid back.
+  <Card title="Refunded if it never arrives" icon="shield-check">
+    A protected purchase waits in escrow until the prompt arrives. If it doesn't, or it's the wrong one, you're paid back automatically.
   </Card>
 </CardGroup>
 
@@ -73,14 +75,14 @@ But x402 stops at the lock. Once the money is in escrow, nothing makes sure the 
 
 | | |
 | - | - |
-| Network | Cardano preprod (test ADA only) |
-| Payments | x402 v2: `default` (instant) and `masumi` (escrow) |
-| Escrow | Masumi `vested_pay` V2 validator, unchanged, deployed with Simpuru's own arbiter key |
 | What is sold | Design prompts: paste one into a coding agent and it builds a page |
+| How you pay | Per prompt, in tADA. Instant, or with protection (escrow) |
 | Who can sell | Anyone signed in with a Cardano wallet |
-| Who can buy | People on [app.simpuru.xyz](https://app.simpuru.xyz), and agents over MCP |
+| Who can buy | People on [app.simpuru.xyz](https://app.simpuru.xyz), and agents through MCP |
+| Network | Cardano preprod (test ADA only) |
+| Under the hood | Payments over x402; protected purchases use a Masumi `vested_pay` V2 escrow with Simpuru's own arbiter key |
 | Status | Live on preprod. Every claim in these docs links a preprod transaction |
 
 <Card title="Start with how it works" icon="arrow-right" href="/overview/how-it-works" horizontal>
-  Five steps, from a listing to a paid seller or a refunded buyer.
+  Pick a prompt, pay, get it: the whole flow in five steps.
 </Card>
