@@ -175,7 +175,7 @@ export default function ListingPage({ params }: PageProps<"/listings/[id]">) {
 
               <div className="space-y-1 border-y border-gray-100 py-5">
                 <span className="text-3xl font-semibold tracking-tight text-black">
-                  {formatAda(load.listing.priceLovelace)} ADA
+                  {formatAda(load.listing.priceLovelace)} tADA
                 </span>
                 <p className="text-sm text-gray-500">Pay once over x402, reuse it after.</p>
               </div>

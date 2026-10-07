@@ -112,7 +112,7 @@ export default function PurchasePage({ params }: PageProps<"/purchases/[id]">) {
                   <div className="flex gap-1.5">
                     <dt>Paid</dt>
                     <dd className="font-semibold text-black">
-                      {formatAda(load.listing.priceLovelace)} ADA
+                      {formatAda(load.listing.priceLovelace)} tADA
                     </dd>
                   </div>
                 )}

@@ -60,7 +60,7 @@ export default function ListingCard({
           </Link>
         </h3>
         <span className="shrink-0 text-sm font-semibold text-black">
-          {formatAda(listing.priceLovelace)} ADA
+          {formatAda(listing.priceLovelace)} tADA
         </span>
       </div>
       <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-gray-500">

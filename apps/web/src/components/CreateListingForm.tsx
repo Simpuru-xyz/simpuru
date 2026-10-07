@@ -84,9 +84,9 @@ export default function CreateListingForm({
       return "Preview: an https link to an mp4, webm, webp or gif.";
     if (modes.length === 0) return "Pick at least one delivery mode.";
     if (form.priceAda && !lovelace)
-      return "Price: an ADA amount with up to 6 decimals, below 10 billion ADA.";
+      return "Price: a tADA amount with up to 6 decimals, below 10 billion.";
     if (lovelace && BigInt(lovelace) < BigInt(minAda * 1_000_000))
-      return `Price: at least ${minAda} ADA for these modes.`;
+      return `Price: at least ${minAda} tADA for these modes.`;
     if (contentBytes > RULES.contentBytes) return "Content: max 1 MiB.";
     return "";
   })();
@@ -272,16 +272,16 @@ export default function CreateListingForm({
                 <ModeBadge mode={mode} />
                 <span className="text-gray-600">
                   {mode === "instant"
-                    ? `from ${RULES.minAdaInstant} ADA`
-                    : `from ${RULES.minAdaProtected} ADA`}
+                    ? `from ${RULES.minAdaInstant} tADA`
+                    : `from ${RULES.minAdaProtected} tADA`}
                 </span>
               </label>
             ))}
           </div>
           <span className="block text-xs text-gray-500">
             Instant pays you the full price at once. Protected holds the payment in escrow until
-            delivery checks out, then pays you the price minus 10% or 1.5 ADA, whichever is more
-            (the escrow costs that to run), so it starts at 5 ADA.
+            delivery checks out, then pays you the price minus 10% or 1.5 tADA, whichever is more
+            (the escrow costs that to run), so it starts at 5 tADA.
           </span>
         </fieldset>
 
@@ -289,7 +289,7 @@ export default function CreateListingForm({
           <Label
             hint={lovelace ? `${BigInt(lovelace).toLocaleString("en-US")} lovelace` : undefined}
           >
-            Price in ADA
+            Price in tADA
           </Label>
           <input
             required
@@ -303,7 +303,9 @@ export default function CreateListingForm({
             <span className="block text-xs text-gray-500">
               You receive{" "}
               {modes
-                .map((m) => `${formatAda(creatorPayout(lovelace, m).toString())} ADA per ${m} sale`)
+                .map(
+                  (m) => `${formatAda(creatorPayout(lovelace, m).toString())} tADA per ${m} sale`,
+                )
                 .join(", ")}
               .
             </span>
