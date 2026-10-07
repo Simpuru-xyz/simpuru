@@ -14,7 +14,7 @@ import {
 } from "remotion";
 import { AgentsPage, APP_FLOW_FRAMES, AppFlow, AppWindow, APP_BEATS as B } from "./app";
 import { AGENT } from "./scenes";
-import { C, mono, sans, short, TX } from "./theme";
+import { C, mono, sans, TX } from "./theme";
 import { Arrow, Node, Terminal, Tx, useIn } from "./ui";
 
 export const FPS3 = 30;
@@ -94,11 +94,11 @@ const Opening = () => (
         <Line {...b} />
       </Sequence>
     ))}
-    {BEATS.map((b, i) =>
-      b.words.map((w, j) => (
-        <Sfx key={`${i}${w}`} name="blip" at={i * BEAT + j * 4} volume={0.35} />
-      )),
-    )}
+    {BEATS.flatMap((b, i) =>
+      b.words.map((w, j) => ({ key: `${b.words.join(" ")}:${w}`, at: i * BEAT + j * 4 })),
+    ).map((s) => (
+      <Sfx key={s.key} name="blip" at={s.at} volume={0.35} />
+    ))}
     <Sfx name="thud" at={2 * BEAT} volume={0.8} />
     <Sfx name="swish" at={4 * BEAT - 4} />
   </AbsoluteFill>

@@ -554,7 +554,7 @@ const Listing = ({
 
 const Bought = ({ f }: { f: number }) => {
   // First line of the real prompt; the rest stays blurred (it's the creator's paid content).
-  const lines = ["Build a luxury handcrafted jewelry landing page…", "", ""];
+  const lines = ["Build a luxury handcrafted jewelry landing page…", "blur-1", "blur-2"];
   return (
     <>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -588,13 +588,13 @@ const Bought = ({ f }: { f: number }) => {
         }}
       >
         {lines.map((l, i) =>
-          l ? (
+          !l.startsWith("blur") ? (
             <div key={l} style={{ opacity: t(f, 4, 12) }}>
               {l}
             </div>
           ) : (
             <div
-              key={`blur${i}`}
+              key={l}
               style={{
                 height: 14,
                 margin: "8px 0",

@@ -20,7 +20,6 @@ import {
   Node,
   Rise,
   Scene,
-  Spot,
   Terminal,
   Tx,
   useIn,
