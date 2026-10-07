@@ -30,6 +30,9 @@ const idParam = (description: string) => ({
   description,
 });
 
+const session = [{ session: [] }];
+const signedIn = (description: string) => ({ description, content: json(ref("Error")) });
+
 export const openApiSpec = {
   openapi: "3.1.0",
   info: {
@@ -55,6 +58,11 @@ export const openApiSpec = {
     { url: "http://localhost:4021", description: "Local `bun run dev` in apps/api" },
   ],
   tags: [
+    {
+      name: "Account",
+      description:
+        "Sign in with a Cardano wallet (CIP-30 `signData`), then use the session as `Authorization: Bearer <token>`. Every account has a Simpuru wallet: a preprod wallet the platform holds for the owner, funded with tADA, that web purchases and the owner's agents spend from.",
+    },
     { name: "Catalogue", description: "Free listing data." },
     { name: "Paid content", description: "The x402 paywall: instant or escrow-protected." },
     {
@@ -72,6 +80,220 @@ export const openApiSpec = {
     { name: "System", description: "Health." },
   ],
   paths: {
+    "/auth/challenge": {
+      post: {
+        tags: ["Account"],
+        summary: "Start signing in",
+        description:
+          "Returns the digest the wallet signs. Pass the address CIP-30 gives you (`getChangeAddress()` / `getUsedAddresses()[0]`, hex) or a bech32 `addr_test1…`. The challenge expires in 5 minutes.",
+        operationId: "authChallenge",
+        requestBody: {
+          required: true,
+          content: json({
+            type: "object",
+            properties: {
+              address: { type: "string", description: "Hex (CIP-30) or bech32 preprod address." },
+            },
+            required: ["address"],
+          }),
+        },
+        responses: {
+          200: {
+            description: "Sign `digest` with `api.signData(address, digest)`",
+            content: json({
+              type: "object",
+              properties: {
+                owner: {
+                  type: "string",
+                  description: "The address as bech32; send it back to /auth/verify.",
+                },
+                digest: hash,
+                expiresAt: { type: "integer", description: "Unix ms." },
+              },
+              required: ["owner", "digest", "expiresAt"],
+            }),
+          },
+          400: error("Not a preprod address"),
+        },
+      },
+    },
+    "/auth/verify": {
+      post: {
+        tags: ["Account"],
+        summary: "Finish signing in",
+        description:
+          "Send the `{ key, signature }` from `signData`. On the first sign-in the account and its Simpuru wallet are created (limits 10 tADA per purchase, 30 tADA a day). The session lasts 7 days.",
+        operationId: "authVerify",
+        requestBody: {
+          required: true,
+          content: json({
+            type: "object",
+            properties: {
+              owner: { type: "string" },
+              key: { type: "string", description: "COSE_Key hex from signData." },
+              signature: { type: "string", description: "COSE_Sign1 hex from signData." },
+            },
+            required: ["owner", "key", "signature"],
+          }),
+        },
+        responses: {
+          200: {
+            description: "Signed in",
+            content: json({
+              type: "object",
+              properties: {
+                token: { type: "string", description: "Send as `Authorization: Bearer <token>`." },
+                expiresAt: { type: "integer", description: "Unix ms." },
+                account: {
+                  type: "object",
+                  properties: {
+                    owner: { type: "string" },
+                    walletAddress: {
+                      type: "string",
+                      description: "The Simpuru wallet; send tADA here to shop.",
+                    },
+                  },
+                  required: ["owner", "walletAddress"],
+                },
+              },
+              required: ["token", "expiresAt", "account"],
+            }),
+          },
+          400: error("Missing owner"),
+          401: error("Bad signature, or no live challenge for this address"),
+        },
+      },
+    },
+    "/auth/logout": {
+      post: {
+        tags: ["Account"],
+        summary: "Sign out",
+        operationId: "authLogout",
+        security: session,
+        responses: { 204: { description: "Session ended" } },
+      },
+    },
+    "/me": {
+      get: {
+        tags: ["Account"],
+        summary: "My account",
+        description:
+          "Wallet balance, agent limits, what I bought (from my wallet or my Simpuru wallet), what I sell, and my seller reputation.",
+        operationId: "getMe",
+        security: session,
+        responses: {
+          200: { description: "Account", content: json(ref("Me")) },
+          401: signedIn("Not signed in"),
+        },
+      },
+    },
+    "/me/buy": {
+      post: {
+        tags: ["Account"],
+        summary: "Buy with my Simpuru wallet",
+        description:
+          "The API pays over x402 from the account's Simpuru wallet, within its limits, and returns the content. Protected purchases are watched and refunded automatically if delivery fails. Buying something already owned returns it again for free (`alreadyOwned`). Takes 20–60 s (waits for the chain).",
+        operationId: "buy",
+        security: session,
+        requestBody: {
+          required: true,
+          content: json({
+            type: "object",
+            properties: { listingId: { type: "string" }, mode: ref("DeliveryMode") },
+            required: ["listingId", "mode"],
+          }),
+        },
+        responses: {
+          200: {
+            description: "Paid and delivered",
+            content: json({
+              type: "object",
+              properties: {
+                purchase: ref("Purchase"),
+                content: { type: "string" },
+                alreadyOwned: { type: "boolean" },
+              },
+              required: ["purchase", "content", "alreadyOwned"],
+            }),
+          },
+          400: error(
+            "Bad input, not enough tADA, over a limit, or the payment failed; `error` says which",
+          ),
+          401: signedIn("Not signed in"),
+        },
+      },
+    },
+    "/me/purchases/{id}/content": {
+      get: {
+        tags: ["Account"],
+        summary: "Read something I bought",
+        operationId: "myPurchaseContent",
+        security: session,
+        parameters: [idParam("Purchase id (payment tx hash)")],
+        responses: {
+          200: {
+            description: "The content",
+            content: { "text/plain": { schema: { type: "string" } } },
+          },
+          401: signedIn("Not signed in"),
+          404: error("Not my purchase"),
+          410: error("Refunded"),
+        },
+      },
+    },
+    "/me/agent-limits": {
+      put: {
+        tags: ["Account"],
+        summary: "Set agent limits",
+        description: "What my agents (and web purchases) may spend from the Simpuru wallet.",
+        operationId: "setAgentLimits",
+        security: session,
+        requestBody: {
+          required: true,
+          content: json({
+            type: "object",
+            properties: {
+              maxPerPaymentAda: { type: "integer", minimum: 1, maximum: 100 },
+              dailyBudgetAda: { type: "integer", description: "≥ maxPerPaymentAda, ≤ 500." },
+            },
+            required: ["maxPerPaymentAda", "dailyBudgetAda"],
+          }),
+        },
+        responses: {
+          200: {
+            description: "Saved",
+            content: json({
+              type: "object",
+              properties: { maxPerPaymentLovelace: lovelace, dailyBudgetLovelace: lovelace },
+            }),
+          },
+          400: error("Out of range"),
+          401: signedIn("Not signed in"),
+        },
+      },
+    },
+    "/me/wallet/withdraw": {
+      post: {
+        tags: ["Account"],
+        summary: "Withdraw my Simpuru wallet",
+        description:
+          "Sends everything (minus ~2 tADA kept for fees) back to the wallet I signed in with.",
+        operationId: "withdraw",
+        security: session,
+        responses: {
+          200: {
+            description: "Sent",
+            content: json({
+              type: "object",
+              properties: { tx: txHash, lovelace },
+              required: ["tx", "lovelace"],
+            }),
+          },
+          400: error("Nothing to withdraw, or the transaction failed"),
+          401: signedIn("Not signed in"),
+        },
+      },
+    },
     "/health": {
       get: {
         tags: ["System"],
@@ -104,13 +326,13 @@ export const openApiSpec = {
         tags: ["Catalogue"],
         summary: "Create a listing",
         description:
-          "Anyone can sell: the creator signs the listing with the wallet of `sellerAddress`. The API stores the content and returns its SHA-256 as `contentHash`; protected quotes commit to it. Instant sales pay the creator directly; protected sales lock into the escrow with the platform as seller of record, which pays the creator `price − max(1.5 tADA, 10%)` once the escrow releases.",
+          "Anyone can sell. Signed in (`Authorization: Bearer`), the listing is sold by the account and `sellerAddress` is ignored. Without a session (scripts), the creator signs the listing with the wallet of `sellerAddress`. The API stores the content and returns its SHA-256 as `contentHash`; protected quotes commit to it. Instant sales pay the creator directly; protected sales lock into the escrow with the platform as seller of record, which pays the creator `price − max(1.5 tADA, 10%)` once the escrow releases.",
         operationId: "createListing",
         parameters: [
           {
             name: "X-Simpuru-Proof",
             in: "header",
-            required: true,
+            required: false,
             schema: proofHeader,
             description:
               'Base64 JSON `UnlockProof` signed by `sellerAddress` (CIP-30 `signData`) over `sha256("simpuru:listing:v1\\n" + sellerAddress + "\\n" + sha256(content) + "\\n" + priceLovelace + "\\n" + timestamp)`, at most 5 min old.',
@@ -120,6 +342,7 @@ export const openApiSpec = {
         responses: {
           201: { description: "Created", content: json(ref("Listing")) },
           400: error("Invalid input; `error` says which field"),
+          401: error("No session and no valid signature"),
         },
       },
     },
@@ -284,7 +507,7 @@ export const openApiSpec = {
           {
             name: "X-Simpuru-Proof",
             in: "header",
-            required: true,
+            required: false,
             schema: proofHeader,
             description: "Base64 JSON `UnlockProof` from the payer.",
           },
@@ -546,6 +769,11 @@ export const openApiSpec = {
   },
   components: {
     securitySchemes: {
+      session: {
+        type: "http",
+        scheme: "bearer",
+        description: "Session token from `POST /auth/verify` (7 days).",
+      },
       mcpOAuth: {
         type: "oauth2",
         description: "OAuth 2.1 with PKCE; MCP clients handle it.",
@@ -564,6 +792,35 @@ export const openApiSpec = {
       },
     },
     schemas: {
+      Me: {
+        type: "object",
+        properties: {
+          owner: { type: "string", description: "The wallet I signed in with." },
+          wallet: {
+            type: "object",
+            description: "My Simpuru wallet.",
+            properties: { address: { type: "string" }, balanceLovelace: lovelace },
+            required: ["address", "balanceLovelace"],
+          },
+          limits: {
+            type: "object",
+            properties: {
+              maxPerPaymentLovelace: lovelace,
+              dailyBudgetLovelace: lovelace,
+              spentTodayLovelace: lovelace,
+            },
+            required: ["maxPerPaymentLovelace", "dailyBudgetLovelace", "spentTodayLovelace"],
+          },
+          purchases: { type: "array", items: ref("Purchase") },
+          listings: { type: "array", items: ref("Listing") },
+          sales: { type: "integer" },
+          sellerReputation: {
+            type: "object",
+            properties: { score: { type: "integer" }, basis: { type: "integer" } },
+          },
+        },
+        required: ["owner", "wallet", "limits", "purchases", "listings", "sales"],
+      },
       Error: { type: "object", properties: { error: { type: "string" } }, required: ["error"] },
       DeliveryMode: { type: "string", enum: ["instant", "protected"] },
       Category: { type: "string", enum: [...CATEGORIES] },

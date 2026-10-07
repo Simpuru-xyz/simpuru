@@ -83,7 +83,7 @@ export function isPreviewUrl(value: string) {
   }
 }
 
-export function listingsRoutes(db: Db) {
+export function listingsRoutes(db: Db, sessionOwner?: (authorization?: string) => string | null) {
   const app = new Hono();
 
   app.get("/", (c) => c.json(listCatalogue(db).map((l) => withStats(db, publicListing(l)))));
@@ -96,14 +96,20 @@ export function listingsRoutes(db: Db) {
   });
 
   app.post("/", async (c) => {
+    // A signed-in creator sells as themselves; scripts sign the listing instead.
+    const owner = sessionOwner?.(c.req.header("authorization")) ?? null;
     const body = await c.req.json().catch(() => null);
-    const v = validateNewListing(body);
+    const v = validateNewListing(
+      owner && body && typeof body === "object" ? { ...body, sellerAddress: owner } : body,
+    );
     if (!v.ok) return c.json({ error: v.error }, 400);
     const hash = contentHash(v.value.content);
     // The creator proves the seller address is theirs by signing this exact listing.
-    const signer = verifySignedProof(c.req.header(PROOF_HEADER) ?? "", (address, ts) =>
-      listingProofDigest(address, hash, v.value.priceLovelace, ts),
-    );
+    const signer =
+      owner ??
+      verifySignedProof(c.req.header(PROOF_HEADER) ?? "", (address, ts) =>
+        listingProofDigest(address, hash, v.value.priceLovelace, ts),
+      );
     if (signer !== v.value.sellerAddress)
       return c.json(
         {

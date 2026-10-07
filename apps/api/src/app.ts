@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { type Db, getListing } from "./db";
 import { creatorsRoutes, listingsRoutes } from "./listings";
+import type { Me } from "./me";
 import type { OAuth } from "./oauth";
 import { docsHtml, openApiSpec } from "./openapi";
 import { ownedContent, PROOF_HEADER, PURCHASE_HEADER } from "./owned";
@@ -19,7 +20,7 @@ export interface HostedMcp {
   optionsFor: (owner: string) => SimpuruMcpOptions;
 }
 
-export function createApp(db: Db, paywall?: Paywall, hosted?: HostedMcp) {
+export function createApp(db: Db, paywall?: Paywall, hosted?: HostedMcp, me?: Me) {
   const app = new Hono();
   app.use(
     "*",
@@ -81,7 +82,8 @@ export function createApp(db: Db, paywall?: Paywall, hosted?: HostedMcp) {
     });
   }
 
-  app.route("/listings", listingsRoutes(db));
+  if (me) app.route("/", me.routes);
+  app.route("/listings", listingsRoutes(db, me?.sessionOwner));
   app.route("/creators", creatorsRoutes(db));
   app.route("/purchases", purchasesRoutes(db));
   return app;

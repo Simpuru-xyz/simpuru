@@ -12,6 +12,8 @@ Hono API on Bun. Owner: @yeheskieltame.
 - Returning buyer lookup and issued-quote log (#17).
 - Protected path only makes sense from ~5 tADA; the seller pays ~1.35 tADA in escrow fees per sale.
 - Response shapes come from `@simpuru/core` (#2).
+- Accounts (#86, #87): sign in with Cardano (`/auth/*`), session bearer, `/me` routes; every
+  account has a Simpuru wallet (`accounts.ts`) that web purchases and agents spend from.
 
 ## Original work only
 
