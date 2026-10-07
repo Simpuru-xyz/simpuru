@@ -3,38 +3,42 @@
 import { ArrowRight } from "lucide-react";
 import { useRef, useState } from "react";
 import CopyButton from "@/components/CopyButton";
-import { MCP_DOCS_URL } from "@/lib/links";
+import { AGENTS_URL } from "@/lib/links";
 
 /**
  * Connect your agent: one card, one command to copy.
  *
  * Layout follows the MotionSites "Community CTA" card (video background, copy
- * on the left, a pill row where the form was). The commands mirror
- * apps/mcp/README.md and apps/agent/README.md; change them together. The hosted
- * MCP (api.simpuru.xyz/mcp) pays from a shared preprod demo wallet; run apps/mcp
- * locally to pay from your own.
+ * on the left, a pill row where the form was). The commands follow the spec in
+ * #86 (J6) and the app's /agents page; change them together. Agents sign in to
+ * the hosted MCP with the user's wallet and spend from their Simpuru wallet,
+ * within the limits set on /agents.
  *
  * Tabs follow the WAI-ARIA tabs pattern: roving tabindex, arrow keys, labelled
  * panel.
  */
 
-export type OnboardingTarget = { id: string; label: string; command: string };
+/** `hint` is one line under the command: where it goes, in the client's own words. */
+export type OnboardingTarget = { id: string; label: string; command: string; hint: string };
 
 export const ONBOARDING_TARGETS: OnboardingTarget[] = [
   {
     id: "claude-code",
     label: "Claude Code",
     command: "claude mcp add --transport http simpuru https://api.simpuru.xyz/mcp",
+    hint: "Run it, then approve with your wallet in the browser page that opens.",
+  },
+  {
+    id: "claude-desktop",
+    label: "Claude Desktop",
+    command: "https://api.simpuru.xyz/mcp",
+    hint: "Settings → Connectors → Add custom connector, paste this URL, then Connect.",
   },
   {
     id: "cursor",
-    label: "Cursor · Claude Desktop",
+    label: "Cursor",
     command: `{"mcpServers":{"simpuru":{"url":"https://api.simpuru.xyz/mcp"}}}`,
-  },
-  {
-    id: "cli",
-    label: "Terminal",
-    command: "bun run buy <listingId> protected",
+    hint: "Add it to your MCP config.",
   },
 ];
 
@@ -140,12 +144,13 @@ export default function AgentOnboarding() {
             </code>
             <CopyButton text={active.command} label={active.label} tone="light" />
           </div>
+          <p className="mt-2.5 px-1 text-sm text-[#08063C]/75">{active.hint}</p>
 
           <a
-            href={MCP_DOCS_URL}
+            href={AGENTS_URL}
             className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold hover:underline"
           >
-            Setup guide
+            Full setup and spending limits
             <ArrowRight aria-hidden className="h-4 w-4" />
           </a>
         </div>

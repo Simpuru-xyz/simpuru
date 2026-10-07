@@ -8,7 +8,7 @@ import Nav from "@/components/Nav";
 import Proof from "@/components/Proof";
 import ScrollAnimations from "@/components/ScrollAnimations";
 import SiteFooter from "@/components/SiteFooter";
-import { APP_URL } from "@/lib/links";
+import { APP_URL, SELL_URL } from "@/lib/links";
 
 const VIDEO_SRC = "/media/hero.mp4";
 
@@ -70,8 +70,8 @@ export default function Home() {
             className="animate-fade-in-up mx-auto mb-14 max-w-3xl px-2 text-base text-gray-600 sm:mb-20 sm:text-lg md:text-xl"
             style={{ animationDelay: "0.4s", opacity: 0 }}
           >
-            Buy one design prompt for a few ADA, or let your agent buy it for you. If it never
-            arrives, you get your money back.
+            Sign in with your Cardano wallet, add test ADA on preprod, and buy yourself or let your
+            agent buy.
           </p>
 
           <Link
@@ -79,8 +79,21 @@ export default function Home() {
             className="animate-fade-in-up inline-block rounded-full bg-black px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800 sm:px-8 sm:text-base"
             style={{ animationDelay: "0.5s", opacity: 0 }}
           >
-            Explore the gallery
+            Open the shop
           </Link>
+
+          <p
+            className="animate-fade-in-up mt-5 text-sm text-gray-600"
+            style={{ animationDelay: "0.55s", opacity: 0 }}
+          >
+            Made something good?{" "}
+            <a
+              href={SELL_URL}
+              className="font-medium text-black underline underline-offset-4 hover:text-gray-700"
+            >
+              Sell your prompts
+            </a>
+          </p>
         </main>
 
         <Footer />

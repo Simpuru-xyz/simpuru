@@ -1,42 +1,37 @@
-import { Github, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { APP_URL, MCP_DOCS_URL, REPO_URL } from "@/lib/links";
+import { ACCOUNT_URL, AGENTS_URL, APP_URL, REPO_URL, SELL_URL } from "@/lib/links";
 
 const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] = [
   {
     heading: "Product",
     links: [
       { label: "Catalogue", href: `${APP_URL}/listings` },
-      { label: "Sell a prompt", href: `${APP_URL}/seller` },
-      { label: "Your purchases", href: `${APP_URL}/purchases` },
-      { label: "Connect an agent", href: "#for-agents" },
+      { label: "Sell a prompt", href: SELL_URL },
+      { label: "Your account", href: ACCOUNT_URL },
+      { label: "Connect an agent", href: AGENTS_URL },
     ],
   },
   {
     heading: "Protocol",
     links: [
-      { label: "MCP setup", href: MCP_DOCS_URL },
       { label: "x402", href: "https://x402.org" },
-      {
-        label: "Masumi escrow",
-        href: "https://github.com/masumi-network/masumi-payment-service",
-      },
+      { label: "Masumi escrow", href: "https://masumi.network" },
       { label: "Preprod explorer", href: "https://preprod.cardanoscan.io" },
     ],
   },
   {
     heading: "Project",
     links: [
+      // The one GitHub link the landing keeps (#89).
       { label: "Source", href: REPO_URL },
-      { label: "Issues", href: `${REPO_URL}/issues` },
       { label: "TOKEN2049 Origins", href: "https://www.token2049.com" },
     ],
   },
 ];
 
-const SOCIALS: { label: string; href: string; Icon: typeof Github }[] = [
-  { label: "Source on GitHub", href: REPO_URL, Icon: Github },
+const SOCIALS: { label: string; href: string; Icon: typeof Globe }[] = [
   { label: "The app", href: APP_URL, Icon: Globe },
 ];
 
@@ -66,8 +61,8 @@ function FooterCard() {
                 <span className="text-[26px] font-bold tracking-tight text-[#0F172A]">simpuru</span>
               </div>
               <p className="max-w-[320px] text-[16px] leading-relaxed font-normal text-[#64748B]">
-                Design prompts for a few ADA each, bought by you or your agent. If one never
-                arrives, the money comes back.
+                Design prompts for a few tADA each on Cardano preprod, bought by you or your agent.
+                With protection, a prompt that never arrives is refunded.
               </p>
               <div className="flex gap-3">
                 {SOCIALS.map(({ label, href, Icon }) => (
