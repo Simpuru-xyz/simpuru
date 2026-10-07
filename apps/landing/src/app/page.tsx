@@ -8,7 +8,7 @@ import Nav from "@/components/Nav";
 import Proof from "@/components/Proof";
 import ScrollAnimations from "@/components/ScrollAnimations";
 import SiteFooter from "@/components/SiteFooter";
-import { APP_URL, SELL_URL } from "@/lib/links";
+import { APP_URL } from "@/lib/links";
 
 const VIDEO_SRC = "/media/hero.mp4";
 
@@ -81,19 +81,6 @@ export default function Home() {
           >
             Open the shop
           </Link>
-
-          <p
-            className="animate-fade-in-up mt-5 text-sm text-gray-600"
-            style={{ animationDelay: "0.55s", opacity: 0 }}
-          >
-            Made something good?{" "}
-            <a
-              href={SELL_URL}
-              className="font-medium text-black underline underline-offset-4 hover:text-gray-700"
-            >
-              Sell your prompts
-            </a>
-          </p>
         </main>
 
         <Footer />
