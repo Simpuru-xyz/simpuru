@@ -1,7 +1,10 @@
 import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
 import { loadFont as loadMono } from "@remotion/google-fonts/JetBrainsMono";
 
-export const sans = loadInter("normal", { weights: ["400", "500", "600", "700"], subsets: ["latin"] }).fontFamily;
+export const sans = loadInter("normal", {
+  weights: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+}).fontFamily;
 export const mono = loadMono("normal", { weights: ["400", "500"], subsets: ["latin"] }).fontFamily;
 
 export const C = {
@@ -41,7 +44,11 @@ export const short = (h: string) => `${h.slice(0, 8)}…${h.slice(-6)}`;
  * Screen recordings you add yourself go in public/rec/ and are switched on here
  * (null = the scene uses its built-in version). See video/README.md.
  */
-export const RECORDINGS: { webBuy: string | null; claudeCode: string | null; sokosumi: string | null } = {
+export const RECORDINGS: {
+  webBuy: string | null;
+  claudeCode: string | null;
+  sokosumi: string | null;
+} = {
   webBuy: null, // e.g. "rec/web-buy.mp4"
   claudeCode: null, // e.g. "rec/claude-code.mp4"
   sokosumi: null, // e.g. "rec/sokosumi.mp4"
