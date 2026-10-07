@@ -22,8 +22,9 @@ The three escrow times come from the deadlines in every protected quote. The quo
 | Buyer | Instant payment | ~0.17 tADA |
 | Buyer | Protected lock | ~0.19 tADA |
 | Seller (platform) | Each later escrow transaction (result, withdrawal) | ~0.40 tADA |
-| Buyer | A refund or dispute transaction | ~0.40 tADA |
-| Arbiter | A dispute payout | ~0.67 tADA (measured before the reference script) |
+| Buyer | A refund transaction | ~0.35 tADA ([`03705831…`](https://preprod.cardanoscan.io/transaction/037058316de32739a3821e2cbb5a1cae7db575a44de2eb9afabe9f1bcdc9bc34)) |
+| Buyer | A dispute transaction | ~0.40 tADA ([`236160f6…`](https://preprod.cardanoscan.io/transaction/236160f667faae70d5c3788d3caeb0b528e80de4f0388c01be42b4cae56327cd)) |
+| Arbiter | A dispute payout | ~0.39 tADA ([`52c7d537…`](https://preprod.cardanoscan.io/transaction/52c7d537f69d02367310860b3cdfdf5c416912f888b075977ae15895d4938f26)) |
 
 The escrow validator lives in a **reference script** on chain, so escrow transactions no longer carry the ~9.9 KB script. That cut the fee per escrow transaction from 0.689 to 0.402 tADA.
 
