@@ -103,7 +103,6 @@
       "dependencies": {
         "@simpuru/core": "workspace:*",
         "bech32": "^2.0.0",
-        "gsap": "^3.15.0",
         "lucide-react": "^0.545.0",
         "next": "16.3.8",
         "qrcode": "^1.5.4",

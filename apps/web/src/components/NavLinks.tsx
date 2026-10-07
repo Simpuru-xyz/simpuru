@@ -1,9 +1,8 @@
 "use client";
 
-import gsap from "gsap";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 /** Only pages that exist. Add an item together with its page. */
 export const NAV_LINKS: { label: string; href: string }[] = [
@@ -12,71 +11,80 @@ export const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Agents", href: "/agents" },
 ];
 
-/** `/listings` stays lit on `/listings/<id>`, but a bare prefix does not match. */
-export const isActive = (pathname: string, href: string) =>
-  pathname === href || pathname.startsWith(`${href}/`);
+/** A section stays lit on its sub-pages (`/listings/abc`), but `/sell` doesn't light `/sel`. */
+export function isActive(pathname: string, href: string) {
+  if (pathname === href) return true;
+  return pathname.slice(0, href.length + 1) === `${href}/`;
+}
 
-const reducedMotion = () =>
-  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+type Pill = { x: number; w: number } | null;
+
+// useLayoutEffect warns during server rendering; this nav only measures in the browser.
+const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 /**
- * Desktop nav with one pill that slides to the current page. Measured from the
- * DOM, so a late font cannot leave it sized for the fallback; the first
- * placement jumps instead of flying in from x=0.
+ * Desktop links with a highlight that glides to the current page. It is positioned from the real
+ * link boxes, re-measured when they resize (a web font arriving late changes their width), and it
+ * jumps into place the first time so it doesn't slide in from the left edge.
  */
 export default function NavLinks() {
   const pathname = usePathname();
-  const pill = useRef<HTMLSpanElement>(null);
-  const items = useRef<Record<string, HTMLAnchorElement | null>>({});
-  const placed = useRef(false);
+  const row = useRef<HTMLDivElement>(null);
+  const [pill, setPill] = useState<Pill>(null);
+  const [animate, setAnimate] = useState(false);
+
+  const measure = useCallback(() => {
+    const container = row.current;
+    const active = container?.querySelector<HTMLAnchorElement>('a[aria-current="page"]');
+    if (!container || !active) return setPill(null);
+    setPill({ x: active.offsetLeft, w: active.offsetWidth });
+  }, []);
+
+  useIsoLayoutEffect(() => {
+    measure();
+  }, [pathname, measure]);
 
   useEffect(() => {
-    const active = NAV_LINKS.find((link) => isActive(pathname, link.href));
-    const element = active ? items.current[active.href] : undefined;
-    const target = pill.current;
-    if (!target) return;
-
-    if (!element) {
-      gsap.to(target, { autoAlpha: 0, duration: 0.2, overwrite: true });
-      placed.current = false;
-      return;
-    }
-
-    const duration = placed.current && !reducedMotion() ? 0.42 : 0;
-    placed.current = true;
-    gsap.to(target, {
-      x: element.offsetLeft,
-      width: element.offsetWidth,
-      autoAlpha: 1,
-      duration,
-      ease: "power3.out",
-      overwrite: true,
-    });
-  }, [pathname]);
+    // Allow the glide only after the first placement has been painted.
+    const id = requestAnimationFrame(() => setAnimate(true));
+    const ro = new ResizeObserver(measure);
+    if (row.current) ro.observe(row.current);
+    return () => {
+      cancelAnimationFrame(id);
+      ro.disconnect();
+    };
+  }, [measure]);
 
   return (
-    <div className="relative hidden items-center gap-1 md:flex">
+    <div ref={row} className="relative hidden items-center gap-1 md:flex">
       <span
         aria-hidden
-        ref={pill}
-        className="absolute top-0 bottom-0 left-0 rounded-full bg-black/[0.06]"
-        style={{ opacity: 0, width: 0 }}
+        className={`absolute inset-y-0 left-0 rounded-full bg-black/[0.06] ${
+          animate
+            ? "transition-[transform,width,opacity] duration-400 ease-[cubic-bezier(.2,.8,.2,1)] motion-reduce:transition-none"
+            : ""
+        }`}
+        style={{
+          width: pill?.w ?? 0,
+          transform: `translateX(${pill?.x ?? 0}px)`,
+          opacity: pill ? 1 : 0,
+        }}
       />
-      {NAV_LINKS.map(({ label, href }) => (
-        <Link
-          key={label}
-          href={href}
-          ref={(node) => {
-            items.current[href] = node;
-          }}
-          aria-current={isActive(pathname, href) ? "page" : undefined}
-          className={`relative rounded-full px-3.5 py-1.5 text-sm transition-colors ${
-            isActive(pathname, href) ? "font-medium text-black" : "text-gray-600 hover:text-black"
-          }`}
-        >
-          {label}
-        </Link>
-      ))}
+      {NAV_LINKS.map(({ label, href }) => {
+        const current = isActive(pathname, href);
+        return (
+          <Link
+            key={href}
+            href={href}
+            aria-current={current ? "page" : undefined}
+            className={`relative rounded-full px-3.5 py-1.5 text-sm transition-colors ${
+              current ? "font-medium text-black" : "text-gray-600 hover:text-black"
+            }`}
+          >
+            {label}
+          </Link>
+        );
+      })}
     </div>
   );
 }
