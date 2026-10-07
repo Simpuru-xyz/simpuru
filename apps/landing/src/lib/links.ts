@@ -20,6 +20,9 @@ export const AGENTS_URL = `${APP_URL}/agents`;
 /** List a prompt; the seller is the signed-in account. */
 export const SELL_URL = `${APP_URL}/sell`;
 
+/** Product documentation (Mintlify, apps/docs). Opens in a new tab. */
+export const DOCS_URL = "https://docs.simpuru.xyz";
+
 /** The only GitHub link on the landing: the footer's "Source". */
 export const REPO_URL = "https://github.com/Simpuru-xyz/simpuru";
 

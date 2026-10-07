@@ -1,9 +1,10 @@
 import { Globe } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { ACCOUNT_URL, AGENTS_URL, APP_URL, REPO_URL, SELL_URL } from "@/lib/links";
+import { ACCOUNT_URL, AGENTS_URL, APP_URL, DOCS_URL, REPO_URL, SELL_URL } from "@/lib/links";
 
-const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] = [
+/** `newTab` opens the link in a new tab (the docs live on their own site). */
+const COLUMNS: { heading: string; links: { label: string; href: string; newTab?: boolean }[] }[] = [
   {
     heading: "Product",
     links: [
@@ -24,6 +25,7 @@ const COLUMNS: { heading: string; links: { label: string; href: string }[] }[] =
   {
     heading: "Project",
     links: [
+      { label: "Docs", href: DOCS_URL, newTab: true },
       // The one GitHub link the landing keeps (#89).
       { label: "Source", href: REPO_URL },
       { label: "TOKEN2049 Origins", href: "https://www.token2049.com" },
@@ -84,10 +86,11 @@ function FooterCard() {
               <div key={heading} className="space-y-6">
                 <h4 className="text-[14px] font-medium text-[#94A3B8]">{heading}</h4>
                 <ul className="space-y-4">
-                  {links.map(({ label, href }) => (
+                  {links.map(({ label, href, newTab }) => (
                     <li key={label}>
                       <Link
                         href={href}
+                        {...(newTab ? { target: "_blank", rel: "noreferrer" } : {})}
                         className="text-[15px] font-medium text-[#1E293B] transition-colors hover:text-[#31A8FF] focus-visible:ring-2 focus-visible:ring-[#0F172A] focus-visible:outline-none"
                       >
                         {label}
