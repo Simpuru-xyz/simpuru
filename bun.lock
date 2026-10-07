@@ -56,6 +56,16 @@
         "@simpuru/tsconfig": "workspace:*",
       },
     },
+    "apps/coworker": {
+      "name": "@simpuru/coworker",
+      "dependencies": {
+        "@simpuru/core": "workspace:*",
+        "@x402/cardano": "2.28.0",
+      },
+      "devDependencies": {
+        "@simpuru/tsconfig": "workspace:*",
+      },
+    },
     "apps/landing": {
       "name": "@simpuru/landing",
       "dependencies": {
@@ -272,6 +282,8 @@
     "@simpuru/arbiter": ["@simpuru/arbiter@workspace:apps/arbiter"],
 
     "@simpuru/core": ["@simpuru/core@workspace:packages/core"],
+
+    "@simpuru/coworker": ["@simpuru/coworker@workspace:apps/coworker"],
 
     "@simpuru/escrow": ["@simpuru/escrow@workspace:packages/escrow"],
 
