@@ -116,5 +116,15 @@
       "github": "https://github.com/Simpuru-xyz/simpuru",
       "website": "https://simpuru.xyz"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/quickstart",
+      "destination": "/developers/quickstart"
+    },
+    {
+      "source": "/introduction",
+      "destination": "/"
+    }
+  ]
 }
