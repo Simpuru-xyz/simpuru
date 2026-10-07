@@ -7,6 +7,7 @@ import {
   staticFile,
   useCurrentFrame,
 } from "remotion";
+import { AgentsPage, AppFlow, AppWindow } from "./app";
 import { C, mono, RECORDINGS, short, TX } from "./theme";
 import {
   Arrow,
@@ -30,7 +31,7 @@ const center = { justifyContent: "center", alignItems: "center" } as const;
 // 1. Hook ─────────────────────────────────────────────────────────────────────
 export const Hook = () => {
   const frame = useCurrentFrame();
-  const big = useIn(150, 18);
+  const big = useIn(130, 18);
   return (
     <Scene dark style={center}>
       <OffthreadVideo
@@ -64,7 +65,7 @@ export const Hook = () => {
         </div>
         <div
           style={{
-            opacity: interpolate(frame, [230, 260], [0, 1], {
+            opacity: interpolate(frame, [95, 115], [0, 1], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
             }),
@@ -201,94 +202,38 @@ export const How = () => (
 );
 
 // 4. For people ───────────────────────────────────────────────────────────────
-const shot = (
-  src: string,
-  url: string,
-  from: number,
-  len: number,
-  caption: string,
-  spot?: { x: number; y: number; w: number; h: number },
-  focus = { fx: 0.5, fy: 0.3 },
-) => (
-  <Sequence from={from} durationInFrames={len} key={src}>
-    <AbsoluteFill style={{ ...center, paddingTop: 40, paddingBottom: 150 }}>
-      <div style={{ position: "relative" }}>
-        <Browser src={src} url={url} width={1280} duration={len} {...focus} />
-        {spot ? (
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              top: 52,
-              bottom: 0,
-              overflow: "hidden",
-              borderRadius: "0 0 18px 18px",
-            }}
-          >
-            <Spot {...spot} delay={45} />
-          </div>
-        ) : null}
-      </div>
-    </AbsoluteFill>
-    <Caption delay={10}>{caption}</Caption>
-  </Sequence>
-);
+const CAPTIONS: [number, number, string][] = [
+  [0, 46, "Design prompts that people and agents can buy, paid in test ADA on Cardano."],
+  [46, 118, "Sign in with your Cardano wallet. It signs a message; no funds move."],
+  [118, 168, "Simpuru gives your account a wallet to spend from."],
+  [168, 270, "Buy with protection: the money waits in escrow until the prompt checks out."],
+  [270, 340, "The prompt arrives, checked against the hash the seller committed to."],
+  [340, 452, "A real sale on preprod: locked, result posted, seller paid, creator paid."],
+  [452, 600, "Anyone can sell. The content's hash is committed before anyone pays."],
+];
 
-export const People = () => (
-  <Scene style={{ background: C.soft }}>
-    <div style={{ position: "absolute", top: 34, left: 0, right: 0, textAlign: "center" }}>
-      <Kicker>For people · app.simpuru.xyz</Kicker>
-    </div>
-    {RECORDINGS.webBuy ? (
-      <Sequence durationInFrames={660}>
-        <AbsoluteFill style={{ ...center, paddingTop: 40, paddingBottom: 150 }}>
-          <Browser src={RECORDINGS.webBuy} url="app.simpuru.xyz" width={1280} video />
-        </AbsoluteFill>
-        <Caption delay={10}>
-          Sign in with your Cardano wallet, fund your Simpuru wallet, buy with protection.
-        </Caption>
-      </Sequence>
-    ) : (
-      <>
-        {shot(
-          "app-sign-in-modal.png",
-          "app.simpuru.xyz",
-          0,
-          210,
-          "Sign in with your Cardano wallet. Your account is your wallet.",
+export const People = () => {
+  const frame = useCurrentFrame();
+  const cap = CAPTIONS.find(([a, b]) => frame >= a && frame < b);
+  return (
+    <Scene style={{ background: C.soft }}>
+      <AbsoluteFill style={{ ...center, paddingBottom: 120 }}>
+        {RECORDINGS.webBuy ? (
+          <Browser src={RECORDINGS.webBuy} url="app.simpuru.xyz" width={1440} video />
+        ) : (
+          <AppWindow width={1500}>
+            <AppFlow />
+          </AppWindow>
         )}
-        {shot(
-          "app-account-wallet.png",
-          "app.simpuru.xyz/account",
-          210,
-          210,
-          "Simpuru gives you a wallet to spend from. Fund it with test ADA.",
-          undefined,
-          { fx: 0.3, fy: 0.4 },
-        )}
-        {shot(
-          "app-listing.png",
-          "app.simpuru.xyz/listings/2c913748…",
-          420,
-          240,
-          "Buy instantly, or with protection: the money waits in escrow until the prompt checks out.",
-          { x: 67.2, y: 50, w: 30.4, h: 11 },
-          { fx: 0.8, fy: 0.55 },
-        )}
-      </>
-    )}
-    {shot(
-      "app-timeline.png",
-      "app.simpuru.xyz/purchases/3219a522…",
-      660,
-      300,
-      "A real sale on preprod: locked, result posted, seller paid, then the creator paid. Every step links its transaction.",
-      { x: 24, y: 36, w: 52, h: 46 },
-      { fx: 0.4, fy: 0.55 },
-    )}
-  </Scene>
-);
+      </AbsoluteFill>
+      {cap ? (
+        <Sequence from={cap[0]} durationInFrames={cap[1] - cap[0]}>
+          <Caption>{cap[2]}</Caption>
+        </Sequence>
+      ) : null}
+    </Scene>
+  );
+};
 
 // 5. For agents ───────────────────────────────────────────────────────────────
 const AGENT: Line[] = [
@@ -323,16 +268,26 @@ export const Agents = () => (
     <div style={{ position: "absolute", top: 34, left: 0, right: 0, textAlign: "center" }}>
       <Kicker dark>For agents · one MCP endpoint</Kicker>
     </div>
-    <AbsoluteFill style={{ ...center, paddingBottom: 90 }}>
-      {RECORDINGS.claudeCode ? (
-        <Browser src={RECORDINGS.claudeCode} url="Claude Code" width={1500} video />
-      ) : (
-        <Terminal lines={AGENT} start={15} cps={70} title="claude · Simpuru MCP" />
-      )}
-    </AbsoluteFill>
-    <Caption dark delay={20}>
-      Your agent shops from the same wallet, inside the limits you set. It never pays twice.
-    </Caption>
+    <Sequence durationInFrames={96}>
+      <AbsoluteFill style={{ ...center, paddingBottom: 120 }}>
+        <AppWindow width={1500} url="app.simpuru.xyz/agents">
+          <AgentsPage />
+        </AppWindow>
+      </AbsoluteFill>
+      <Caption dark>Connect an agent with one command. Set its limits.</Caption>
+    </Sequence>
+    <Sequence from={96}>
+      <AbsoluteFill style={{ ...center, paddingBottom: 90 }}>
+        {RECORDINGS.claudeCode ? (
+          <Browser src={RECORDINGS.claudeCode} url="Claude Code" width={1500} video />
+        ) : (
+          <Terminal lines={AGENT} start={0} cps={150} title="claude · Simpuru MCP" />
+        )}
+      </AbsoluteFill>
+      <Caption dark delay={20}>
+        Your agent shops from the same wallet, inside your limits. It never pays twice.
+      </Caption>
+    </Sequence>
   </Scene>
 );
 
