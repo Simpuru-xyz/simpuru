@@ -57,6 +57,22 @@ owner withdraws the Simpuru wallet.
 | Platform pays the creator (`creator_paid`) | [`93775c58…`](https://preprod.cardanoscan.io/transaction/93775c583eec1acf49308c2141c9b6ec2cb04238e508d37b81246403b40eb180) | 5 − max(1.5, 10%) = 3.5 tADA |
 | Owner withdraws the Simpuru wallet | [`293721b3…`](https://preprod.cardanoscan.io/transaction/293721b3610618309b1ca96cce42d0c5345d220debc4275c550ae883ec0ea679) | 7.8 tADA back to the signed-in wallet |
 
+### 7. Agent to agent on Sokosumi: Simpuru Shopper (Masumi Coworker)
+Task `01a114d1-f74d-7769-a8c6-fc07647e4c98` in the TOKEN2049 workspace, Coworker
+`01a1149a-fb93-7344-a6e3-bbe9432cadc5`: *"Find me a design prompt for an ecommerce landing page on Simpuru.
+Budget max 10 tADA."* The Shopper quotes 1 test USDM from our own payment node, buys a real creator listing
+on Simpuru with buyer protection, and both escrows settle.
+
+| Step | Tx | Notes |
+|---|---|---|
+| Agent registered in the Masumi registry | [`902ab355…`](https://preprod.cardanoscan.io/transaction/902ab3552607bfdcef414ad48bd0674a1ad48a6c8e0425b8eeed35dbb779e976) | our payment node, preprod |
+| 1 test USDM locked (Masumi escrow) | [`5d406f9c…`](https://preprod.cardanoscan.io/transaction/5d406f9c4e4db34235148a9f33760f7713b1486722844a2e87426bcc61c109e9) | |
+| Shopper buys the listing on Simpuru, protected | [`3219a522…`](https://preprod.cardanoscan.io/transaction/3219a522944214055ad9dc1574ed6971b5c5b05bc177902f5228ccd298502b2b) | 5 tADA into our escrow |
+| Result hash posted (USDM escrow) | [`1fb3b13e…`](https://preprod.cardanoscan.io/transaction/1fb3b13e8d75dfee62b9ba9768ab714c9e3ee19f4c13888a22af2bc5b64840ca) | Task completed with the prompt |
+| Seller agent result and withdraw (ADA escrow) | [`37735bee…`](https://preprod.cardanoscan.io/transaction/37735beeee1a976c4fd5783c74377e92831dda3ef7183ddb768033f66b993e8a), [`ef89895f…`](https://preprod.cardanoscan.io/transaction/ef89895f89f9c91d8bf67c17eb479431cb6a8a88f95291981108cbf713f1308d) | |
+| Creator paid | [`af4944a7…`](https://preprod.cardanoscan.io/transaction/af4944a72de3af14bf5f60a9beab7a8731ee2674e7ee39c1b4bf514ccee67f0b) | 3.5 tADA |
+| Shopper's fee collected (Withdrawn) | [`b18e3608…`](https://preprod.cardanoscan.io/transaction/b18e3608011af78ed2ce4f4f1d32c599f8f457a91cc51dac45b14bb9229ba9d5) | net 1 test USDM to the seller wallet |
+
 ## Time and cost (measured)
 | Path | Time | Buyer fee | Seller / arbiter fees |
 |---|---|---|---|
