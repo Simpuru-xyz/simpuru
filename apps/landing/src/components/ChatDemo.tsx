@@ -192,6 +192,12 @@ export default function ChatDemo() {
             ].join(", "),
           }}
         >
+          {/* The transcript is an illustration, not a listing from the live catalogue. */}
+          <p className="mx-auto mb-3 max-w-[814px] px-1">
+            <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-medium tracking-wide text-[#141414] uppercase">
+              Example
+            </span>
+          </p>
           <div className="mx-auto flex max-w-[814px] flex-col gap-4 rounded-[18px] bg-[#0d0d0d] p-4 sm:p-6">
             {TRANSCRIPT.map((entry, index) => {
               const isAgent = entry.speaker === "agent";
