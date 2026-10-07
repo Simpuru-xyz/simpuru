@@ -36,7 +36,11 @@ export function migrateSessions(db: Db) {
 export function toOwner(address: unknown): string | null {
   if (typeof address !== "string") return null;
   try {
-    const bech = address.startsWith("addr") ? address : Address.toBech32(Address.fromHex(address));
+    // Round-trip through the decoder so only real addresses pass (bech32 checksum included).
+    const parsed = address.startsWith("addr")
+      ? Address.fromBech32(address)
+      : Address.fromHex(address);
+    const bech = Address.toBech32(parsed);
     return bech.startsWith("addr_test1") ? bech : null;
   } catch {
     return null;
@@ -186,7 +190,8 @@ export function createMe(db: Db, accounts: Accounts, bf: Blockfrost) {
     if (!body?.listingId || (body.mode !== "instant" && body.mode !== "protected"))
       return c.json({ error: "Need { listingId, mode: 'instant' | 'protected' }" }, 400);
     accountOf(owner);
-    const r = await accounts.buyerFor(owner).buy(body.listingId, body.mode);
+    // The owner chose this purchase; agent limits are for agents.
+    const r = await accounts.buyerFor(owner).buy(body.listingId, body.mode, { byOwner: true });
     if (!r.ok) return c.json({ error: r.error }, 400);
     const tx = r.redelivered ? r.txHash : r.record.txHash;
     return c.json({
