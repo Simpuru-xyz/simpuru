@@ -217,33 +217,49 @@ export default function ListingPage({ params }: PageProps<"/listings/[id]">) {
                     <ArrowUpRight aria-hidden className="h-3.5 w-3.5" />
                   </Link>
                 </div>
-                <Field label="Content hash (SHA-256)" value={load.listing.contentHash} copy />
               </div>
 
-              <section className="space-y-3">
-                <h2 className="text-lg font-semibold text-black">How each option works</h2>
-                {load.listing.modes.map((mode) => (
-                  <div key={mode} className="space-y-3 rounded-2xl border border-gray-200 p-5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-semibold text-black">{HOW[mode].title}</span>
-                      <ModeBadge mode={mode} />
+              <Link
+                href="/agents"
+                className="inline-flex items-center gap-1 px-1 text-sm font-medium hover:underline"
+              >
+                Let your AI agent buy it
+                <ArrowUpRight aria-hidden className="h-3.5 w-3.5" />
+              </Link>
+
+              {/* Protocol detail for the curious; buyers don't need it to buy. */}
+              <details className="group rounded-2xl border border-gray-200 p-5 [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-semibold text-black">
+                  For developers
+                  <span
+                    aria-hidden
+                    className="text-gray-400 transition-transform group-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </summary>
+                <section className="mt-4 space-y-3">
+                  <Field label="Content hash (SHA-256)" value={load.listing.contentHash} copy />
+                  {load.listing.modes.map((mode) => (
+                    <div key={mode} className="space-y-3 rounded-2xl border border-gray-200 p-5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold text-black">{HOW[mode].title}</span>
+                        <ModeBadge mode={mode} />
+                      </div>
+                      <ul className="space-y-1.5 text-sm leading-relaxed text-gray-600">
+                        {HOW[mode].points.map((point) => (
+                          <li key={point}>{withCode(point)}</li>
+                        ))}
+                      </ul>
                     </div>
-                    <ul className="space-y-1.5 text-sm leading-relaxed text-gray-600">
-                      {HOW[mode].points.map((point) => (
-                        <li key={point}>{withCode(point)}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-                <Field label="Paid endpoint for agents (x402)" value={ENDPOINTS.unlock(id)} copy />
-                <Link
-                  href="/agents"
-                  className="inline-flex items-center gap-1 px-1 text-sm font-medium hover:underline"
-                >
-                  Let your AI agent buy it
-                  <ArrowUpRight aria-hidden className="h-3.5 w-3.5" />
-                </Link>
-              </section>
+                  ))}
+                  <Field
+                    label="Paid endpoint for agents (x402)"
+                    value={ENDPOINTS.unlock(id)}
+                    copy
+                  />
+                </section>
+              </details>
             </div>
           </article>
         )}
