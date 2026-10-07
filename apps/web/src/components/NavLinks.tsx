@@ -9,6 +9,7 @@ import { useEffect, useRef } from "react";
 export const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Catalogue", href: "/listings" },
   { label: "Sell", href: "/sell" },
+  { label: "Agents", href: "/agents" },
 ];
 
 /** `/listings` stays lit on `/listings/<id>`, but a bare prefix does not match. */

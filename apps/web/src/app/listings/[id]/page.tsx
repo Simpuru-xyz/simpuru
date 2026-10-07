@@ -1,8 +1,11 @@
 "use client";
 
 import type { DeliveryMode } from "@simpuru/core";
+import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import BuyPanel from "@/components/BuyPanel";
 import CopyButton from "@/components/CopyButton";
 import ListingPreview from "@/components/ListingPreview";
 import ModeBadge from "@/components/ModeBadge";
@@ -180,6 +183,8 @@ export default function ListingPage({ params }: PageProps<"/listings/[id]">) {
                 <p className="text-sm text-gray-500">Pay once over x402, reuse it after.</p>
               </div>
 
+              <BuyPanel listing={load.listing} />
+
               <dl className="grid grid-cols-3 gap-4 text-sm">
                 <div>
                   <dt className="text-xs text-gray-500">Sold</dt>
@@ -205,12 +210,21 @@ export default function ListingPage({ params }: PageProps<"/listings/[id]">) {
               </dl>
 
               <div className="grid gap-3">
-                <Field label="Seller" value={load.listing.sellerAddress} copy />
+                <div className="min-w-0 space-y-1.5">
+                  <Field label="Seller" value={load.listing.sellerAddress} copy />
+                  <Link
+                    href={`/creators/${load.listing.sellerAddress}`}
+                    className="inline-flex items-center gap-1 px-1 text-sm font-medium text-black hover:underline"
+                  >
+                    More from this creator
+                    <ArrowUpRight aria-hidden className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
                 <Field label="Content hash (SHA-256)" value={load.listing.contentHash} copy />
               </div>
 
               <section className="space-y-3">
-                <h2 className="text-lg font-semibold text-black">How to buy</h2>
+                <h2 className="text-lg font-semibold text-black">How each option works</h2>
                 {load.listing.modes.map((mode) => (
                   <div key={mode} className="space-y-3 rounded-2xl border border-gray-200 p-5">
                     <div className="flex items-center justify-between gap-2">
@@ -225,6 +239,13 @@ export default function ListingPage({ params }: PageProps<"/listings/[id]">) {
                   </div>
                 ))}
                 <Field label="Paid endpoint for agents (x402)" value={ENDPOINTS.unlock(id)} copy />
+                <Link
+                  href="/agents"
+                  className="inline-flex items-center gap-1 px-1 text-sm font-medium hover:underline"
+                >
+                  Let your AI agent buy it
+                  <ArrowUpRight aria-hidden className="h-3.5 w-3.5" />
+                </Link>
               </section>
             </div>
           </article>

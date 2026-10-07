@@ -5,7 +5,7 @@ import { formatAda, type ListingView, shorten } from "@/lib/api";
 import { compact } from "@/lib/format";
 
 /**
- * One catalogue card, Motion Sites style: the recording of what the prompt
+ * One catalogue card: the recording of what the prompt
  * builds is the card. Under it what a buyer scans for: name, price, category,
  * seller and their reputation. Fields the API doesn't send yet are skipped.
  */
@@ -25,10 +25,8 @@ export default function ListingCard({
       className="animate-fade-in-up group"
       style={{ animationDelay: `${index * 50}ms` }}
     >
-      <Link
-        href={`/listings/${listing.id}`}
-        className="block rounded-xl focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none"
-      >
+      {/* The preview repeats the title link; hidden from keyboard and screen readers. */}
+      <Link href={`/listings/${listing.id}`} tabIndex={-1} aria-hidden className="block">
         <div className="relative mb-3 aspect-[4/3] overflow-hidden rounded-xl bg-gray-100">
           <ListingPreview
             src={listing.previewMedia}
@@ -50,36 +48,48 @@ export default function ListingCard({
             </span>
           )}
         </div>
-
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="min-w-0 truncate text-sm font-semibold text-black">{listing.title}</h3>
-          <span className="shrink-0 text-sm font-semibold text-black">
-            {formatAda(listing.priceLovelace)} ADA
-          </span>
-        </div>
-        <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-gray-500">
-          <span className="min-w-0 truncate">
-            {listing.category && `${listing.category} · `}
-            <span className="font-mono text-gray-700">{seller}</span>
-          </span>
-          <span className="inline-flex shrink-0 items-center gap-1">
-            {rep ? (
-              <span
-                className="inline-flex items-center gap-1"
-                title={`Reputation ${rep.score}/100 from ${rep.basis} settled sales`}
-              >
-                <ThumbsUp aria-hidden className="h-3 w-3" />
-                {rep.score}%
-              </span>
-            ) : (
-              <span className="text-gray-400">New seller</span>
-            )}
-            {listing.sales !== undefined && (
-              <span className="text-gray-400">· {compact(listing.sales)} sold</span>
-            )}
-          </span>
-        </div>
       </Link>
+
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="min-w-0 truncate text-sm font-semibold text-black">
+          <Link
+            href={`/listings/${listing.id}`}
+            className="rounded hover:text-gray-600 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
+            {listing.title}
+          </Link>
+        </h3>
+        <span className="shrink-0 text-sm font-semibold text-black">
+          {formatAda(listing.priceLovelace)} ADA
+        </span>
+      </div>
+      <div className="mt-0.5 flex items-center justify-between gap-3 text-xs text-gray-500">
+        <span className="min-w-0 truncate">
+          {listing.category && `${listing.category} · `}
+          <Link
+            href={`/creators/${listing.sellerAddress}`}
+            className="rounded font-mono text-gray-700 hover:text-black hover:underline focus-visible:ring-2 focus-visible:ring-black focus-visible:outline-none"
+          >
+            {seller}
+          </Link>
+        </span>
+        <span className="inline-flex shrink-0 items-center gap-1">
+          {rep ? (
+            <span
+              className="inline-flex items-center gap-1"
+              title={`Reputation ${rep.score}/100 from ${rep.basis} settled sales`}
+            >
+              <ThumbsUp aria-hidden className="h-3 w-3" />
+              {rep.score}%
+            </span>
+          ) : (
+            <span className="text-gray-400">New seller</span>
+          )}
+          {listing.sales !== undefined && (
+            <span className="text-gray-400">· {compact(listing.sales)} sold</span>
+          )}
+        </span>
+      </div>
     </article>
   );
 }

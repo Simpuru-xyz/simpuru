@@ -5,6 +5,7 @@ import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { AccountMenu, TestnetBadge } from "@/components/AccountMenu";
 import NavLinks, { isActive, NAV_LINKS } from "@/components/NavLinks";
 
 export default function Nav() {
@@ -46,19 +47,21 @@ export default function Nav() {
 
         <NavLinks />
 
-        <span className="hidden rounded-full border border-gray-200 px-2.5 py-0.5 font-mono text-[11px] text-gray-600 md:inline">
-          preprod
-        </span>
-
-        <button
-          type="button"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={menuOpen}
-          className="md:hidden"
-        >
-          {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex items-center gap-3">
+          <TestnetBadge />
+          <div className="hidden md:block">
+            <AccountMenu />
+          </div>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            className="md:hidden"
+          >
+            {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {menuOpen && (
@@ -79,6 +82,9 @@ export default function Nav() {
                 {label}
               </Link>
             ))}
+            <div className="mt-2 border-t border-gray-100 px-3 pt-4">
+              <AccountMenu />
+            </div>
           </div>
         </div>
       )}
