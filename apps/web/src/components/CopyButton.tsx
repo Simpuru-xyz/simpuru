@@ -1,16 +1,16 @@
 "use client";
 
-import { Check, Copy } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Check, Copy, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
-type CopyState = "idle" | "copied" | "error";
+type Result = "copied" | "failed" | null;
 
-const RESET_MS = 2500;
+/** How long the "Copied" / "Failed" confirmation stays before the button resets. */
+const SHOW_FOR_MS = 2000;
 
 /**
- * Copy-to-clipboard with named states and an aria-live confirmation, so the
- * result is announced rather than implied by an icon swap. A refusal (denied
- * permission, insecure context) says so and stays retryable.
+ * Puts `text` on the clipboard. The outcome is spoken (aria-live) as well as shown, and a refusal
+ * (no permission, insecure page) says so instead of pretending it worked.
  */
 export default function CopyButton({
   text,
@@ -18,56 +18,46 @@ export default function CopyButton({
   className,
 }: {
   text: string;
-  /** What is being copied, for the accessible name and the announcement. */
+  /** What gets copied, e.g. "content hash": used in the accessible name and the announcement. */
   label: string;
   className?: string;
 }) {
-  const [state, setState] = useState<CopyState>("idle");
-  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [result, setResult] = useState<Result>(null);
 
-  useEffect(
-    () => () => {
-      if (resetTimer.current) clearTimeout(resetTimer.current);
-    },
-    [],
-  );
+  useEffect(() => {
+    if (!result) return;
+    const t = setTimeout(() => setResult(null), SHOW_FOR_MS);
+    return () => clearTimeout(t);
+  }, [result]);
 
-  const copy = async () => {
-    if (resetTimer.current) clearTimeout(resetTimer.current);
-    try {
-      await navigator.clipboard.writeText(text);
-      setState("copied");
-    } catch {
-      setState("error");
-    }
-    resetTimer.current = setTimeout(() => setState("idle"), RESET_MS);
-  };
+  const onClick = () =>
+    navigator.clipboard.writeText(text).then(
+      () => setResult("copied"),
+      () => setResult("failed"),
+    );
 
-  const caption =
-    state === "copied" ? "Copied!" : state === "error" ? "Copy failed, retry" : "Copy";
+  const Icon = result === "copied" ? Check : result === "failed" ? X : Copy;
+  const text_ = result === "copied" ? "Copied" : result === "failed" ? "Failed" : "Copy";
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={copy}
-        aria-label={`Copy ${label}`}
-        className={
-          className ??
-          "inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:border-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none"
-        }
-      >
-        {state === "copied" ? (
-          <Check aria-hidden className="h-3.5 w-3.5" />
-        ) : (
-          <Copy aria-hidden className="h-3.5 w-3.5" />
-        )}
-        {caption}
-      </button>
-      <span role="status" aria-live="polite" className="sr-only">
-        {state === "copied" ? `${label} copied to clipboard` : ""}
-        {state === "error" ? `Copying ${label} failed` : ""}
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`Copy ${label}`}
+      className={
+        className ??
+        "inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:border-black focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:outline-none"
+      }
+    >
+      <Icon aria-hidden className="h-3.5 w-3.5" />
+      {text_}
+      <span aria-live="polite" className="sr-only">
+        {result === "copied"
+          ? `Copied ${label}`
+          : result === "failed"
+            ? `Couldn't copy ${label}`
+            : ""}
       </span>
-    </>
+    </button>
   );
 }

@@ -1,14 +1,15 @@
 import type { ReactNode } from "react";
 
-/**
- * A placeholder the size of the thing that is coming. Always aria-hidden: the
- * loading announcement belongs on the region that owns the load (SkeletonRegion).
- */
-export default function Skeleton({ className = "" }: { className?: string }) {
-  return <div aria-hidden className={`animate-pulse rounded bg-gray-100 ${className}`} />;
+type BoxProps = { className?: string };
+
+/** Grey stand-in shaped like the content on its way. Decorative, so hidden from screen readers. */
+export default function Skeleton({ className = "" }: BoxProps) {
+  return <span aria-hidden className={`block animate-pulse rounded-md bg-gray-100 ${className}`} />;
 }
 
-/** A loading region: skeletons plus the one announcement that covers them. */
+/**
+ * Wraps a group of skeletons and announces the load once ("Loading…"), instead of once per box.
+ */
 export function SkeletonRegion({
   label,
   className = "",
@@ -19,9 +20,11 @@ export function SkeletonRegion({
   children: ReactNode;
 }) {
   return (
-    <div role="status" className={className}>
+    <div aria-busy="true" className={className}>
+      <span role="status" className="sr-only">
+        {label}
+      </span>
       {children}
-      <span className="sr-only">{label}</span>
     </div>
   );
 }
