@@ -1,0 +1,17 @@
+{
+  "name": "@simpuru/coworker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "start": "bun src/index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@simpuru/core": "workspace:*",
+    "@x402/cardano": "2.28.0"
+  },
+  "devDependencies": {
+    "@simpuru/tsconfig": "workspace:*"
+  }
+}

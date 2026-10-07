@@ -16,3 +16,17 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+  # Simpuru Shopper, the Sokosumi Coworker (apps/coworker). Opt in: `docker compose --profile coworker up -d`.
+  # Host network so it reaches the API and the Masumi Payment Service on 127.0.0.1.
+  coworker:
+    build: .
+    profiles: [coworker]
+    working_dir: /app/apps/coworker
+    command: ["bun", "src/index.ts"]
+    env_file: coworker.env
+    environment:
+      STATE_PATH: /data/coworker-state.json
+    volumes:
+      - ./data:/data
+    network_mode: host
+    restart: unless-stopped
