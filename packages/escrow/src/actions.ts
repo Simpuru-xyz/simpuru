@@ -31,8 +31,22 @@ const TX_WINDOW_MS = 5 * 60_000;
 const ROOMY_LOVELACE = 10_000_000n;
 export async function roomyUtxos(wallet: ReturnType<typeof walletClient>) {
   const utxos = await wallet.getWalletUtxos();
+  return pickRoomy(utxos);
+}
+
+/**
+ * No UTxO of 10 ADA (a buyer wallet after a few purchases)? Then offer only the largest one, so the
+ * collateral can't land on a small UTxO; the escrow input pays the rest (refunds failed on preprod,
+ * 7 Oct 2026, with a wallet of 2-5 ADA UTxOs).
+ */
+export function pickRoomy<U extends { assets: { lovelace: bigint } }>(utxos: readonly U[]): U[] {
   const roomy = utxos.filter((u) => u.assets.lovelace >= ROOMY_LOVELACE);
-  return roomy.length > 0 ? roomy : utxos;
+  if (roomy.length > 0) return roomy;
+  const largest = utxos.reduce<U | undefined>(
+    (a, u) => (!a || u.assets.lovelace > a.assets.lovelace ? u : a),
+    undefined,
+  );
+  return largest ? [largest] : [...utxos];
 }
 
 export function keyHashOf(role: Actor) {
