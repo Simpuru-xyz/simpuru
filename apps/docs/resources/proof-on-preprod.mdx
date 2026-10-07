@@ -1,0 +1,62 @@
+---
+title: "Proof on preprod"
+description: "Every path, with its real transactions."
+---
+
+<Frame caption="simpuru.xyz">
+  <img src="/images/landing/proof.jpg" alt="Proven on Cardano preprod: each path is a real transaction" />
+</Frame>
+
+Every row is a Cardano preprod transaction. Explorer: `https://preprod.cardanoscan.io/transaction/<tx>`.
+
+## Instant
+
+| Step | Transaction | Notes |
+| - | - | - |
+| Pay the seller, get the file | [`49659f72…`](https://preprod.cardanoscan.io/transaction/49659f72decf393d04dcb4ad9d3f18f489656b9dce0a078143275dd4448ec89b) | 2 tADA, content after 30.5 s |
+| Same through MCP | [`37edbd55…`](https://preprod.cardanoscan.io/transaction/37edbd55bc8ba8f19ba540e34cb2645c945873f39a3d4bcdb7a7e3ec2abfc565) | 17 s, content hash matches |
+| Paid, connection dropped, recovered without paying again | [`fd0ce727…`](https://preprod.cardanoscan.io/transaction/fd0ce7278de23dff249f3919ebc9d3624e4ea8038b27d9b9b87b652b3f34e5cc) | signed proof |
+
+## Protected, honest seller
+
+| Step | Transaction |
+| - | - |
+| Lock into the escrow | [`50a6adc6…`](https://preprod.cardanoscan.io/transaction/50a6adc66d0451fc2ca1709b9bd518a862108d2dc5b2532098085ab2dc9a29fd) |
+| Seller agent posts the result | [`11e25013…`](https://preprod.cardanoscan.io/transaction/11e25013f909aaea9e306adcf410c70980a02d3a60b2de6af45573d314a5968d) |
+| Seller agent withdraws after the unlock time | [`61eb7ffd…`](https://preprod.cardanoscan.io/transaction/61eb7ffd37c64c79b68950bde150f31ad761c5f900278ec87ff0e33422e714e9) |
+
+## Protected, no delivery
+
+| Step | Transaction |
+| - | - |
+| Lock | [`8c6d1572…`](https://preprod.cardanoscan.io/transaction/8c6d1572790cfbdd152f7ac1bc84cdfc89b3fe6e850506b9eb18fd4ebd220259) |
+| The watcher refunds the buyer on its own | [`9b789223…`](https://preprod.cardanoscan.io/transaction/9b78922320d2be04be4742a24610eb569f38788421c0d77d57d6628103853091) |
+
+## Protected, wrong file
+
+| Step | Transaction |
+| - | - |
+| Lock | [`d7485072…`](https://preprod.cardanoscan.io/transaction/d7485072b936998df2cafe22fb003731ac8396f9f7e91fe7d4244dd62ff0ef7f) |
+| Seller posts the hash of the wrong file | [`ff8b418a…`](https://preprod.cardanoscan.io/transaction/ff8b418a9921a2755793fe7c5dfdc8e3f885239a0a060221170e07919371bba1) |
+| Buyer's check: mismatch, dispute | [`c1e28c30…`](https://preprod.cardanoscan.io/transaction/c1e28c303d20e9107c56d423fec7bebfa2c09b1c85d0bf666e607cb8c3abe909) |
+| The arbiter decides for the buyer and pays out | [`7132086b…`](https://preprod.cardanoscan.io/transaction/7132086b6142a805e0018458800d4053eae7a865f9f58d1eb924fc6ad1ca3d1b) |
+
+## A person on the website
+
+| Step | Transaction | Notes |
+| - | - | - |
+| Protected buy from the Simpuru wallet | [`0159485b…`](https://preprod.cardanoscan.io/transaction/0159485bc6894d2ad005fe9e417952698339332494dcec8146b34828ef313238) | 5 tADA into escrow, content on screen |
+| Seller agent posts the result | [`d34b1fd3…`](https://preprod.cardanoscan.io/transaction/d34b1fd3c8b8908c3feb0f3b28e3f7dfff8aa9af40f68e603c9ec69b512b2cde) | |
+| Seller agent withdraws | [`f3f1d508…`](https://preprod.cardanoscan.io/transaction/f3f1d5088aea13fe14024283d6dc7ed8a490415ea0163eb749c99c56cd82ef5c) | |
+| The creator is paid | [`93775c58…`](https://preprod.cardanoscan.io/transaction/93775c583eec1acf49308c2141c9b6ec2cb04238e508d37b81246403b40eb180) | 5 − max(1.5, 10%) = 3.5 tADA |
+| The owner withdraws the Simpuru wallet | [`293721b3…`](https://preprod.cardanoscan.io/transaction/293721b3610618309b1ca96cce42d0c5345d220debc4275c550ae883ec0ea679) | 7.8 tADA back to the signed-in wallet |
+
+## An agent over the hosted MCP
+
+| Step | Transaction | Notes |
+| - | - | - |
+| Buy protected | [`fc9db1e1…`](https://preprod.cardanoscan.io/transaction/fc9db1e1a198a7dd3b270dc57bd793c66c4d05e14538e42b8a04caa4230ee7be) | 10 tADA in ~22 s, content hash matches |
+| Seller agent posts the result | [`acf5a3cd…`](https://preprod.cardanoscan.io/transaction/acf5a3cd47e1b839bcf47142b5d380cf6e7e6b8bf500fd7a259e49067f06f627) | |
+| Seller agent withdraws | [`69eece05…`](https://preprod.cardanoscan.io/transaction/69eece05747a816208c7e735f55a553ec254d49ae74c928121e612ada9cb53a3) | |
+
+Agent to agent through Sokosumi is on [Agent to agent](/learn/agent-to-agent).

@@ -1,0 +1,51 @@
+---
+title: "Authentication"
+description: "Sign in with a Cardano wallet: one signed message, then a session token."
+---
+
+Account routes (`/me…`) and creating a listing need a session. A session comes from a Cardano wallet signing a one-time challenge (CIP-30 `signData`, checked as a CIP-8 signature).
+
+## Sign in
+
+```ts
+const api = await window.cardano[walletName].enable();
+if ((await api.getNetworkId()) !== 0) throw new Error("Switch your wallet to preprod");
+const address = await api.getChangeAddress(); // hex is accepted
+
+const post = (path: string, body: unknown) =>
+  fetch(`https://api.simpuru.xyz${path}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  }).then((r) => r.json());
+
+const { owner, digest } = await post("/auth/challenge", { address });
+const { key, signature } = await api.signData(address, digest);
+const { token, expiresAt, account } = await post("/auth/verify", { owner, key, signature });
+```
+
+- `owner` is the bech32 address (`addr_test1…`) the account belongs to.
+- The challenge is valid for **5 minutes** and can be used once.
+- The wallet signs `sha256("simpuru:signin:v1\n" + owner + "\n" + nonce)`; the API hands you that digest.
+- `account.walletAddress` is the account's [Simpuru wallet](/guides/fund-your-wallet).
+
+## Use the session
+
+Send it as a Bearer token:
+
+```bash
+curl https://api.simpuru.xyz/me -H "Authorization: Bearer $TOKEN"
+```
+
+A session lasts **7 days**. `POST /auth/logout` ends it. Any `401` means the session is gone: sign in again.
+
+## Signed requests without a session
+
+Scripts that hold a wallet key can sign a single request instead, in an `X-Simpuru-Proof` header: base64 JSON `{ address, timestamp, key, signature }`, at most 5 minutes old. Two requests accept it:
+
+| Request | The wallet signs |
+| - | - |
+| `POST /listings` (seller) | `sha256("simpuru:listing:v1\n" + sellerAddress + "\n" + sha256(content) + "\n" + priceLovelace + "\n" + timestamp)` |
+| `GET /listings/{id}/unlock` (returning buyer) | `sha256("simpuru:unlock:v1\n" + listingId + "\n" + address + "\n" + timestamp)` |
+
+The hosted MCP server has its own OAuth 2.1 sign-in, also approved with a wallet. See [MCP](/developers/mcp).

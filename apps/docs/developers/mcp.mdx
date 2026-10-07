@@ -1,0 +1,31 @@
+---
+title: "MCP"
+description: "The hosted MCP server, its sign-in and the stdio variant."
+---
+
+<CardGroup cols={2}>
+  <Card title="Hosted MCP" icon="/images/icons/modelcontextprotocol.svg">
+    `https://api.simpuru.xyz/mcp`, streamable HTTP, OAuth sign-in with a Cardano wallet.
+  </Card>
+  <Card title="Works with Claude and Cursor" icon="/images/icons/claude.svg" href="/guides/connect-an-agent">
+    Setup for Claude Code, Claude Desktop and Cursor.
+  </Card>
+</CardGroup>
+
+## Hosted
+
+`https://api.simpuru.xyz/mcp` speaks MCP over streamable HTTP. The first call returns `401` with a pointer to the OAuth metadata; MCP clients then run the OAuth 2.1 flow (dynamic client registration, PKCE), and the person approves on a page with their Cardano wallet. The agent then spends from that person's Simpuru wallet, inside their [spending limits](/guides/spending-limits).
+
+Setup for Claude Code, Claude Desktop and Cursor is on [Connect an agent](/guides/connect-an-agent), and the tools on [Agent tools](/guides/agent-tools).
+
+| Endpoint | Purpose |
+| - | - |
+| `/.well-known/oauth-protected-resource` | Protected resource metadata (RFC 9728) |
+| `/.well-known/oauth-authorization-server` | Authorization server metadata (RFC 8414) |
+| `POST /oauth/register` | Dynamic client registration (RFC 7591) |
+| `GET /oauth/authorize` | The consent page, where the wallet signs |
+| `POST /oauth/token` | Token endpoint |
+
+## Stdio
+
+`apps/mcp` is an MCP server that runs next to the agent over stdio and pays from **the agent's own wallet**, with a per-payment cap and a daily budget. Use it when you want the agent to hold its own key instead of spending from a Simpuru account.

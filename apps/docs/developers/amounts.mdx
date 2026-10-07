@@ -1,0 +1,14 @@
+---
+title: "Amounts and units"
+description: "Lovelace as strings, times as milliseconds."
+---
+
+| Value | Format | Example |
+| - | - | - |
+| Prices and balances | Lovelace as a **string** (1 tADA = 1,000,000 lovelace) | `"6000000"` is 6 tADA |
+| Times and deadlines | Unix milliseconds as a **string** | `"1791276922688"` |
+| Hashes | Lowercase hex SHA-256 | `68bfe9ec…` |
+| Addresses | Bech32, preprod (`addr_test1…`) | |
+| Agent limits (input) | Whole tADA as numbers | `{ "maxPerPaymentAda": 10, "dailyBudgetAda": 30 }` |
+
+Amounts are strings so they survive JSON without losing precision. Convert with integer arithmetic (for example `BigInt`), never floats.

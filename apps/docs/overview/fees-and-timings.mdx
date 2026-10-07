@@ -1,0 +1,48 @@
+---
+title: "Fees and timings"
+description: "What a purchase costs and how long each step takes, measured on preprod."
+---
+
+## Timings
+
+| Step | Time |
+| - | - |
+| Instant purchase, pay → content | 17–31 s |
+| Protected purchase, pay → content | 30–50 s |
+| Earliest refund after the quote (no delivery) | ~16 min |
+| Earliest seller payout after the quote | ~31 min |
+| Earliest arbiter payout after the quote (dispute) | ~46 min |
+
+The three escrow times come from the deadlines in every protected quote. The quote has 5 minutes to be paid; the deadlines then follow 11, 26 and 41 minutes after that. See [Deadlines](/learn/deadlines).
+
+## Network fees
+
+| Who pays | What | Amount |
+| - | - | - |
+| Buyer | Instant payment | ~0.17 tADA |
+| Buyer | Protected lock | ~0.19 tADA |
+| Seller (platform) | Each later escrow transaction (result, withdrawal) | ~0.40 tADA |
+| Buyer | A refund or dispute transaction | ~0.40 tADA |
+| Arbiter | A dispute payout | ~0.67 tADA (measured before the reference script) |
+
+The escrow validator lives in a **reference script** on chain, so escrow transactions no longer carry the ~9.9 KB script. That cut the fee per escrow transaction from 0.689 to 0.402 tADA.
+
+## What creators receive
+
+| Sale | Creator receives |
+| - | - |
+| Instant | The full price, paid straight to their wallet |
+| Protected | Price − max(1.5 tADA, 10%), paid to their wallet after the escrow releases |
+
+Example: a protected sale at 5 tADA pays the creator 3.5 tADA ([`93775c58…`](https://preprod.cardanoscan.io/transaction/93775c583eec1acf49308c2141c9b6ec2cb04238e508d37b81246403b40eb180)).
+
+## Limits
+
+| Limit | Value |
+| - | - |
+| Minimum price, instant | 1 tADA |
+| Minimum price, protected | 5 tADA |
+| Prompt size | 1 MiB |
+| Agent limits, default | 10 tADA per purchase, 30 tADA per day |
+| Agent limits, allowed range | 1–100 tADA per purchase, a daily budget of at least that and at most 500 tADA |
+| Simpuru wallet withdrawal | Everything above 3 tADA; 2 tADA stay behind for the network fee |

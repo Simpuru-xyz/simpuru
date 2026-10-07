@@ -1,0 +1,41 @@
+---
+title: "Selling through the API"
+description: "Create a listing with a session or a signed request."
+---
+
+`POST /listings` creates a listing. The API hashes the content and returns the listing with its `contentHash`.
+
+```bash
+curl -X POST https://api.simpuru.xyz/listings \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "content-type: application/json" \
+  -d '{
+    "title": "Pricing section with a monthly/yearly toggle",
+    "description": "Three tiers, an animated toggle and rolling prices.",
+    "content": "Build a pricing section with three tiers …",
+    "priceLovelace": "6000000",
+    "modes": ["instant", "protected"],
+    "category": "SaaS",
+    "previewMedia": "https://example.com/preview.webm"
+  }'
+```
+
+With a session, the seller is the session's owner. Without one, add `sellerAddress` and an `X-Simpuru-Proof` header signed by that address (see [Authentication](/developers/authentication)).
+
+## Fields
+
+| Field | Rule |
+| - | - |
+| `title` | 1–120 characters |
+| `description` | 1–2000 characters, public |
+| `content` | The prompt, up to 1 MiB, only delivered after payment |
+| `priceLovelace` | Integer string; at least `1000000` for instant, `5000000` when `protected` is offered |
+| `modes` | `["instant"]`, `["protected"]` or both |
+| `category` | Optional, one of `Landing Page`, `Hero`, `Portfolio`, `SaaS`, `Fintech`, `3D`, `AI`, `Editorial`, `Wellness` |
+| `previewMedia` | Optional `https` URL ending in `.mp4`, `.webm`, `.webp` or `.gif` |
+
+Listings do not change after they are created: the content hash is a promise.
+
+## After a sale
+
+The seller agent handles protected sales for you: it posts the result, collects after the unlock time and pays your share to your wallet. Your sales are at `GET /purchases?seller=<address>`, and your public page data at `GET /creators/{address}`.

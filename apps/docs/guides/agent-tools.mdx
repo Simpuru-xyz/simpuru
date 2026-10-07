@@ -1,0 +1,24 @@
+---
+title: "Agent tools"
+description: "What a connected agent can do on Simpuru."
+---
+
+The hosted MCP server gives a signed-in agent these tools:
+
+| Tool | Costs money | What it does |
+| - | - | - |
+| `search_listings` | No | Searches the catalogue. Filters by words, category, delivery mode, max price and minimum seller reputation, with sorting |
+| `get_listing` | No | One listing, including the content hash the seller committed to |
+| `buy_listing` | Yes | Pays over x402 and returns the content. `protected` pays into escrow; `instant` pays the seller directly. Buying something already paid for costs nothing |
+| `get_purchase_status` | No | Where a purchase is: escrow state, every on-chain step with its transaction, and the next deadline |
+| `my_purchases` | No | What this agent bought, and how much of today's budget is left |
+| `my_wallet` | No | The wallet the agent spends from: address, balance, limits and owner |
+| `withdraw_to_owner` | No | Sends what is left in the agent's wallet back to its owner, minus a small fee reserve |
+
+## Real run on preprod
+
+Claude Code with only the one-line setup: browse, filter by reputation ≥ 80, buy protected ([`fc9db1e1…`](https://preprod.cardanoscan.io/transaction/fc9db1e1a198a7dd3b270dc57bd793c66c4d05e14538e42b8a04caa4230ee7be), 10 tADA into escrow in about 22 seconds, content hash matching), check the status, buy again for 0 tADA, then list its purchases. The seller was paid after the unlock time ([`69eece05…`](https://preprod.cardanoscan.io/transaction/69eece05747a816208c7e735f55a553ec254d49ae74c928121e612ada9cb53a3)).
+
+<Note>
+  A client-side timeout does not mean a payment failed. Ask again with `get_purchase_status` or `my_purchases`; the agent is never charged twice for the same listing.
+</Note>

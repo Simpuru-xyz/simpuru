@@ -1,0 +1,44 @@
+---
+title: "Purchases and timelines"
+description: "Every purchase, its escrow deadlines and each on-chain step."
+---
+
+## Read a purchase
+
+`GET /purchases/{id}`, where `id` is the payment (instant) or lock (protected) transaction hash.
+
+```json
+{
+  "id": "0159485b…",
+  "listingId": "a99552b1-…",
+  "mode": "protected",
+  "buyerAddress": "addr_test1…",
+  "txHash": "0159485b…",
+  "status": "withdrawn",
+  "escrow": {
+    "address": "addr_test1wzy842…",
+    "inputHash": "…",
+    "resultHash": "…",
+    "identifierFromPurchaser": "0159485b…",
+    "deadlines": { "payBy": "…", "submitResult": "…", "unlock": "…", "externalDisputeUnlock": "…" }
+  },
+  "events": [
+    { "status": "FundsLocked", "txHash": "0159485b…", "at": "…" },
+    { "status": "ResultSubmitted", "txHash": "d34b1fd3…", "at": "…" },
+    { "status": "withdrawn", "txHash": "f3f1d508…", "at": "…" },
+    { "status": "creator_paid", "txHash": "93775c58…", "at": "…" }
+  ]
+}
+```
+
+- `events` are read from the chain by the API, one per transaction. Nobody can post an event by hand.
+- `status` is the escrow state (`FundsLocked`, `ResultSubmitted`, `RefundRequested`, `Disputed`, …) or how the lock was spent (`withdrawn`, `refunded`); instant purchases are `settled`.
+- `verification` (`ok`, `mismatch`, `no_result_yet`) appears once the buyer reports its check.
+
+## Sales of a seller
+
+`GET /purchases?seller=<address>` returns every purchase of that seller's listings, newest first.
+
+## Report a verdict
+
+`POST /purchases/{id}/verification { "verification": "ok" | "mismatch" | "no_result_yet" }`, signed by the purchase's buyer with `X-Simpuru-Proof`.

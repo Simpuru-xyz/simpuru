@@ -1,0 +1,30 @@
+---
+title: "Deployment"
+description: "Simpuru's escrow on Cardano preprod: addresses, parameters and the arbiter."
+---
+
+| | |
+| - | - |
+| Network | `cardano:preprod` |
+| Validator | `vested_pay.vested_pay.spend` (Masumi payment V2, unchanged) |
+| Script hash | `887aa8305de5257fe963f4bc44ed5f01921d99a527a46f5dc04762da` |
+| Escrow address | `addr_test1wzy842psthjj2llfv06tc38dtuqey8ve55n6gm6acprk9ksc7d963` |
+| Required admins | `1` |
+| Arbiter key hash | `f7c7b7455aa07fb60a9635f198eb896ef5948fae88a1a000ff89178b` |
+| Arbiter address | `addr_test1vrmu0d69t2s8lds2jc6lrx8t39h0t9y046y2rgqql7y30zcj2plet` |
+| Cooldown | `60000` ms |
+| Reference script UTxO | `9cc49588d78cb0b99c18f153416410eaf3fcdb4c5e567c2274a9cf851749ea0e#0` |
+| Reference script address | `addr_test1wpfdc02rkmfyvh5kzzwwwk4kr2l9a8qa3g7feehl3ga022qez7f2d` |
+
+The record lives in `contracts/deployments/preprod.json` in the repository, and the API and buyer only accept quotes for exactly this deployment.
+
+## Live services
+
+| | |
+| - | - |
+| App | [app.simpuru.xyz](https://app.simpuru.xyz) |
+| API | [api.simpuru.xyz](https://api.simpuru.xyz) ([health](https://api.simpuru.xyz/health)) |
+| Swagger | [api.simpuru.xyz/docs](https://api.simpuru.xyz/docs) |
+| OpenAPI 3.1 | [api.simpuru.xyz/openapi.json](https://api.simpuru.xyz/openapi.json) |
+| Hosted MCP | `https://api.simpuru.xyz/mcp` |
+| Website | [simpuru.xyz](https://simpuru.xyz) |

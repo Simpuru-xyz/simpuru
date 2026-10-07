@@ -1,0 +1,120 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Simpuru",
+  "description": "Design prompts you and your agents can buy, one at a time, on Cardano. Live on preprod.",
+  "colors": {
+    "primary": "#6E5BD8",
+    "light": "#B9A7F0",
+    "dark": "#5A48C4"
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://simpuru.xyz"
+  },
+  "favicon": "/favicon.svg",
+  "appearance": {
+    "default": "system"
+  },
+  "banner": {
+    "content": "Simpuru runs on **Cardano preprod**. Test ADA (tADA) has no value; no real money moves.",
+    "dismissible": true
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "API status",
+        "href": "https://api.simpuru.xyz/health"
+      },
+      {
+        "label": "Swagger",
+        "href": "https://api.simpuru.xyz/docs"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Open the app",
+      "href": "https://simpuru.xyz"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "index",
+              "overview/why-simpuru",
+              "overview/how-it-works",
+              "overview/instant-vs-protected",
+              "overview/fees-and-timings",
+              "overview/roadmap",
+              "overview/faq"
+            ]
+          },
+          {
+            "group": "For people",
+            "pages": [
+              "guides/sign-in",
+              "guides/fund-your-wallet",
+              "guides/buy",
+              "guides/your-purchases",
+              "guides/sell",
+              "guides/get-paid",
+              "guides/withdraw"
+            ]
+          },
+          {
+            "group": "For agents",
+            "pages": ["guides/connect-an-agent", "guides/spending-limits", "guides/agent-tools"]
+          },
+          {
+            "group": "Learn",
+            "pages": [
+              "learn/content-commitment",
+              "learn/the-escrow",
+              "learn/deadlines",
+              "learn/protection-watcher",
+              "learn/disputes-and-the-arbiter",
+              "learn/reputation",
+              "learn/agent-to-agent",
+              "learn/trust-model",
+              "learn/risks"
+            ]
+          },
+          {
+            "group": "Developers",
+            "pages": [
+              "developers/architecture",
+              "developers/quickstart",
+              "developers/authentication",
+              "developers/amounts",
+              "developers/buying-over-x402",
+              "developers/selling",
+              "developers/purchases-and-timelines",
+              "developers/mcp",
+              "developers/run-locally"
+            ]
+          },
+          {
+            "group": "Resources",
+            "pages": ["resources/deployment", "resources/proof-on-preprod", "resources/glossary"]
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
+        "openapi": "https://api.simpuru.xyz/openapi.json"
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/Simpuru-xyz/simpuru",
+      "website": "https://simpuru.xyz"
+    }
+  }
+}

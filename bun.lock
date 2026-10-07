@@ -66,6 +66,9 @@
         "@simpuru/tsconfig": "workspace:*",
       },
     },
+    "apps/docs": {
+      "name": "@simpuru/docs",
+    },
     "apps/landing": {
       "name": "@simpuru/landing",
       "dependencies": {
@@ -286,6 +289,8 @@
     "@simpuru/core": ["@simpuru/core@workspace:packages/core"],
 
     "@simpuru/coworker": ["@simpuru/coworker@workspace:apps/coworker"],
+
+    "@simpuru/docs": ["@simpuru/docs@workspace:apps/docs"],
 
     "@simpuru/escrow": ["@simpuru/escrow@workspace:packages/escrow"],
 

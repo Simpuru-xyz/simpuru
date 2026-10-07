@@ -1,0 +1,27 @@
+---
+title: "Disputes and the arbiter"
+description: "Disputes are settled from hashes neither side can change."
+---
+
+When a delivery is disputed, the arbiter decides who gets the money. It does not read the prompt or judge its quality. It checks three facts, each against something fixed before or at the lock:
+
+| Check | Compared with | Proves |
+| - | - | - |
+| The escrow is for this listing | `input_hash` in the escrow vs the commitment to `{ listingId, contentHash }` | This escrow paid for this listing |
+| The output is what the seller posted | `sha256(lockTxHash + ";" + output)` vs `result_hash` in the escrow | The seller put its name to this output on chain |
+| The output is what was listed | `sha256(output)` vs the listing's `contentHash` | What was delivered is what was sold |
+
+**The seller wins only if all three hold.** Otherwise the buyer is paid back.
+
+## Who brings the evidence
+
+The output is shown by whoever calls the arbiter. An output that does not match the seller's on-chain result proves nothing on its own: it could be the buyer hiding the real delivery. So such a call gets no verdict until an evidence deadline. If by then nobody has shown the output the seller posted, the seller loses for not proving delivery.
+
+## The payout
+
+The arbiter builds the dispute payout and signs it with Simpuru's arbiter key (a CIP-8 signature the validator checks). The validator only accepts it after the dispute unlock time (see [Deadlines](/learn/deadlines)), so an early or forged payout is rejected on chain.
+
+## On preprod
+
+- **Buyer wins** (wrong file): lock [`d7485072…`](https://preprod.cardanoscan.io/transaction/d7485072b936998df2cafe22fb003731ac8396f9f7e91fe7d4244dd62ff0ef7f), seller posts the hash of the wrong file [`ff8b418a…`](https://preprod.cardanoscan.io/transaction/ff8b418a9921a2755793fe7c5dfdc8e3f885239a0a060221170e07919371bba1), dispute [`c1e28c30…`](https://preprod.cardanoscan.io/transaction/c1e28c303d20e9107c56d423fec7bebfa2c09b1c85d0bf666e607cb8c3abe909), arbiter pays the buyer [`7132086b…`](https://preprod.cardanoscan.io/transaction/7132086b6142a805e0018458800d4053eae7a865f9f58d1eb924fc6ad1ca3d1b)
+- **Seller wins** (right delivery): arbiter pays the seller [`763b27fe…`](https://preprod.cardanoscan.io/transaction/763b27fee81803c91507747be3dce4ae4796181ea42bcc6a93f9b498b639aa15)

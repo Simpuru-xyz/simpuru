@@ -1,0 +1,88 @@
+---
+title: "Introduction"
+description: "Design prompts you and your agents can buy. Pay per prompt, not per month."
+---
+
+<Info>
+  Simpuru runs on **Cardano preprod**, the test network. Everything is paid in test ADA (tADA), which has no value. Built for the TOKEN2049 Origins Hackathon, Cardano track (agentic commerce).
+</Info>
+
+<Frame caption="simpuru.xyz">
+  <img src="/images/landing/hero.jpg" alt="Simpuru: pay per prompt, not per month. Refunded if it never arrives." />
+</Frame>
+
+## The short version
+
+Simpuru is a shop for **design prompts**. A design prompt is a ready-made instruction you paste into a coding agent, and it builds a page: a landing page, a hero section, a pricing table, a 3D scene. Listings come with a recording of what the prompt builds, so you can see the result before you buy.
+
+You **pay per prompt, not per month**. No subscription and no bundle: you buy the one prompt you want for a few tADA, and it is yours to open again whenever you need it.
+
+Anyone can sell. If you made a prompt that builds something good, list it, set a price and get paid in tADA every time someone buys it.
+
+And you can buy **with protection**: the money waits in an escrow on Cardano until the prompt arrives. No prompt, or the wrong prompt, and you get your money back automatically.
+
+<CardGroup cols={2}>
+  <Card title="Pay per prompt" icon="tag">
+    Buy one prompt at a time for a few tADA. No subscription, no bundle.
+  </Card>
+  <Card title="Buy once, open again" icon="rotate">
+    A prompt you bought stays yours. Opening it again costs nothing.
+  </Card>
+  <Card title="Anyone can sell" icon="store">
+    List a prompt with no approval. Every settled sale builds your public reputation.
+  </Card>
+  <Card title="Refunded if it never arrives" icon="shield-check">
+    A protected purchase waits in escrow until the prompt arrives. If it doesn't, or it's the wrong one, you're paid back automatically.
+  </Card>
+</CardGroup>
+
+## Buy from anywhere
+
+<CardGroup cols={4}>
+  <Card title="The web app" icon="globe" href="/guides/buy">
+    Sign in with a Cardano wallet and buy on app.simpuru.xyz.
+  </Card>
+  <Card title="Claude Code" icon="/images/icons/claude.svg" href="/guides/connect-an-agent">
+    One command, then approve with your wallet.
+  </Card>
+  <Card title="Cursor" icon="/images/icons/cursor.svg" href="/guides/connect-an-agent">
+    Add the server to `mcp.json`.
+  </Card>
+  <Card title="Any MCP client" icon="/images/icons/modelcontextprotocol.svg" href="/developers/mcp">
+    Hosted MCP at `api.simpuru.xyz/mcp`.
+  </Card>
+</CardGroup>
+
+<Frame caption="app.simpuru.xyz: anyone can sell">
+  <img src="/images/screens/app-sell-signed-in.jpg" alt="The Simpuru app: anyone can sell a design prompt" />
+</Frame>
+
+## Who these docs are for
+
+<CardGroup cols={3}>
+  <Card title="People" icon="user" href="/guides/sign-in">
+    Sign in with a Cardano wallet, buy and sell design prompts, and see every step on chain.
+  </Card>
+  <Card title="Agents and their owners" icon="robot" href="/guides/connect-an-agent">
+    Plug Claude or Cursor into Simpuru and let it buy within limits you set.
+  </Card>
+  <Card title="Developers" icon="code" href="/developers/quickstart">
+    The API, x402 payments, the escrow and how to run it all locally.
+  </Card>
+</CardGroup>
+
+## At a glance
+
+| | |
+| - | - |
+| What is sold | Design prompts: paste one into a coding agent and it builds a page |
+| How you pay | Per prompt, in tADA. Instant, or with protection (escrow) |
+| Who can sell | Anyone signed in with a Cardano wallet |
+| Who can buy | People on [app.simpuru.xyz](https://app.simpuru.xyz), and agents through MCP |
+| Network | Cardano preprod (test ADA only) |
+| Under the hood | Payments over x402; protected purchases use a Masumi `vested_pay` V2 escrow with Simpuru's own arbiter key |
+| Status | Live on preprod. Every claim in these docs links a preprod transaction |
+
+<Card title="Start with how it works" icon="arrow-right" href="/overview/how-it-works" horizontal>
+  Pick a prompt, pay, get it: the whole flow in five steps.
+</Card>

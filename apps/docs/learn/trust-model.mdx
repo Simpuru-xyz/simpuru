@@ -1,0 +1,27 @@
+---
+title: "Trust model"
+description: "What you have to trust, and what is enforced on chain instead."
+---
+
+## Enforced on chain
+
+These hold no matter what Simpuru does:
+
+- A protected payment can only leave the escrow along the validator's rules: to the seller after the unlock time, to the buyer after the submit deadline without a result, or by an arbiter-signed payout after the dispute window.
+- The listing's content hash and the escrow's input and result hashes cannot be changed after they are written.
+- An arbiter payout before the dispute unlock time is rejected by the validator.
+
+## Trusted to Simpuru
+
+| You trust Simpuru to | Because | Bounded by |
+| - | - | - |
+| Hold your Simpuru wallet | Its key lives on Simpuru's server (encrypted at rest) | You can withdraw to your own wallet at any time; it is testnet money |
+| Run the protection watcher | Refunds and disputes need someone to send the transaction in time | Every action is on chain; anyone holding the buyer key could act too |
+| Run the arbiter honestly | Simpuru holds the arbiter key (1 of 1 on preprod) | The arbiter decides from three hashes anyone can recompute |
+| Forward creator payouts | A platform wallet is the escrow seller for creator listings | Every payout is a public transaction on the purchase timeline |
+| Serve the prompt that was listed | Simpuru stores it | Its hash is public; a different prompt is a provable mismatch |
+
+## Not trusted
+
+- **The seller's word.** Only the hashes count.
+- **The buyer's word.** An output the buyer shows must match what the seller posted on chain.

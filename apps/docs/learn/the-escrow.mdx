@@ -1,0 +1,39 @@
+---
+title: "The escrow"
+description: "An unchanged Masumi vested_pay V2 validator, deployed with Simpuru's own arbiter key."
+---
+
+Protected payments are locked by the Masumi `vested_pay` V2 validator, **unchanged**. Simpuru deployed its own instance of it, parameterised with Simpuru's arbiter key instead of Masumi's admins, so disputes can be settled by Simpuru's [arbiter](/learn/disputes-and-the-arbiter). Addresses and parameters are on [Deployment](/resources/deployment).
+
+## What the datum holds
+
+Every lock carries the buyer and seller, the amount, the `input_hash` and later the `result_hash` (see [Content commitment](/learn/content-commitment)), four deadlines and a state.
+
+## States
+
+| State | Meaning |
+| - | - |
+| `FundsLocked` | Paid in, waiting for the seller's result |
+| `ResultSubmitted` | The seller posted a result hash |
+| `RefundRequested` | The buyer asked for a refund before any result |
+| `Disputed` | The buyer disputed a posted result |
+| `WithdrawAuthorized` | The buyer let the seller collect early |
+| `RefundAuthorized` | The seller conceded; the buyer can take the refund now |
+
+When the lock is spent, the purchase ends as **withdrawn** (seller paid) or **refunded** (buyer paid back).
+
+## Who can spend it, and when
+
+| Action | Who | When |
+| - | - | - |
+| Post a result | Seller | Before the submit deadline |
+| Collect (withdraw) | Seller | After the unlock time, if a result is posted and not disputed |
+| Refund | Buyer | After the submit deadline if there is no result, or at once if the seller conceded |
+| Dispute | Buyer | After a result, before the unlock time |
+| Pay out a dispute | Arbiter | After the dispute window closes |
+
+The exact times are on [Deadlines](/learn/deadlines).
+
+## Who is the seller in the escrow
+
+For a creator's listing, a Simpuru platform wallet is the escrow's seller of record: it signs the quote, posts the result and collects. It then pays the creator their share (see [Get paid](/guides/get-paid)). This keeps creators from having to run anything themselves.

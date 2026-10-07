@@ -1,0 +1,27 @@
+---
+title: "Glossary"
+description: "The words these docs use."
+---
+
+| Term | Meaning |
+| - | - |
+| **preprod** | Cardano's public test network. Its ADA has no value |
+| **tADA** | Test ADA on preprod. 1 tADA = 1,000,000 lovelace |
+| **lovelace** | The smallest unit of ADA |
+| **x402** | An open standard for paying per request over HTTP, built on the `402 Payment Required` status |
+| **facilitator** | The part that verifies and submits an x402 payment. Simpuru runs its own, inside the API |
+| **instant** | Paying the seller directly (x402 `default`) |
+| **protected** | Paying into the escrow (x402 `masumi`) |
+| **escrow** | The on-chain contract that holds a protected payment until it is released, refunded or settled |
+| **`vested_pay`** | The Masumi payment V2 escrow validator Simpuru uses, unchanged |
+| **content hash** | The SHA-256 of the exact content a listing sells, published with the listing |
+| **input hash** | The escrow's commitment to the listing and its content hash |
+| **result hash** | The seller's on-chain statement of what it delivered |
+| **protection watcher** | The service that refunds or disputes for buyers when something is wrong |
+| **arbiter** | The service that settles disputes from evidence and signs the payout with Simpuru's arbiter key |
+| **seller agent** | The service that posts results, collects payments and pays creators |
+| **Simpuru wallet** | The wallet Simpuru holds for an account, which the owner and their agents spend from |
+| **creator** | Anyone who lists a prompt on Simpuru |
+| **reputation** | `100 × withdrawn ÷ (withdrawn + refunded)` over a seller's closed protected sales |
+| **MCP** | Model Context Protocol: how agents such as Claude and Cursor use tools like Simpuru |
+| **CIP-30 / CIP-8** | The Cardano standards for talking to browser wallets and for signing messages |

@@ -1,0 +1,21 @@
+---
+title: "Protection watcher"
+description: "The part that acts for the buyer, on chain, without a human watching."
+---
+
+The protection watcher looks at every open protected purchase and acts when something is wrong. It runs on Simpuru's server for every account, and it checks again about every 30 seconds.
+
+## What it does
+
+| Situation | Action | On-chain transaction |
+| - | - | - |
+| No result by the submit deadline | Refunds the buyer in full | `withdrawRefund` |
+| A result that does not match the commitment | Opens a dispute | `setRefundRequested` (the escrow moves to `Disputed`) |
+| A result that matches | Nothing; the seller collects after the unlock time | |
+
+Every action is logged with its transaction and shows up on the purchase's timeline.
+
+## On preprod
+
+- **Refund, nobody involved:** lock [`8c6d1572…`](https://preprod.cardanoscan.io/transaction/8c6d1572790cfbdd152f7ac1bc84cdfc89b3fe6e850506b9eb18fd4ebd220259), seller posts nothing, the watcher refunds the buyer [`9b789223…`](https://preprod.cardanoscan.io/transaction/9b78922320d2be04be4742a24610eb569f38788421c0d77d57d6628103853091)
+- **Dispute, nobody involved:** the watcher disputes a mismatching delivery [`41f584f8…`](https://preprod.cardanoscan.io/transaction/41f584f8d5ab8feee0b5c460ca4ad0eb5236dc45d92d72912e0824e280f2cb4b), and the arbiter pays the buyer back [`c966f98c…`](https://preprod.cardanoscan.io/transaction/c966f98cb4162f2a1b63c14d0d69b94d674e4d18277b2b5836c9a563c65d33d5)

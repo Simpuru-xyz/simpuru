@@ -1,0 +1,59 @@
+---
+title: "Buying over x402"
+description: "Pay for a listing from your own code, instantly or into escrow."
+---
+
+`GET /listings/{id}/unlock` is the paid route. It follows x402 v2:
+
+1. **Unpaid**: `402` with a base64 JSON `PAYMENT-REQUIRED` header listing the payment options.
+2. **Paid retry**: send the signed Cardano transaction in `PAYMENT-SIGNATURE`. The API verifies and submits it with its own facilitator, then answers `200` with the content and a base64 JSON `PAYMENT-RESPONSE` header whose `transaction` is the tx hash.
+
+| Option | `extra.assetTransferMethod` | `payTo` |
+| - | - | - |
+| Instant | `default` | The seller's address |
+| Protected | `masumi` | Simpuru's escrow address (see [Deployment](/resources/deployment)) |
+
+## With the x402 client
+
+```ts
+import { toClientCardanoSigner } from "@x402/cardano";
+import { ExactCardanoScheme } from "@x402/cardano/exact/client";
+import { decodePaymentResponseHeader, wrapFetchWithPayment, x402Client } from "@x402/fetch";
+
+const ESCROW = "addr_test1wzy842psthjj2llfv06tc38dtuqey8ve55n6gm6acprk9ksc7d963";
+
+const signer = toClientCardanoSigner({
+  mnemonic: process.env.BUYER_MNEMONIC!, // a fresh preprod test wallet
+  network: "cardano:preprod",
+  provider: { blockfrost: { baseUrl: "https://cardano-preprod.blockfrost.io/api/v0", projectId: process.env.BLOCKFROST_PROJECT_ID! } },
+  validateCustomMasumiDeployment: (claim) => claim.payTo === ESCROW, // only pay into Simpuru's escrow
+});
+
+const client = x402Client.fromConfig({
+  schemes: [{ network: "cardano:preprod", client: new ExactCardanoScheme(signer) }],
+  // Pick the protected option, and only if it pays into Simpuru's escrow.
+  policies: [(_v, reqs) => reqs.filter((r) => r.extra?.assetTransferMethod === "masumi" && r.payTo === ESCROW)],
+  spendControls: {
+    allowedAssets: [{ network: "cardano:preprod", asset: "lovelace", maxAmountPerPayment: "20000000" }],
+  },
+});
+
+const pay = wrapFetchWithPayment(fetch, client);
+const res = await pay("https://api.simpuru.xyz/listings/<id>/unlock");
+const content = await res.text();
+const tx = decodePaymentResponseHeader(res.headers.get("PAYMENT-RESPONSE")!).transaction;
+```
+
+<Warning>
+  Check the deployment you pay into. A protected quote names an escrow; only pay one that matches Simpuru's deployment, never just any address a server returns. The repository's buyer uses `isOurDeployment` from `@simpuru/core/escrow`, which also compares the arbiter key and parameters.
+</Warning>
+
+## After paying
+
+- Recompute `sha256(content)` and compare it with the listing's `contentHash`.
+- Follow the purchase at `GET /purchases/{tx}`. See [Purchases and timelines](/developers/purchases-and-timelines).
+- Asking again after a dropped connection: send an `X-Simpuru-Proof` header (see [Authentication](/developers/authentication)) to get the content you already paid for without paying again.
+
+## Or let an account pay
+
+A signed-in account can buy from its Simpuru wallet with `POST /me/buy { listingId, mode }`. It takes 20–60 seconds and returns `{ purchase, content, alreadyOwned }`.
