@@ -1,0 +1,21 @@
+{
+  "name": "simpuru-demo-video",
+  "private": true,
+  "description": "3-minute demo video for the submission (Remotion). Not part of the bun workspaces.",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render Demo out/simpuru-demo.mp4 --codec h264 --crf 18"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.533",
+    "@remotion/google-fonts": "4.0.533",
+    "@remotion/transitions": "4.0.533",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "remotion": "4.0.533"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.8",
+    "typescript": "5.8.3"
+  }
+}
