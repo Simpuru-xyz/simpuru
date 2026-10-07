@@ -61,8 +61,8 @@ function FooterCard() {
                 <span className="text-[26px] font-bold tracking-tight text-[#0F172A]">simpuru</span>
               </div>
               <p className="max-w-[320px] text-[16px] leading-relaxed font-normal text-[#64748B]">
-                Design prompts for a few ADA each, bought by you or your agent. If one never
-                arrives, the money comes back.
+                Design prompts for a few tADA each on Cardano preprod, bought by you or your agent.
+                With protection, a prompt that never arrives is refunded.
               </p>
               <div className="flex gap-3">
                 {SOCIALS.map(({ label, href, Icon }) => (

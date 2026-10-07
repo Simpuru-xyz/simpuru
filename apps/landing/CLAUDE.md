@@ -13,7 +13,8 @@ Still to build for #25: preprod proof links (from #19), dark mode.
 
 ## Copy
 
-- Plain words. Say "agent", not "AI". Prices are "a few cents", not "ADA". No "escrow",
+- Plain words. Say "agent", not "AI". Prices are a few tADA (test ADA); say preprod/testnet where money is
+  mentioned. Creators choose instant, protected or both, so never claim every prompt has both. No "escrow",
   "on-chain" or "hash" in the hero; the developer section may be technical.
 - Credit the stack accurately: x402 on Cardano, escrow from Masumi (`vested_pay`). Do not claim a
   Sokosumi listing; our locks are not visible there.

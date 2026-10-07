@@ -70,8 +70,8 @@ export default function Home() {
             className="animate-fade-in-up mx-auto mb-14 max-w-3xl px-2 text-base text-gray-600 sm:mb-20 sm:text-lg md:text-xl"
             style={{ animationDelay: "0.4s", opacity: 0 }}
           >
-            Sign in with your Cardano wallet, add ADA, and buy yourself or let your agent buy. If it
-            never arrives, you&apos;re refunded.
+            Sign in with your Cardano wallet, add test ADA on preprod, and buy yourself or let your
+            agent buy.
           </p>
 
           <Link
@@ -79,7 +79,7 @@ export default function Home() {
             className="animate-fade-in-up inline-block rounded-full bg-black px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-gray-800 sm:px-8 sm:text-base"
             style={{ animationDelay: "0.5s", opacity: 0 }}
           >
-            Explore the gallery
+            Open the shop
           </Link>
 
           <p

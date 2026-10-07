@@ -23,14 +23,14 @@ export default function InstantVsProtected() {
               href={`${APP_URL}/listings`}
               className="inline-flex items-center gap-3 rounded-full bg-black py-2 pr-2 pl-8 text-base font-medium text-white transition-colors duration-200 hover:bg-gray-800"
             >
-              Explore the gallery
+              Open the shop
               <span className="flex items-center justify-center rounded-full bg-white p-2">
                 <ArrowRight aria-hidden className="h-5 w-5 text-black" />
               </span>
             </a>
           </div>
           <p className="text-2xl leading-relaxed font-normal text-black/70 md:text-3xl">
-            Every prompt offers both. Pick the one that fits.
+            Creators offer instant, protected, or both.
           </p>
         </div>
 

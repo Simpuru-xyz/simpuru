@@ -17,15 +17,15 @@ const STEPS: Step[] = [
     height: "min-h-[320px] lg:min-h-[420px]",
   },
   {
-    title: "Pay a few ADA",
-    line: "The money waits until it arrives.",
+    title: "Pay a few tADA",
+    line: "With protection, it waits until the prompt arrives.",
     video: "/media/step-2",
     overlay: "bg-[rgba(247,236,233,0.6)]",
     height: "min-h-[320px] lg:min-h-[340px]",
   },
   {
     title: "Get it, or get it back",
-    line: "No prompt, no payment.",
+    line: "With protection, no prompt means no payment.",
     video: "/media/step-3",
     overlay: "bg-[rgba(218,218,218,0.2)]",
     height: "min-h-[320px] lg:min-h-[420px]",
@@ -41,7 +41,7 @@ export default function HowItWorks() {
             How it works
           </p>
           <h2 className="text-4xl leading-[1.05] font-normal tracking-tight text-[#141414] sm:text-5xl md:text-6xl">
-            Paid only when it arrives
+            Pick it, pay, get it
           </h2>
         </div>
 

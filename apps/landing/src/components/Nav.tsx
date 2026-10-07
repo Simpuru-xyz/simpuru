@@ -40,7 +40,7 @@ export default function Nav() {
           <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-gray-200 bg-white p-4 text-left text-sm leading-relaxed text-gray-700 shadow-lg">
             <p className="mb-2 font-medium text-black">What&apos;s preprod?</p>
             <p className="mb-3">
-              Cardano&apos;s test network. Test ADA has no value, so nothing here costs real money.
+              Cardano&apos;s test network. Simpuru runs only here, and test ADA has no value.
             </p>
             <a
               href={FAUCET_URL}
