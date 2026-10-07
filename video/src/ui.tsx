@@ -11,11 +11,18 @@ import {
 } from "remotion";
 import { C, mono, sans, short } from "./theme";
 
-/** 0→1 spring that starts at `delay` frames. */
+/** Scene delays are authored at a relaxed pace; PACE tightens them all (0.5 = twice as fast). */
+export const PACE = 0.5;
+
+/** 0→1 spring that starts at `delay` frames (scaled by PACE). */
 export const useIn = (delay = 0, damping = 200) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  return spring({ frame: frame - delay, fps, config: { damping } });
+  return spring({
+    frame: frame - delay * PACE,
+    fps,
+    config: { damping, stiffness: 220, mass: 0.6 },
+  });
 };
 
 /** Fades out over the last `frames` of a scene of length `duration`. */
