@@ -1,7 +1,15 @@
 // The app (app.simpuru.xyz) rebuilt as animated components, driven by a cursor. Same look as the real
 // UI: Inter, black and white, pill buttons, the yellow testnet badge.
 import type { CSSProperties, ReactNode } from "react";
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
+import {
+  AbsoluteFill,
+  Easing,
+  Img,
+  interpolate,
+  OffthreadVideo,
+  staticFile,
+  useCurrentFrame,
+} from "remotion";
 import { C, mono, sans, short, TX } from "./theme";
 
 const W = 1440;
@@ -11,6 +19,21 @@ const ease = Easing.bezier(0.22, 1, 0.36, 1);
 /** 0→1 between frames a and b (eased). */
 const t = (f: number, a: number, b: number) =>
   interpolate(f, [a, b], [0, 1], { ...clamp, easing: ease });
+
+/** A listing's real preview (the creator's own media, as on app.simpuru.xyz). */
+const Media = ({ src, style }: { src: string; style?: CSSProperties }) =>
+  src.endsWith(".mp4") ? (
+    <OffthreadVideo
+      src={staticFile(src)}
+      muted
+      style={{ width: "100%", height: "100%", objectFit: "cover", ...style }}
+    />
+  ) : (
+    <Img
+      src={staticFile(src)}
+      style={{ width: "100%", height: "100%", objectFit: "cover", ...style }}
+    />
+  );
 
 const Pill = ({
   children,
@@ -149,6 +172,7 @@ const Card = ({
   p,
   protectedMode = true,
   hover = 0,
+  media,
 }: {
   title: string;
   sub: string;
@@ -156,17 +180,20 @@ const Card = ({
   p: number;
   protectedMode?: boolean;
   hover?: number;
+  media: string;
 }) => (
-  <div style={{ width: 300, opacity: p, transform: `translateY(${(1 - p) * 30 - hover * 6}px)` }}>
+  <div style={{ width: 360, opacity: p, transform: `translateY(${(1 - p) * 30 - hover * 6}px)` }}>
     <div
       style={{
-        height: 190,
+        height: 270,
         borderRadius: 18,
-        background: "linear-gradient(135deg,#1f1b3a,#3b2f73 55%,#e4a3c7)",
+        overflow: "hidden",
+        background: C.soft,
         position: "relative",
         boxShadow: hover ? "0 18px 40px rgba(0,0,0,0.18)" : "none",
       }}
     >
+      <Media src={media} />
       {protectedMode ? (
         <div
           style={{
@@ -205,7 +232,7 @@ const Catalogue = ({ f, hoverCard }: { f: number; hoverCard: number }) => (
   <div style={{ padding: "28px 36px" }}>
     <div
       style={{
-        height: 240,
+        height: 190,
         borderRadius: 24,
         background: "#000",
         color: "#fff",
@@ -243,19 +270,6 @@ const Catalogue = ({ f, hoverCard }: { f: number; hoverCard: number }) => (
       >
         Pay once in tADA on Cardano. Protected buys wait in escrow until delivery checks out.
       </div>
-      <div
-        style={{
-          marginTop: 18,
-          display: "inline-block",
-          padding: "6px 14px",
-          borderRadius: 999,
-          border: "1px solid #555",
-          fontSize: 13,
-          color: "#ddd",
-        }}
-      >
-        Preprod testnet · test ADA has no value
-      </div>
     </div>
     <div style={{ display: "flex", gap: 24, marginTop: 30 }}>
       <Card
@@ -264,6 +278,7 @@ const Catalogue = ({ f, hoverCard }: { f: number; hoverCard: number }) => (
         price="5 tADA"
         p={t(f, 8, 22)}
         hover={hoverCard}
+        media="oyla.mp4"
       />
       <Card
         title="3D Collectible Hero"
@@ -271,6 +286,7 @@ const Catalogue = ({ f, hoverCard }: { f: number; hoverCard: number }) => (
         price="1 tADA"
         p={t(f, 12, 26)}
         protectedMode={false}
+        media="hero3d.webp"
       />
     </div>
   </div>
@@ -468,13 +484,10 @@ const Listing = ({
     }}
   >
     <div
-      style={{
-        width: 760,
-        height: 640,
-        borderRadius: 24,
-        background: "linear-gradient(135deg,#1f1b3a,#3b2f73 55%,#e4a3c7)",
-      }}
-    />
+      style={{ width: 760, height: 640, borderRadius: 24, overflow: "hidden", background: C.soft }}
+    >
+      <Media src="oyla.mp4" />
+    </div>
     <div style={{ flex: 1 }}>
       <div style={{ fontSize: 14, color: C.muted }}>Catalogue / Landing Page</div>
       <div style={{ fontSize: 44, fontWeight: 600, letterSpacing: -1, marginTop: 6 }}>OYLA</div>
@@ -821,26 +834,28 @@ const Cursor = ({ f, path, clicks }: { f: number; path: Way[]; clicks: number[] 
 
 /** The whole web journey in one browser window: catalogue → sign in → buy → timeline → sell. */
 export const APP_FLOW_FRAMES = 600;
+/** Beats of the web journey (frames), shared with the copy and the sound. */
+export const APP_BEATS = {
+  signClick: 40,
+  modal: 46,
+  eternl: 70,
+  popup: 76,
+  sign: 100,
+  signed: 106,
+  funded: 120,
+  cardClick: 168,
+  listing: 174,
+  buyClick: 214,
+  paid: 262,
+  bought: 266,
+  toTimeline: 340,
+  sellNav: 452,
+  publish: 540,
+};
 export const AppFlow = () => {
   const f = useCurrentFrame();
   // Beats (frames).
-  const B = {
-    signClick: 40,
-    modal: 46,
-    eternl: 70,
-    popup: 76,
-    sign: 100,
-    signed: 106,
-    funded: 120,
-    cardClick: 168,
-    listing: 174,
-    buyClick: 214,
-    paid: 262,
-    bought: 266,
-    toTimeline: 340,
-    sellNav: 452,
-    publish: 540,
-  };
+  const B = APP_BEATS;
   const signedIn = t(f, B.signed, B.signed + 10);
   const balance = interpolate(f, [B.funded, B.funded + 24], [0, 15], clamp) - (f >= B.paid ? 5 : 0);
   const page =

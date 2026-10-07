@@ -4,7 +4,7 @@
   "description": "3-minute demo video for the submission (Remotion). Not part of the bun workspaces.",
   "scripts": {
     "studio": "remotion studio",
-    "render": "remotion render Demo out/simpuru-demo.mp4 --codec h264 --crf 18"
+    "render": "remotion render Film out/simpuru-demo.mp4 --codec h264 --crf 18"
   },
   "dependencies": {
     "@remotion/cli": "4.0.533",

@@ -236,7 +236,7 @@ export const People = () => {
 };
 
 // 5. For agents ───────────────────────────────────────────────────────────────
-const AGENT: Line[] = [
+export const AGENT: Line[] = [
   { text: "$ claude mcp add --transport http simpuru https://api.simpuru.xyz/mcp", kind: "dim" },
   {
     text: "✓ Signed in with your wallet · agent spends your Simpuru wallet · max 10 tADA per purchase",
