@@ -1250,3 +1250,173 @@ export const Landing = () => {
     </div>
   );
 };
+
+/**
+ * The MCP sign-in page (api.simpuru.xyz/oauth/authorize) the agent opens in the browser: pick the
+ * wallet, sign, then back to the agent. Laid out absolutely so the cursor lands on each control.
+ */
+export const CONSENT_FRAMES = 180;
+export const Consent = () => {
+  const f = useCurrentFrame();
+  const press = (at: number) => interpolate(f, [at, at + 4, at + 10], [0, 1, 0], clamp);
+  const ask = 1 - t(f, 88, 96);
+  const done = t(f, 92, 102);
+  const card: CSSProperties = { position: "absolute", left: 480, width: 480 };
+  const button = (
+    top: number,
+    label: string,
+    swatch: string,
+    pressed = 0,
+    hot = false,
+  ): ReactNode => (
+    <div
+      style={{
+        ...card,
+        top,
+        height: 52,
+        borderRadius: 12,
+        border: `1px solid ${hot ? C.ink : C.line}`,
+        background: hot ? "#f6f6f4" : "#fff",
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        padding: "0 18px",
+        fontSize: 18,
+        fontWeight: 500,
+        transform: `scale(${1 - pressed * 0.03})`,
+      }}
+    >
+      <span style={{ width: 24, height: 24, borderRadius: 7, background: swatch }} />
+      {label}
+    </div>
+  );
+  return (
+    <div
+      style={{
+        width: W,
+        height: H,
+        position: "relative",
+        overflow: "hidden",
+        background: "#f6f6f4",
+        fontFamily: sans,
+        color: C.ink,
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          left: 440,
+          top: 60,
+          width: 560,
+          height: 560,
+          borderRadius: 20,
+          background: "#fff",
+          border: `1px solid ${C.line}`,
+          opacity: t(f, 0, 10),
+        }}
+      />
+      <div style={{ ...card, top: 98, fontSize: 18, fontWeight: 700 }}>◆ Simpuru</div>
+      <div style={{ opacity: ask }}>
+        <div style={{ ...card, top: 136, fontSize: 34, fontWeight: 600, letterSpacing: -0.8 }}>
+          Let your agent shop for you
+        </div>
+        <div style={{ ...card, top: 196, fontSize: 17, lineHeight: 1.5, color: C.muted }}>
+          <b style={{ color: C.ink }}>Claude Code</b> wants to buy on Simpuru for you. Sign in with
+          your Cardano wallet: your agent spends your Simpuru wallet, only inside the limits below.
+        </div>
+        {[
+          ["Max per purchase (ADA)", "10", 480],
+          ["Daily budget (ADA)", "30", 728],
+        ].map(([l, v, x]) => (
+          <div
+            key={l as string}
+            style={{ position: "absolute", left: x as number, top: 316, width: 232 }}
+          >
+            <div style={{ fontSize: 14, color: C.muted }}>{l}</div>
+            <div
+              style={{
+                marginTop: 6,
+                height: 44,
+                borderRadius: 10,
+                border: `1px solid ${C.line}`,
+                display: "flex",
+                alignItems: "center",
+                padding: "0 14px",
+                fontSize: 18,
+              }}
+            >
+              {v}
+            </div>
+          </div>
+        ))}
+        {button(430, "Eternl", "linear-gradient(135deg,#f472b6,#fb923c)", press(44), f >= 44)}
+        {button(492, "Lace", "linear-gradient(135deg,#22d3ee,#6366f1)")}
+        <div style={{ ...card, top: 566, fontSize: 14, color: C.muted }}>
+          Cardano <b>preprod</b> only. Signing proves the wallet is yours; it moves no funds.
+        </div>
+      </div>
+      <div style={{ opacity: done }}>
+        <div style={{ ...card, top: 136, fontSize: 34, fontWeight: 600, letterSpacing: -0.8 }}>
+          You're connected
+        </div>
+        <div style={{ ...card, top: 196, fontSize: 17, color: C.muted }}>
+          Your agent spends from your Simpuru wallet:
+        </div>
+        <div
+          style={{
+            ...card,
+            top: 228,
+            height: 50,
+            borderRadius: 10,
+            background: "#f6f6f4",
+            display: "flex",
+            alignItems: "center",
+            padding: "0 16px",
+            fontFamily: mono,
+            fontSize: 16,
+          }}
+        >
+          addr_test1qqsjlmqnn663v7g6…pfwp6
+        </div>
+        <div style={{ ...card, top: 300, fontSize: 17, lineHeight: 1.5, color: C.muted }}>
+          Limits: 10 tADA per purchase, 30 tADA a day. Protected purchases are refunded
+          automatically if the seller doesn't deliver.
+        </div>
+        <div
+          style={{
+            ...card,
+            top: 444,
+            height: 52,
+            borderRadius: 12,
+            background: C.ink,
+            color: "#fff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 18,
+            fontWeight: 600,
+            transform: `scale(${1 - press(140) * 0.03})`,
+          }}
+        >
+          Back to your agent
+        </div>
+      </div>
+      {f >= 50 && f < 96 ? (
+        <WalletPopup p={t(f, 50, 58) * (1 - t(f, 86, 94))} pressed={press(80)} />
+      ) : null}
+      <Cursor
+        f={f}
+        path={[
+          { f: 0, x: 1000, y: 650 },
+          { f: 36, x: 595, y: 453 }, // Eternl (600,456), click 44
+          { f: 52, x: 595, y: 453 },
+          { f: 72, x: 1314, y: 287 }, // wallet Sign (1319,290), click 80
+          { f: 88, x: 1314, y: 287 },
+          { f: 130, x: 715, y: 467 }, // Back to your agent (720,470), click 140
+          { f: 180, x: 715, y: 467 },
+        ]}
+        clicks={[44, 80, 140]}
+      />
+    </div>
+  );
+};

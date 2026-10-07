@@ -29,7 +29,8 @@ LINES = {
     "w6": "Every step is on chain. Locked, delivered, seller paid, creator paid.",
     "w7": "And anyone can sell. The hash is locked in before anyone pays.",
     # Agents
-    "a1": "Connect an agent with one command, and set its limits.",
+    "a1": "Connect an agent with one command.",
+    "a1b": "It opens a sign-in page. Approve with your wallet, set a budget, and you're back in the terminal.",
     "a2": "Now Claude shops on its own. It filters sellers by reputation, checks the listing and its wallet, then buys with protection. Ask again, and it won't pay twice.",
     # Proof, coworker, outro
     "p1": "Three outcomes, all real on preprod. Delivered, the seller gets paid. Never delivered, refunded automatically. Wrong file, our arbiter refunds the buyer.",
