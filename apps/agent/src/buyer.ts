@@ -157,6 +157,8 @@ export function createBuyer(cfg: BuyerConfig) {
     return { ok: true as const, body, txHash, selected };
   }
 
+  const inFlight = new Map<string, Promise<BuyResult>>();
+
   return {
     address: signer.getAddress(),
     purchases,
@@ -164,88 +166,108 @@ export function createBuyer(cfg: BuyerConfig) {
     getListing,
     redeliver,
 
-    /** `byOwner`: the owner clicked Buy themselves, so the agent limits are skipped. */
-    async buy(
+    /**
+     * `byOwner`: the owner clicked Buy themselves, so the agent limits are skipped.
+     * A second call for the same listing while one is still paying waits for that one instead
+     * of paying again (a client that timed out and retried).
+     */
+    buy(
       listingId: string,
       mode: DeliveryMode,
       opts: { byOwner?: boolean } = {},
     ): Promise<BuyResult> {
-      const listing = await getListing(listingId);
-      if (!listing) return { ok: false, paid: false, error: `listing ${listingId} not found` };
-      // Already paid (maybe the connection dropped last time)? Then never pay twice.
-      const started = Date.now();
-      const owned = await redeliver(listing.id);
-      if (owned)
-        return { ok: true, redelivered: true, ...owned, seconds: (Date.now() - started) / 1000 };
-
-      if (!listing.modes.includes(mode))
-        return { ok: false, paid: false, error: `listing does not offer ${mode}` };
-      const price = BigInt(listing.priceLovelace);
-      if (!opts.byOwner && price > cfg.maxPerPaymentLovelace)
-        return {
-          ok: false,
-          paid: false,
-          error: `price ${price} is above the per-payment cap ${cfg.maxPerPaymentLovelace}`,
-        };
-      const spent = spentToday();
-      if (!opts.byOwner && spent + price > cfg.dailyBudgetLovelace)
-        return {
-          ok: false,
-          paid: false,
-          error: `daily budget: ${spent} spent of ${cfg.dailyBudgetLovelace}`,
-        };
-
-      const cap = opts.byOwner ? price : cfg.maxPerPaymentLovelace;
-      let r = await attempt(listing, mode, cap);
-      // A 402 means nothing was broadcast. The usual cause right after another buy is a
-      // wallet UTxO the provider has not indexed yet, so wait one block and try once more.
-      if (!r.ok && r.status === 402) {
-        await Bun.sleep(20_000);
-        r = await attempt(listing, mode, cap);
-      }
-      if (!r.ok) return { ok: false, paid: false, error: r.error };
-
-      const terms = r.selected?.extra?.terms as Record<string, string> | undefined;
-      const record: PurchaseRecord = {
-        at: new Date().toISOString(),
-        listingId: listing.id,
-        mode,
-        priceLovelace: listing.priceLovelace,
-        txHash: r.txHash,
-        receivedContentHash: contentHash(r.body),
-        listingContentHash: listing.contentHash,
-        ...(opts.byOwner ? { byOwner: true as const } : {}),
-        ...(mode === "protected" && terms
-          ? {
-              escrow: {
-                address: ESCROW.address,
-                blockchainIdentifier: String(r.selected?.extra?.blockchainIdentifier ?? ""),
-                inputHash: terms.inputHash ?? "",
-                inputCommitment: r.selected?.extra?.inputCommitment ?? null,
-                deadlines: {
-                  payBy: terms.payByTime ?? "",
-                  submitResult: terms.submitResultTime ?? "",
-                  unlock: terms.unlockTime ?? "",
-                  externalDisputeUnlock: terms.externalDisputeUnlockTime ?? "",
-                },
-              },
-            }
-          : {}),
-      };
-      mkdirSync(dirname(cfg.logPath), { recursive: true });
-      appendFileSync(cfg.logPath, `${JSON.stringify(record)}\n`);
-      // Keep what we received: the protection watcher needs it to check the seller's
-      // result hash and, in a dispute, to show the arbiter.
-      // The tx hash comes from the server's settlement response, so it is checked before it
-      // becomes a file name (a hostile server could send "../..").
-      if (record.escrow && /^[0-9a-f]{64}$/.test(record.txHash)) {
-        const dir = join(dirname(cfg.logPath), "deliveries");
-        mkdirSync(dir, { recursive: true });
-        writeFileSync(join(dir, record.txHash), r.body);
-      }
-      return { ok: true, record, content: r.body, seconds: (Date.now() - started) / 1000 };
+      const running = inFlight.get(listingId);
+      if (running) return running;
+      const p = buyOnce(listingId, mode, opts).finally(() => inFlight.delete(listingId));
+      inFlight.set(listingId, p);
+      return p;
     },
   };
+
+  async function buyOnce(
+    listingId: string,
+    mode: DeliveryMode,
+    opts: { byOwner?: boolean },
+  ): Promise<BuyResult> {
+    const listing = await getListing(listingId);
+    if (!listing) return { ok: false, paid: false, error: `listing ${listingId} not found` };
+    // Already paid (maybe the connection dropped last time)? Then never pay twice.
+    const started = Date.now();
+    const owned = await redeliver(listing.id);
+    if (owned)
+      return { ok: true, redelivered: true, ...owned, seconds: (Date.now() - started) / 1000 };
+
+    if (!listing.modes.includes(mode))
+      return { ok: false, paid: false, error: `listing does not offer ${mode}` };
+    const price = BigInt(listing.priceLovelace);
+    if (!opts.byOwner && price > cfg.maxPerPaymentLovelace)
+      return {
+        ok: false,
+        paid: false,
+        error: `price ${price} is above the per-payment cap ${cfg.maxPerPaymentLovelace}`,
+      };
+    const spent = spentToday();
+    if (!opts.byOwner && spent + price > cfg.dailyBudgetLovelace)
+      return {
+        ok: false,
+        paid: false,
+        error: `daily budget: ${spent} spent of ${cfg.dailyBudgetLovelace}`,
+      };
+
+    const cap = opts.byOwner ? price : cfg.maxPerPaymentLovelace;
+    let r = await attempt(listing, mode, cap);
+    // A 402 means nothing was broadcast. The usual cause right after another buy is a
+    // wallet UTxO the provider has not indexed yet, so wait one block and try once more.
+    if (!r.ok && r.status === 402) {
+      await Bun.sleep(20_000);
+      // The 402 may also mean an earlier payment for this listing just landed: look again first.
+      const landed = await redeliver(listing.id);
+      if (landed)
+        return { ok: true, redelivered: true, ...landed, seconds: (Date.now() - started) / 1000 };
+      r = await attempt(listing, mode, cap);
+    }
+    if (!r.ok) return { ok: false, paid: false, error: r.error };
+
+    const terms = r.selected?.extra?.terms as Record<string, string> | undefined;
+    const record: PurchaseRecord = {
+      at: new Date().toISOString(),
+      listingId: listing.id,
+      mode,
+      priceLovelace: listing.priceLovelace,
+      txHash: r.txHash,
+      receivedContentHash: contentHash(r.body),
+      listingContentHash: listing.contentHash,
+      ...(opts.byOwner ? { byOwner: true as const } : {}),
+      ...(mode === "protected" && terms
+        ? {
+            escrow: {
+              address: ESCROW.address,
+              blockchainIdentifier: String(r.selected?.extra?.blockchainIdentifier ?? ""),
+              inputHash: terms.inputHash ?? "",
+              inputCommitment: r.selected?.extra?.inputCommitment ?? null,
+              deadlines: {
+                payBy: terms.payByTime ?? "",
+                submitResult: terms.submitResultTime ?? "",
+                unlock: terms.unlockTime ?? "",
+                externalDisputeUnlock: terms.externalDisputeUnlockTime ?? "",
+              },
+            },
+          }
+        : {}),
+    };
+    mkdirSync(dirname(cfg.logPath), { recursive: true });
+    appendFileSync(cfg.logPath, `${JSON.stringify(record)}\n`);
+    // Keep what we received: the protection watcher needs it to check the seller's
+    // result hash and, in a dispute, to show the arbiter.
+    // The tx hash comes from the server's settlement response, so it is checked before it
+    // becomes a file name (a hostile server could send "../..").
+    if (record.escrow && /^[0-9a-f]{64}$/.test(record.txHash)) {
+      const dir = join(dirname(cfg.logPath), "deliveries");
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(join(dir, record.txHash), r.body);
+    }
+    return { ok: true, record, content: r.body, seconds: (Date.now() - started) / 1000 };
+  }
 }
 
 export type Buyer = ReturnType<typeof createBuyer>;
