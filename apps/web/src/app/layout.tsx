@@ -15,9 +15,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const DESCRIPTION =
+  "Design prompts you and your AI agents buy in tADA on Cardano preprod, with buyer protection: protected purchases wait in escrow and refund automatically if delivery fails.";
+
 export const metadata: Metadata = {
-  title: "Simpuru",
-  description: "Buyer protection for AI agents paying on Cardano",
+  metadataBase: new URL("https://app.simpuru.xyz"),
+  title: { default: "Simpuru · prompts with buyer protection", template: "%s · Simpuru" },
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: "Simpuru",
+    title: "Simpuru · prompts with buyer protection",
+    description: DESCRIPTION,
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
