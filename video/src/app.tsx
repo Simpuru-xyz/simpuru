@@ -867,18 +867,25 @@ export const AppFlow = () => {
           ? "timeline"
           : "sell";
   const path: Way[] = [
+    // Targets measured in the rendered UI (centre of each control); the arrow's tip sits 5,3 px
+    // inside the cursor box, and the cursor holds still from arrival until after the click.
     { f: 0, x: 900, y: 500 },
-    { f: 34, x: 1372, y: 36 },
-    { f: 60, x: 720, y: 420 },
-    { f: 94, x: 1240, y: 330 },
-    { f: 150, x: 1180, y: 300 },
-    { f: 164, x: 190, y: 440 },
-    { f: 205, x: 1180, y: 372 },
-    { f: 330, x: 1180, y: 520 },
-    { f: 445, x: 760, y: 36 },
-    { f: 470, x: 700, y: 300 },
-    { f: 530, x: 450, y: 520 },
-    { f: 600, x: 480, y: 540 },
+    { f: 32, x: 1349, y: 33 }, // Sign in (1354,36), click 40
+    { f: 46, x: 1349, y: 33 },
+    { f: 62, x: 615, y: 420 }, // Eternl row (620,423), click 70
+    { f: 76, x: 615, y: 420 },
+    { f: 92, x: 1314, y: 287 }, // wallet Sign (1319,290), click 100
+    { f: 108, x: 1314, y: 287 },
+    { f: 140, x: 1150, y: 320 },
+    { f: 160, x: 211, y: 451 }, // OYLA card image (216,454), click 168
+    { f: 176, x: 211, y: 451 },
+    { f: 204, x: 1115, y: 420 }, // Buy with protection (1120,423), click 214
+    { f: 226, x: 1115, y: 420 },
+    { f: 330, x: 1115, y: 520 },
+    { f: 440, x: 727, y: 33 }, // Sell (732,36), click 452
+    { f: 458, x: 727, y: 33 },
+    { f: 528, x: 441, y: 482 }, // Publish listing (446,485), click 540
+    { f: 600, x: 441, y: 482 },
   ];
   const press = (at: number) => interpolate(f, [at, at + 4, at + 10], [0, 1, 0], clamp);
   return (
@@ -1024,8 +1031,8 @@ export const AgentsPage = () => {
         f={f}
         path={[
           { f: 0, x: 900, y: 600 },
-          { f: 46, x: 1060, y: 452 },
-          { f: 90, x: 1080, y: 470 },
+          { f: 40, x: 1021, y: 414 }, // Copy (1026,417), click 48
+          { f: 90, x: 1021, y: 414 },
         ]}
         clicks={[48]}
       />
@@ -1233,8 +1240,8 @@ export const Landing = () => {
         path={[
           { f: 0, x: 1100, y: 640 },
           { f: 60, x: 1000, y: 560 },
-          { f: 92, x: 724, y: 430 },
-          { f: 132, x: 724, y: 430 },
+          { f: 88, x: 715, y: 404 }, // Open the shop (720,407), click 96
+          { f: 132, x: 715, y: 404 },
         ]}
         clicks={[LANDING_CLICK]}
       />
