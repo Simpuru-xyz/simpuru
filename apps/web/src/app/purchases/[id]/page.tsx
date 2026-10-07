@@ -11,7 +11,7 @@ import Skeleton, { SkeletonRegion } from "@/components/Skeleton";
 import StatusBadge from "@/components/StatusBadge";
 import Timeline from "@/components/Timeline";
 import VerificationCard from "@/components/VerificationCard";
-import { fetchListings, formatAda, shorten } from "@/lib/api";
+import { fetchListingOrNull, formatAda, shorten } from "@/lib/api";
 import { fetchPurchase, type PurchaseView } from "@/lib/purchases";
 
 type LoadState =
@@ -32,14 +32,21 @@ export default function PurchasePage({ params }: PageProps<"/purchases/[id]">) {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([fetchListings(), fetchPurchase(id)])
-      .then(([listings, purchase]) => {
+    fetchPurchase(id)
+      .then(async (purchase) => {
+        // The listing by id, so a purchase of a since-retired listing still shows its title.
+        const listing = purchase
+          ? await fetchListingOrNull(purchase.listingId).catch(() => null)
+          : null;
+        return { purchase, listing };
+      })
+      .then(({ purchase, listing }) => {
         if (cancelled) return;
         if (!purchase) return setLoad({ phase: "missing" });
         setLoad({
           phase: "ready",
           purchase,
-          listing: listings.find((l) => l.id === purchase.listingId),
+          listing: listing ?? undefined,
         });
       })
       .catch(() => {

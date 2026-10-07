@@ -81,6 +81,18 @@ export function creatorPayout(priceLovelace: string, mode: DeliveryMode) {
   return price - (tenth > floor ? tenth : floor);
 }
 
+/**
+ * The catalogue plus any of `ids` it doesn't list: retired listings are hidden from
+ * `GET /listings` but still served by `GET /listings/:id`, and old purchases point at them.
+ */
+export async function fetchListingsIncluding(ids: string[]): Promise<ListingView[]> {
+  const catalogue = await fetchListings();
+  const known = new Set(catalogue.map((l) => l.id));
+  const missing = [...new Set(ids)].filter((id) => !known.has(id));
+  const extra = await Promise.all(missing.map((id) => fetchListingOrNull(id).catch(() => null)));
+  return [...catalogue, ...extra.filter((l): l is ListingView => l !== null)];
+}
+
 /** `fetchListing`, but an unknown id (404) is `null` instead of an error. */
 export const fetchListingOrNull = (id: string) =>
   fetchListing(id).catch((e: unknown) => {

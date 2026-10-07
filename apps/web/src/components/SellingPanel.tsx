@@ -9,7 +9,7 @@ import ListingCard from "@/components/ListingCard";
 import SalesList from "@/components/SalesList";
 import { useSession } from "@/components/SessionProvider";
 import Skeleton, { SkeletonRegion } from "@/components/Skeleton";
-import { fetchListings } from "@/lib/api";
+import { fetchListingsIncluding } from "@/lib/api";
 import { compact } from "@/lib/format";
 import { fetchSales, isDispute, type PurchaseView } from "@/lib/purchases";
 
@@ -33,7 +33,10 @@ export default function SellingPanel() {
   useEffect(() => {
     if (!owner) return;
     let cancelled = false;
-    Promise.all([fetchListings(), fetchSales(owner)])
+    fetchSales(owner)
+      .then(
+        async (mine) => [await fetchListingsIncluding(mine.map((s) => s.listingId)), mine] as const,
+      )
       .then(([listings, mine]) => {
         if (!cancelled) setSales({ phase: "ready", sales: mine, listings });
       })

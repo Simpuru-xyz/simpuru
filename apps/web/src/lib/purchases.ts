@@ -25,6 +25,8 @@ const STATUS_LABEL: Record<string, string> = {
   settled: "Paid",
   // The seller agent's in-flight state while its withdraw tx confirms.
   withdrawing: "Seller collecting",
+  // After a protected sale the platform forwards the creator's share (apps/api seller.ts).
+  creator_paid: "Creator paid",
 };
 
 /** The API may add states the core type doesn't list yet; show those as they come. */
