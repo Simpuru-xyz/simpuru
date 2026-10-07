@@ -17,20 +17,35 @@ import {
 import {
   AgentsPage,
   APP_FLOW_FRAMES,
+  APP_SLOW,
   AppFlow,
   AppWindow,
-  APP_BEATS as B,
   LANDING_CLICK,
   LANDING_FRAMES,
   Landing,
+  APP_BEATS as RAW_B,
 } from "./app";
 import { AGENT } from "./scenes";
 import { C, mono, sans, TX } from "./theme";
 import { Terminal, useIn } from "./ui";
+import VO from "./vo.json";
 
 export const FPS3 = 30;
 const BG = "#f4f4f5";
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
+/** App beats on the film's clock (the web journey is slowed by APP_SLOW). */
+const B = Object.fromEntries(
+  Object.entries(RAW_B).map(([k, v]) => [k, Math.round(v * APP_SLOW)]),
+) as typeof RAW_B;
+const WEB_FRAMES = Math.round(APP_FLOW_FRAMES * APP_SLOW);
+/** Frames a voice line needs, plus a breath. */
+const need = (id: keyof typeof VO, pad = 10) => Math.ceil(VO[id] * 30) + pad;
+/** One voice-over line at a frame of the current sequence. */
+const Vo = ({ id, at }: { id: keyof typeof VO; at: number }) => (
+  <Sequence from={at} durationInFrames={need(id, 0)}>
+    <Audio src={staticFile(`vo/${id}.mp3`)} volume={1} />
+  </Sequence>
+);
 
 const Sfx = ({ name, at, volume = 0.6 }: { name: string; at: number; volume?: number }) => (
   <Sequence from={Math.max(0, at)} durationInFrames={60}>
@@ -259,24 +274,24 @@ const WhyChain = () => {
 type Act = { len: number; node: ReactNode; words?: string[] };
 const ACTS: Act[] = [
   {
-    len: 50,
+    len: 60,
     words: ["Great", "UI", "design", "is", "expensive."],
     node: <Line words={["Great", "UI", "design", "is", "expensive."]} />,
   },
   {
-    len: 54,
+    len: 60,
     words: ["A", "design", "prompt", "gets", "you", "there."],
     node: <Line words={["A", "design", "prompt", "gets", "you", "there."]} />,
   },
   { len: SUB_FRAMES, node: <Subscriptions /> },
   {
-    len: 54,
+    len: Math.max(54, need("o2")),
     words: ["Your", "agent", "needs", "one.", "Once."],
     node: <Line dark words={["Your", "agent", "needs", "one.", "Once."]} />,
   },
-  { len: 120, node: <WhyChain /> },
+  { len: Math.max(120, need("o3", 16)), node: <WhyChain /> },
   {
-    len: 48,
+    len: Math.max(48, need("o4")),
     words: ["This", "is", "Simpuru."],
     node: <Line logo words={["This", "is", "Simpuru."]} />,
   },
@@ -298,11 +313,11 @@ const Opening = () => (
         at: (starts[i] as number) + j * 4,
       })),
     ).map((x) => (
-      <Sfx key={x.key} name="blip" at={x.at} volume={0.35} />
+      <Sfx key={x.key} name="blip" at={x.at} volume={0.15} />
     ))}
     <Sfx name="swish" at={starts[2] as number} volume={0.5} />
     {MONTHS.map((m, i) => (
-      <Sfx key={m} name="tap" at={(starts[2] as number) + 8 + i * MONTH_FRAMES} volume={0.45} />
+      <Sfx key={m} name="tap" at={(starts[2] as number) + 8 + i * MONTH_FRAMES} volume={0.25} />
     ))}
     <Sfx name="thud" at={(starts[2] as number) + 12 * MONTH_FRAMES + 12} volume={0.7} />
     <Sfx name="thud" at={starts[3] as number} volume={0.8} />
@@ -311,6 +326,10 @@ const Opening = () => (
       <Sfx key={d} name="tap" at={(starts[4] as number) + d} volume={0.5} />
     ))}
     <Sfx name="chime" at={starts[5] as number} volume={0.5} />
+    <Vo id="o1" at={4} />
+    <Vo id="o2" at={(starts[3] as number) + 2} />
+    <Vo id="o3" at={(starts[4] as number) + 4} />
+    <Vo id="o4" at={(starts[5] as number) + 2} />
   </AbsoluteFill>
 );
 
@@ -441,12 +460,27 @@ const WEB_COPY: Copy[] = [
   },
   {
     at: B.sellNav,
-    to: APP_FLOW_FRAMES,
+    to: WEB_FRAMES,
     eyebrow: "07 Sell",
     title: "Anyone can sell.",
     body: "The hash is fixed before anyone pays.",
   },
 ];
+
+/** Each line starts at its beat, never before the previous line ends. */
+const WEB_VO: [keyof typeof VO, number][] = [];
+for (const [id, beat] of [
+  ["w1", 4],
+  ["w2", B.modal],
+  ["w3", B.funded],
+  ["w4", B.cardClick],
+  ["w5", B.bought + 4],
+  ["w6", B.toTimeline],
+  ["w7", B.sellNav],
+] as [keyof typeof VO, number][]) {
+  const prev = WEB_VO[WEB_VO.length - 1];
+  WEB_VO.push([id, prev ? Math.max(beat, prev[1] + need(prev[0], 2)) : beat]);
+}
 
 const Web = () => (
   <>
@@ -465,6 +499,9 @@ const Web = () => (
     <Sfx name="swish" at={B.listing - 2} volume={0.4} />
     <Sfx name="swish" at={B.toTimeline - 2} volume={0.4} />
     <Sfx name="swish" at={B.sellNav - 2} volume={0.4} />
+    {WEB_VO.map(([id, at]) => (
+      <Vo key={id} id={id} at={at} />
+    ))}
   </>
 );
 
@@ -529,6 +566,8 @@ const Agents = () => (
     </Split>
     <Sfx name="tap" at={48} />
     <Sfx name="swish" at={94} volume={0.4} />
+    <Vo id="a1" at={4} />
+    <Vo id="a2" at={100} />
   </>
 );
 
@@ -671,7 +710,7 @@ const Outcome = ({
   );
 };
 
-const PROOF_FRAMES = 240;
+const PROOF_FRAMES = Math.max(240, need("p1", 16));
 const Proof = () => {
   const f = useCurrentFrame();
   const h = interpolate(f, [0, 12], [0, 1], clamp);
@@ -748,6 +787,7 @@ const Proof = () => {
       <Sfx name="chime" at={80} volume={0.4} />
       <Sfx name="chime" at={96} volume={0.4} />
       <Sfx name="chime" at={140} volume={0.4} />
+      <Vo id="p1" at={6} />
     </AbsoluteFill>
   );
 };
@@ -888,6 +928,7 @@ const Coworker = () => (
     <Sfx name="chime" at={80} volume={0.4} />
     <Sfx name="chime" at={150} />
     <Sfx name="chime" at={190} volume={0.4} />
+    <Vo id="c1" at={6} />
   </>
 );
 
@@ -940,6 +981,7 @@ const Outro = () => {
         ))}
       </div>
       <Sfx name="thud" at={0} volume={0.6} />
+      <Vo id="e1" at={10} />
     </AbsoluteFill>
   );
 };
@@ -951,16 +993,19 @@ const Site = () => (
       <Landing />
     </AppWindow>
     <Sfx name="tap" at={LANDING_CLICK} />
-    <Sfx name="swish" at={LANDING_FRAMES - 10} volume={0.5} />
+    <Sfx name="swish" at={SITE_FRAMES - 10} volume={0.5} />
+    <Vo id="site" at={6} />
   </AbsoluteFill>
 );
+
+const SITE_FRAMES = Math.max(LANDING_FRAMES, need("site", 16));
 
 // ── The film ─────────────────────────────────────────────────────────────────
 const T = 8;
 const PARTS = [
   ["opening", Opening, OPEN_FRAMES],
-  ["site", Site, LANDING_FRAMES],
-  ["web", Web, APP_FLOW_FRAMES],
+  ["site", Site, SITE_FRAMES],
+  ["web", Web, WEB_FRAMES],
   ["agents", Agents, AGENTS_FRAMES],
   ["proof", Proof, PROOF_FRAMES],
   ["coworker", Coworker, COWORKER_FRAMES],
@@ -989,7 +1034,7 @@ export const Film = () => (
     <Audio
       src={staticFile("sfx/pad.wav")}
       volume={(f) =>
-        0.22 * interpolate(f, [0, 30, FILM_FRAMES - 60, FILM_FRAMES], [0, 1, 1, 0], clamp)
+        0.1 * interpolate(f, [0, 30, FILM_FRAMES - 60, FILM_FRAMES], [0, 1, 1, 0], clamp)
       }
     />
   </AbsoluteFill>
