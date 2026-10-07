@@ -39,17 +39,3 @@ export const TX = {
   usdmPaid: "b18e3608011af78ed2ce4f4f1d32c599f8f457a91cc51dac45b14bb9229ba9d5",
 };
 export const short = (h: string) => `${h.slice(0, 8)}…${h.slice(-6)}`;
-
-/**
- * Screen recordings you add yourself go in public/rec/ and are switched on here
- * (null = the scene uses its built-in version). See video/README.md.
- */
-export const RECORDINGS: {
-  webBuy: string | null;
-  claudeCode: string | null;
-  sokosumi: string | null;
-} = {
-  webBuy: null, // e.g. "rec/web-buy.mp4"
-  claudeCode: null, // e.g. "rec/claude-code.mp4"
-  sokosumi: null, // e.g. "rec/sokosumi.mp4"
-};

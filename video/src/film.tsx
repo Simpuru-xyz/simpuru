@@ -14,6 +14,7 @@ import {
   staticFile,
   useCurrentFrame,
 } from "remotion";
+import { AGENT } from "./agent";
 import {
   AgentsPage,
   APP_FLOW_FRAMES,
@@ -25,7 +26,6 @@ import {
   Landing,
   APP_BEATS as RAW_B,
 } from "./app";
-import { AGENT } from "./scenes";
 import { C, mono, sans, TX } from "./theme";
 import { Terminal, useIn } from "./ui";
 import VO from "./vo.json";
