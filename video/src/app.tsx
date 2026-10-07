@@ -834,6 +834,8 @@ const Cursor = ({ f, path, clicks }: { f: number; path: Way[]; clicks: number[] 
 
 /** The whole web journey in one browser window: catalogue → sign in → buy → timeline → sell. */
 export const APP_FLOW_FRAMES = 600;
+/** The web journey plays slower than authored so the voice-over fits each beat. */
+export const APP_SLOW = 1.35;
 /** Beats of the web journey (frames), shared with the copy and the sound. */
 export const APP_BEATS = {
   signClick: 40,
@@ -853,7 +855,7 @@ export const APP_BEATS = {
   publish: 540,
 };
 export const AppFlow = () => {
-  const f = useCurrentFrame();
+  const f = useCurrentFrame() / APP_SLOW;
   // Beats (frames).
   const B = APP_BEATS;
   const signedIn = t(f, B.signed, B.signed + 10);
