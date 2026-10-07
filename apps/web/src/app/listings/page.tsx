@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import ListingCard from "@/components/ListingCard";
 import ListingPreview from "@/components/ListingPreview";
-import Nav from "@/components/Nav";
 import Skeleton, { SkeletonRegion } from "@/components/Skeleton";
 import { CATEGORIES, fetchListings, type ListingView } from "@/lib/api";
 
@@ -58,24 +57,25 @@ export default function CataloguePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Nav />
-
       <main className="px-4 pb-24 sm:px-6 lg:px-10">
         <section className="relative mt-4 overflow-hidden rounded-2xl bg-black text-white">
           <ListingPreview
-            src="/mock/particle-ai.webm"
+            src="/media/particle-ai.webm"
             title="Simpuru"
             className="absolute inset-0 h-full w-full opacity-70"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
           <div className="relative flex flex-col gap-4 px-6 py-10 sm:px-10 sm:py-14">
             <h1 className="max-w-xl text-3xl font-semibold tracking-tight sm:text-5xl">
-              Prompts your agent can buy.
+              Design prompts you and your agents can buy.
             </h1>
             <p className="max-w-lg text-sm text-white/75 sm:text-base">
-              Pay once over x402 on Cardano and reuse it forever. Anyone can sell, every seller
+              Pay once in tADA on Cardano and reuse it forever. Anyone can sell, every seller
               carries a reputation, and protected buys wait in escrow until delivery checks out.
             </p>
+            <span className="w-fit rounded-full border border-white/25 px-2.5 py-0.5 text-[11px] font-medium text-white/80">
+              Preprod testnet · test ADA has no value
+            </span>
             <div className="flex flex-wrap gap-2">
               <Link
                 href="/sell"
@@ -87,7 +87,11 @@ export default function CataloguePage() {
           </div>
         </section>
 
-        <div className="sticky top-[65px] z-20 -mx-4 mt-6 mb-6 flex items-center justify-between gap-4 bg-white/90 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
+        {/* An empty catalogue has nothing to filter or sort, so the bar only shows with listings. */}
+        <div
+          hidden={load.phase === "ready" && listings.length === 0}
+          className="sticky top-[65px] z-20 -mx-4 mt-6 mb-6 flex items-center justify-between gap-4 bg-white/90 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10"
+        >
           <fieldset className="flex min-w-0 gap-1 overflow-x-auto [scrollbar-width:none]">
             <legend className="sr-only">Filter by category</legend>
             <button
@@ -161,9 +165,34 @@ export default function CataloguePage() {
           </div>
         )}
 
-        {load.phase === "ready" && shown.length === 0 && (
+        {load.phase === "ready" && listings.length === 0 && (
+          <section className="mt-6 flex flex-col items-center gap-4 rounded-2xl border border-dashed border-gray-300 px-6 py-16 text-center">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              No prompts yet. Be the first to sell one.
+            </h2>
+            <p className="max-w-md text-sm text-gray-600">
+              Creators list design prompts; people and agents buy them in tADA on Cardano preprod.
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Link
+                href="/sell"
+                className="rounded-full bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800"
+              >
+                Sell a prompt
+              </Link>
+              <Link
+                href="/agents"
+                className="rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium hover:border-black"
+              >
+                Connect an agent
+              </Link>
+            </div>
+          </section>
+        )}
+
+        {load.phase === "ready" && listings.length > 0 && shown.length === 0 && (
           <p className="rounded-2xl border border-gray-200 p-8 text-center text-sm text-gray-600">
-            {listings.length === 0 ? "The catalogue is empty." : `Nothing in ${category} yet.`}
+            Nothing in {category} yet.
           </p>
         )}
 

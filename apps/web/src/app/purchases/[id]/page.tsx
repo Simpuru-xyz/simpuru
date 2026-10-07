@@ -7,7 +7,6 @@ import { use, useEffect, useState } from "react";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import Countdown from "@/components/Countdown";
 import ModeBadge from "@/components/ModeBadge";
-import Nav from "@/components/Nav";
 import Skeleton, { SkeletonRegion } from "@/components/Skeleton";
 import StatusBadge from "@/components/StatusBadge";
 import Timeline from "@/components/Timeline";
@@ -53,8 +52,6 @@ export default function PurchasePage({ params }: PageProps<"/purchases/[id]">) {
 
   return (
     <div className="min-h-screen bg-white">
-      <Nav />
-
       <main className="mx-auto max-w-3xl px-4 pb-24 sm:px-6">
         <div className="mt-6">
           <Breadcrumbs
@@ -115,7 +112,7 @@ export default function PurchasePage({ params }: PageProps<"/purchases/[id]">) {
                   <div className="flex gap-1.5">
                     <dt>Paid</dt>
                     <dd className="font-semibold text-black">
-                      {formatAda(load.listing.priceLovelace)} ADA
+                      {formatAda(load.listing.priceLovelace)} tADA
                     </dd>
                   </div>
                 )}

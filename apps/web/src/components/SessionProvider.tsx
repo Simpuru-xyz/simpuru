@@ -89,6 +89,11 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
+    // Keys from the old address-field and per-listing-signature flows; no longer read.
+    try {
+      localStorage.removeItem("simpuru:seller-address");
+      localStorage.removeItem("simpuru:wallet");
+    } catch {}
     const s = loadSession();
     if (!s) {
       setRestoring(false);

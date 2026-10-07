@@ -1,6 +1,5 @@
 "use client";
 
-import Nav from "@/components/Nav";
 import SellingPanel, { PAYOUT_COPY } from "@/components/SellingPanel";
 import SignInGate from "@/components/SignInGate";
 
@@ -8,7 +7,6 @@ import SignInGate from "@/components/SignInGate";
 export default function SellPage() {
   return (
     <div className="min-h-screen bg-white">
-      <Nav />
       <main className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
         <header className="py-8">
           <h1 className="mb-3 text-3xl font-normal tracking-tight sm:text-4xl">

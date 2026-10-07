@@ -47,7 +47,7 @@ export default function SalesList({
               </div>
               {listing && (
                 <span className="shrink-0 rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
-                  {formatAda(listing.priceLovelace)} ADA
+                  {formatAda(listing.priceLovelace)} tADA
                 </span>
               )}
             </div>

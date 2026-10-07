@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import Nav from "@/components/Nav";
 import PurchasesTable from "@/components/PurchasesTable";
 import SellingPanel from "@/components/SellingPanel";
 import { useSession } from "@/components/SessionProvider";
@@ -57,7 +56,6 @@ function AccountTabs() {
 export default function AccountPage() {
   return (
     <div className="min-h-screen bg-white">
-      <Nav />
       <main className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
         <header className="py-8">
           <h1 className="text-3xl font-normal tracking-tight sm:text-4xl">Account</h1>
